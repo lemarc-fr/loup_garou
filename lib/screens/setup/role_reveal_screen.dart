@@ -4,6 +4,7 @@ import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/pass_device_gate.dart';
 import '../../widgets/role_image.dart';
+import '../../models/role.dart';
 
 class RoleRevealScreen extends StatelessWidget {
   const RoleRevealScreen({super.key});
@@ -37,7 +38,7 @@ class _RevealContent extends StatelessWidget {
     final gp = context.watch<GameProvider>();
     final player = gp.state!.players[playerIndex];
     final theme = Theme.of(context);
-    final info = player.role;
+    final info = player.role.info;
 
     return Scaffold(
       body: SafeArea(

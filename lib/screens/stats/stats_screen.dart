@@ -5,6 +5,7 @@ import '../../providers/stats_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/confirm.dart';
 import '../../widgets/role_image.dart';
+import '../../models/role.dart';
 
 class StatsScreen extends StatelessWidget {
   const StatsScreen({super.key});

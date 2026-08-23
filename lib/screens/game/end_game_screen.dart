@@ -6,6 +6,7 @@ import '../../providers/stats_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/role_image.dart';
 import '../stats/stats_screen.dart';
+import '../../models/role.dart';
 
 class EndGameScreen extends StatefulWidget {
   const EndGameScreen({super.key});

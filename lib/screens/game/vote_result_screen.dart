@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/role_image.dart';
+import '../../models/role.dart';
 
 class VoteResultScreen extends StatelessWidget {
   const VoteResultScreen({super.key});
