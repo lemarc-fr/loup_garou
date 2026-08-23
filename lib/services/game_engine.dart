@@ -243,6 +243,10 @@ class GameEngine {
       s.phase = GamePhase.endGame;
       return;
     }
+    // On repart d'une liste vierge pour la vague "jour" : les morts de la
+    // nuit viennent d'être révélées, on ne veut pas les revoir mélangées
+    // aux morts du vote qui va suivre (cf. VoteResultScreen).
+    s.deathsThisWave = [];
     final rest = <GamePhase>[GamePhase.dayReveal];
     if (s.mayorId == null) rest.add(GamePhase.mayorElection);
     rest.add(GamePhase.debate);

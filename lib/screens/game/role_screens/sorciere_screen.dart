@@ -1,0 +1,126 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../models/role.dart';
+import '../../../providers/game_provider.dart';
+import '../../../widgets/pass_device_gate.dart';
+import '../../../widgets/player_grid_selector.dart';
+
+class SorciereScreen extends StatelessWidget {
+  const SorciereScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final gp = context.watch<GameProvider>();
+    final sorciere = gp.state!.alivePlayersWithRole(RoleId.sorciere).first;
+
+    return PassDeviceGate(
+      toName: sorciere.name,
+      subtitle: 'C\'est le rôle de la Sorcière. Réveille-toi.',
+      accent: RoleId.sorciere.info.accent,
+      contentBuilder: (_) => const _SorciereContent(),
+    );
+  }
+}
+
+class _SorciereContent extends StatefulWidget {
+  const _SorciereContent();
+  @override
+  State<_SorciereContent> createState() => _SorciereContentState();
+}
+
+class _SorciereContentState extends State<_SorciereContent> {
+  bool saveVictim = false;
+  bool poisoning = false;
+  String? poisonTargetId;
+
+  @override
+  Widget build(BuildContext context) {
+    final gp = context.read<GameProvider>();
+    final state = gp.state!;
+    final theme = Theme.of(context);
+
+    final sorciereId = state.alivePlayersWithRole(RoleId.sorciere).first.id;
+    final victim = state.tryById(state.finalNightVictimId);
+    final canSave = !state.sorciereVieUsed && victim != null;
+    final canPoison = !state.sorciereMortUsed;
+    final poisonTargets =
+        state.alivePlayers.where((p) => p.id != sorciereId).toList();
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('La Sorcière')),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                victim != null
+                    ? 'Cette nuit, les Loups-Garous ont désigné ${victim.name}.'
+                    : 'Cette nuit, les Loups-Garous n\'ont désigné personne.',
+                style: theme.textTheme.bodyLarge,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              if (canSave)
+                SwitchListTile(
+                  value: saveVictim,
+                  onChanged: (v) => setState(() => saveVictim = v),
+                  title: Text(
+                      'Utiliser la potion de vie pour sauver ${victim.name}'),
+                )
+              else
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Text(
+                    state.sorciereVieUsed
+                        ? 'Potion de vie déjà utilisée.'
+                        : 'Aucune victime à sauver cette nuit.',
+                    style: theme.textTheme.bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              const Divider(height: 32),
+              if (canPoison) ...[
+                SwitchListTile(
+                  value: poisoning,
+                  onChanged: (v) => setState(() {
+                    poisoning = v;
+                    if (!v) poisonTargetId = null;
+                  }),
+                  title: const Text('Utiliser la potion de mort'),
+                ),
+                if (poisoning) ...[
+                  const SizedBox(height: 8),
+                  Text('Choisissez la victime de la potion :',
+                      style: theme.textTheme.bodyMedium,
+                      textAlign: TextAlign.center),
+                  const SizedBox(height: 12),
+                  PlayerGridSelector(
+                    players: poisonTargets,
+                    selectedId: poisonTargetId,
+                    onSelect: (id) => setState(() => poisonTargetId = id),
+                  ),
+                ],
+              ] else
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Text('Potion de mort déjà utilisée.',
+                      style: theme.textTheme.bodyMedium,
+                      textAlign: TextAlign.center),
+                ),
+              const SizedBox(height: 28),
+              ElevatedButton(
+                onPressed: () => gp.resolveSorciere(
+                  useVie: saveVictim,
+                  poisonTargetId: poisoning ? poisonTargetId : null,
+                ),
+                child: const Text('Confirmer et se rendormir'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

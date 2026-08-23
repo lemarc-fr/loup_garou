@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../models/player.dart';
-import '../../providers/game_provider.dart';
-import '../../theme/app_theme.dart';
-import '../../widgets/pass_device_gate.dart';
-import '../../widgets/player_grid_selector.dart';
+import '../../../models/player.dart';
+import '../../../providers/game_provider.dart';
+import '../../../theme/app_theme.dart';
+import '../../../widgets/pass_device_gate.dart';
+import '../../../widgets/player_grid_selector.dart';
 
 /// Fait voter chaque joueur vivant, un par un (téléphone passé de main en
 /// main, vote secret), puis calcule le résultat. En cas d'égalité, relance

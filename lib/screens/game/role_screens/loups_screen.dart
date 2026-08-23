@@ -1,0 +1,72 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../providers/game_provider.dart';
+import '../../../theme/app_theme.dart';
+import '../../../widgets/pass_device_gate.dart';
+import '../../../widgets/player_grid_selector.dart';
+
+/// Contrairement aux autres rôles, les Loups-Garous se réveillent tous
+/// ensemble (pas de passage individuel du téléphone) et se mettent d'accord
+/// en silence avant qu'un seul d'entre eux ne pointe la victime.
+class LoupsScreen extends StatelessWidget {
+  const LoupsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final gp = context.watch<GameProvider>();
+    final wolves = gp.state!.aliveWolves;
+    final names = wolves.map((w) => w.name).join(', ');
+
+    return PassDeviceGate(
+      toName: wolves.length > 1 ? 'les Loups-Garous' : wolves.first.name,
+      subtitle:
+          'Réveillez-vous ($names) et mettez-vous d\'accord en silence sur votre victime.',
+      accent: AppColors.blood,
+      contentBuilder: (_) => const _LoupsContent(),
+    );
+  }
+}
+
+class _LoupsContent extends StatelessWidget {
+  const _LoupsContent();
+
+  @override
+  Widget build(BuildContext context) {
+    final gp = context.read<GameProvider>();
+    final state = gp.state!;
+    final theme = Theme.of(context);
+
+    // Les Loups ne peuvent pas se dévorer entre eux : on les retire des cibles.
+    final wolfIds = state.aliveWolves.map((w) => w.id).toSet();
+    final targets =
+        state.alivePlayers.where((p) => !wolfIds.contains(p.id)).toList();
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Les Loups-Garous')),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Désignez votre victime.',
+                style: theme.textTheme.bodyLarge,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: PlayerGridSelector(
+                    players: targets,
+                    onSelect: (id) => gp.setLoupsVictim(id),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

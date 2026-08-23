@@ -37,7 +37,7 @@ class _RevealContent extends StatelessWidget {
     final gp = context.watch<GameProvider>();
     final player = gp.state!.players[playerIndex];
     final theme = Theme.of(context);
-    final info = player.role.info;
+    final info = player.role;
 
     return Scaffold(
       body: SafeArea(
