@@ -49,6 +49,30 @@ C:\Users\marcb\Developpement\loup_garou\loup_garou\lib
     ├── player_grid_selector.dart
     └── role_image.dart
 
+C:\Users\marcb\Developpement\loup_garou\loup_garou\assets
+└── images
+    └── roles
+        ├── ancien.png
+        ├── ange.png
+        ├── chasseur.png
+        ├── chevalier_a_l_epee_rouille.png
+        ├── chien_loup.png
+        ├── cupidon.png
+        ├── enfant_sauvage.png
+        ├── grand_mechant_loup.png
+        ├── infect_pere_des_loups.png
+        ├── joueur_de_flutte.png
+        ├── loup_blanc.png
+        ├── loup_garou.png
+        ├── mayor_insign.png
+        ├── montreur_d_ours.png
+        ├── petite_fille.png
+        ├── renard.png
+        ├── soeurs.png
+        ├── soriere.png
+        ├── villageois.png
+        └── voyante.png
+
 
 ===== Fichier: main.dart =====
 
@@ -1052,6 +1076,7 @@ import '../../providers/stats_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/role_image.dart';
 import '../stats/stats_screen.dart';
+import '../../models/role.dart';
 
 class EndGameScreen extends StatefulWidget {
   const EndGameScreen({super.key});
@@ -1538,6 +1563,7 @@ import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/role_image.dart';
+import '../../models/role.dart';
 
 class VoteResultScreen extends StatelessWidget {
   const VoteResultScreen({super.key});
@@ -2569,6 +2595,7 @@ import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/pass_device_gate.dart';
 import '../../widgets/role_image.dart';
+import '../../models/role.dart';
 
 class RoleRevealScreen extends StatelessWidget {
   const RoleRevealScreen({super.key});
@@ -2602,7 +2629,7 @@ class _RevealContent extends StatelessWidget {
     final gp = context.watch<GameProvider>();
     final player = gp.state!.players[playerIndex];
     final theme = Theme.of(context);
-    final info = player.role;
+    final info = player.role.info;
 
     return Scaffold(
       body: SafeArea(
@@ -2840,6 +2867,7 @@ import '../../providers/stats_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/confirm.dart';
 import '../../widgets/role_image.dart';
+import '../../models/role.dart';
 
 class StatsScreen extends StatelessWidget {
   const StatsScreen({super.key});
@@ -3747,46 +3775,3 @@ class PlayerGridSelector extends StatelessWidget {
 
 ===== Fichier: widgets\role_image.dart =====
 
-import 'package:flutter/material.dart';
-import '../models/role.dart';
-
-/// Affiche l'illustration d'un rôle si le fichier existe dans les assets,
-/// sinon retombe proprement sur une icône colorée. Ça permet de développer
-/// et faire tourner l'app avant même que les images finales soient prêtes
-/// (voir assets/IMAGES_A_CREER.md).
-class RoleImage extends StatelessWidget {
-  final RoleId role;
-  final double size;
-  final bool circular;
-
-  const RoleImage(
-      {super.key, required this.role, this.size = 96, this.circular = true});
-
-  @override
-  Widget build(BuildContext context) {
-    final info = role.info;
-    final fallback = Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: info.accent.withValues(alpha: 0.18),
-        shape: circular ? BoxShape.circle : BoxShape.rectangle,
-        borderRadius: circular ? null : BorderRadius.circular(16),
-        border: Border.all(color: info.accent, width: 2),
-      ),
-      child: Icon(info.fallbackIcon, color: info.accent, size: size * 0.5),
-    );
-
-    return ClipRRect(
-      borderRadius:
-          circular ? BorderRadius.circular(size) : BorderRadius.circular(16),
-      child: Image.asset(
-        info.imageAsset,
-        width: size,
-        height: size,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => fallback,
-      ),
-    );
-  }
-}
