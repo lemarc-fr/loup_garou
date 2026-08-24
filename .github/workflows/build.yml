@@ -2,6 +2,7 @@ name: Build Mobile
 
 on:
   workflow_dispatch:
+  push:
 
 concurrency:
   group: multi-platform-release
@@ -132,3 +133,11 @@ jobs:
           
           scp -r -P 18005 build/app/outputs/split-apks/ \
             Marc@lemarc.fr:/home/Marc/build/loup_garou/
+            # Publier l'APK universel comme artifact GitHub
+            
+      - name: Upload Universal APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: universal-apk
+          path: build/app/outputs/universal-apk/universal.apk
+          retention-days: 2
