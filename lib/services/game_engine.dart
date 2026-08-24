@@ -248,7 +248,10 @@ class GameEngine {
     // aux morts du vote qui va suivre (cf. VoteResultScreen).
     s.deathsThisWave = [];
     final rest = <GamePhase>[GamePhase.dayReveal];
-    if (s.mayorId == null) rest.add(GamePhase.mayorElection);
+    if (s.mayorId == null) {
+      rest.add(GamePhase.mayorElection);
+      rest.add(GamePhase.mayorReveal);
+    }
     rest.add(GamePhase.debate);
     rest.add(GamePhase.villageVote);
     s.phaseQueue = rest;
@@ -271,6 +274,7 @@ class GameEngine {
   }
 
   void confirmDebate(GameState s) => advance2(s);
+  void confirmMayorReveal(GameState s) => advance2(s);
 
   VoteTally tallyVotes(GameState s, Map<String, String> votes) {
     final counts = <String, int>{};

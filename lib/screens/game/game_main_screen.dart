@@ -18,6 +18,7 @@ import 'role_screens/voyante_screen.dart';
 import 'village_vote_screen.dart';
 import 'vote_result_screen.dart';
 import 'village_power_loss_screen.dart';
+import 'mayor_reveal_screen.dart';
 
 /// Point d'entrée de la partie une fois la distribution des rôles terminée.
 /// Regarde `GameState.phase` et affiche l'écran correspondant — c'est la
@@ -32,6 +33,7 @@ class GameMainScreen extends StatelessWidget {
   static const _dayPhases = {
     GamePhase.dayReveal,
     GamePhase.mayorElection,
+    GamePhase.mayorReveal,
     GamePhase.debate,
     GamePhase.villageVote,
     GamePhase.voteResult,
@@ -54,6 +56,7 @@ class GameMainScreen extends StatelessWidget {
       GamePhase.pendingAction => const PendingActionScreen(),
       GamePhase.dayReveal => const DayRevealScreen(),
       GamePhase.mayorElection => const MayorElectionScreen(),
+      GamePhase.mayorReveal => const MayorRevealScreen(),
       GamePhase.debate => const DebateScreen(),
       GamePhase.villageVote => const VillageVoteScreen(),
       GamePhase.voteResult => const VoteResultScreen(),

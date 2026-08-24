@@ -212,4 +212,9 @@ class GameProvider extends ChangeNotifier {
     engine.confirmPowerLossReveal(state!);
     notifyListeners();
   }
+
+  void confirmMayorReveal() {
+    engine.confirmMayorReveal(state!);
+    notifyListeners();
+  }
 }
