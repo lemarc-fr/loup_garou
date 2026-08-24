@@ -44,5 +44,3 @@ flutter:
   # grâce à des Icon() de secours (voir widgets/role_image.dart).
   assets:
     - assets/images/roles/
-    - assets/images/ui/
-    - assets/images/camps/

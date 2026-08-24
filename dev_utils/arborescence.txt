@@ -1,0 +1,51 @@
+﻿C:\Users\marcb\Developpement\loup_garou\loup_garou\lib
+├── main.dart
+├── models
+│   ├── game_config.dart
+│   ├── game_state.dart
+│   ├── player.dart
+│   ├── player_stats.dart
+│   └── role.dart
+├── providers
+│   ├── game_provider.dart
+│   └── stats_provider.dart
+├── screens
+│   ├── game
+│   │   ├── day_reveal_screen.dart
+│   │   ├── debate_screen.dart
+│   │   ├── end_game_screen.dart
+│   │   ├── game_main_screen.dart
+│   │   ├── mayor_election_screen.dart
+│   │   ├── night_intro_screen.dart
+│   │   ├── pending_action_screen.dart
+│   │   ├── role_screens
+│   │   │   ├── cupidon_screen.dart
+│   │   │   ├── loups_screen.dart
+│   │   │   ├── petite_fille_screen.dart
+│   │   │   ├── sorciere_screen.dart
+│   │   │   ├── voleur_screen.dart
+│   │   │   └── voyante_screen.dart
+│   │   ├── sequential_vote_flow.dart
+│   │   ├── village_vote_screen.dart
+│   │   └── vote_result_screen.dart
+│   ├── game_flow_screen.dart
+│   ├── home
+│   │   └── home_screen.dart
+│   ├── setup
+│   │   ├── player_count_screen.dart
+│   │   ├── player_names_screen.dart
+│   │   ├── role_reveal_screen.dart
+│   │   └── role_selection_screen.dart
+│   └── stats
+│       └── stats_screen.dart
+├── services
+│   ├── game_engine.dart
+│   └── storage_service.dart
+├── theme
+│   └── app_theme.dart
+└── widgets
+    ├── confirm.dart
+    ├── pass_device_gate.dart
+    ├── player_grid_selector.dart
+    └── role_image.dart
+

@@ -1,0 +1,134 @@
+name: Build Mobile
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: multi-platform-release
+  cancel-in-progress: true
+
+env:
+  JAVA_VERSION: 17
+  FLUTTER_VERSION: 3.41.1
+  BUNDLETOOL_VERSION: 1.17.2
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Java
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
+
+      # Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - run: flutter doctor -v
+
+      # Cache pub dependencies
+      - name: Cache pub
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            pub-${{ runner.os }}-
+
+      - run: flutter pub get
+
+      # Decode keystore
+      - name: Decode keystore
+        run: |
+          mkdir -p android/app
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
+
+      # Key properties
+      - name: Create key.properties
+        run: |
+          cat > android/key.properties <<EOF
+          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          storeFile=keystore.jks
+          EOF
+
+      # Build AAB uniquement
+      - name: Build AAB
+        run: flutter build appbundle --release -v
+
+      # Télécharger bundletool
+      - name: Download bundletool
+        run: |
+          curl -L "https://github.com/google/bundletool/releases/download/${{ env.BUNDLETOOL_VERSION }}/bundletool-all-${{ env.BUNDLETOOL_VERSION }}.jar" \
+            -o bundletool.jar
+
+      # Générer les APKs depuis le AAB via bundletool
+      - name: Generate APKs with bundletool
+        run: |
+          java -jar bundletool.jar build-apks \
+            --bundle=build/app/outputs/bundle/release/app-release.aab \
+            --output=build/app/outputs/apks/app.apks \
+            --ks=android/app/keystore.jks \
+            --ks-pass=pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }} \
+            --ks-key-alias=${{ secrets.ANDROID_KEY_ALIAS }} \
+            --key-pass=pass:${{ secrets.ANDROID_KEY_PASSWORD }} \
+            --mode=universal
+          
+          java -jar bundletool.jar build-apks \
+            --bundle=build/app/outputs/bundle/release/app-release.aab \
+            --output=build/app/outputs/apks/default.apks \
+            --ks=android/app/keystore.jks \
+            --ks-pass=pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }} \
+            --ks-key-alias=${{ secrets.ANDROID_KEY_ALIAS }} \
+            --key-pass=pass:${{ secrets.ANDROID_KEY_PASSWORD }} \
+            --mode=default
+
+      # Extraire l'APK universel du .apks (archive zip)
+      - name: Extract APKs
+        run: |
+         mkdir -p build/app/outputs/universal-apk
+         mkdir -p build/app/outputs/split-apks
+
+         # APK universel — was "universal.apks", should be "app.apks"
+         unzip -j build/app/outputs/apks/app.apks \
+         "universal.apk" \
+         -d build/app/outputs/universal-apk/
+
+          # APKs splittés — was "universal.apks", should be "default.apks"
+         unzip build/app/outputs/apks/default.apks \
+         "splits/*.apk" \
+         -d build/app/outputs/split-apks/
+
+      # SSH + envoi des artifacts
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.PRIVATE_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -p 18005 lemarc.fr >> ~/.ssh/known_hosts
+
+      - name: Send artifacts to server
+        run: |
+          ssh -p 18005 Marc@lemarc.fr "rm -rf /home/Marc/build/loup_garou/*"
+          ssh -p 18005 Marc@lemarc.fr "mkdir -p /home/Marc/build/loup_garou"
+
+          scp -P 18005 build/app/outputs/bundle/release/app-release.aab \
+            Marc@lemarc.fr:/home/Marc/build/loup_garou/
+
+          scp -P 18005 build/app/outputs/universal-apk/universal.apk \
+            Marc@lemarc.fr:/home/Marc/build/loup_garou/
+          
+          scp -r -P 18005 build/app/outputs/split-apks/ \
+            Marc@lemarc.fr:/home/Marc/build/loup_garou/
