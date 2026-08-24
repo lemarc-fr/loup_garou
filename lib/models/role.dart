@@ -171,7 +171,7 @@ const Map<RoleId, RoleInfo> kRoleCatalog = {
     description:
         "Aucun pouvoir particulier. Son arme : l'observation, l'écoute, et le vote le jour venu.",
     nightInstruction: "",
-    imageAsset: 'assets/images/roles/simple_villageois.png',
+    imageAsset: 'assets/images/roles/villageois.png',
     fallbackIcon: Icons.person,
     accent: AppColors.forest,
     actsAtNight: false,
