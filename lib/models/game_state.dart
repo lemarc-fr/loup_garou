@@ -28,12 +28,22 @@ enum GamePhase {
   debate,
   villageVote,
   voteResult,
+  villagePowerLoss,
 
   // Fin
   endGame,
 }
 
 enum WinnerType { village, loups, amoureux }
+
+/// Un villageois qui vient de perdre son pouvoir suite à l'exécution
+/// erronée de l'Ancien. On garde son ancien rôle pour l'animation de
+/// révélation, même si Player.role a déjà basculé sur simpleVillageois.
+class PowerLossEntry {
+  final String playerId;
+  final RoleId previousRole;
+  const PowerLossEntry(this.playerId, this.previousRole);
+}
 
 class GameResult {
   final WinnerType winner;
@@ -70,6 +80,9 @@ class GameState {
   int phaseIndex = 0;
 
   String? mayorId;
+  bool ancienExtraLifeUsed =
+      false; // vie supplémentaire de l'Ancien face aux Loups
+  List<PowerLossEntry> powerLossThisWave = [];
 
   // --- Données temporaires de la nuit en cours ---
   String? loupsVictimId; // victime désignée par les loups, avant substitution

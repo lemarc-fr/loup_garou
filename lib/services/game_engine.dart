@@ -300,6 +300,7 @@ class GameEngine {
   }
 
   /// À appeler quand le groupe a fini de lire le résultat du vote.
+  /// À appeler quand le groupe a fini de lire le résultat du vote.
   void confirmVoteResult(GameState s) {
     final result = checkWinCondition(s);
     if (result != null) {
@@ -307,6 +308,20 @@ class GameEngine {
       s.phase = GamePhase.endGame;
       return;
     }
+    if (s.powerLossThisWave.isNotEmpty) {
+      s.phase = GamePhase.villagePowerLoss;
+      return;
+    }
+    _startNextNight(s);
+  }
+
+  /// À appeler quand le groupe a fini de lire la révélation de perte de pouvoirs.
+  void confirmPowerLossReveal(GameState s) {
+    s.powerLossThisWave = [];
+    _startNextNight(s);
+  }
+
+  void _startNextNight(GameState s) {
     s.night += 1;
     s.currentWave = 'night';
     _resetNightTempData(s);
@@ -322,6 +337,16 @@ class GameEngine {
   void _applyDeath(GameState s, String playerId, DeathCause cause) {
     final p = s.byId(playerId);
     if (!p.alive) return; // déjà mort (ex. sauvé puis reciblé ailleurs)
+
+    // L'Ancien résiste à une première attaque des Loups-Garous : il survit
+    // en silence, sans qu'aucun mort ne soit annoncé cette nuit-là.
+    if (p.role == RoleId.ancien &&
+        cause == DeathCause.devoreParLesLoups &&
+        !s.ancienExtraLifeUsed) {
+      s.ancienExtraLifeUsed = true;
+      return;
+    }
+
     p.alive = false;
     p.deathCause = cause;
     p.deathAtNight = s.currentWave == 'night' ? s.night : null;
@@ -347,6 +372,24 @@ class GameEngine {
       p.isMayor = false;
       s.pendingActions
           .add(PendingAction(playerId: p.id, isMayorSuccession: true));
+    }
+
+    // Le village a fait pendre l'Ancien par erreur : tous les villageois à
+    // pouvoir perdent leur don pour le reste de la partie.
+    if (p.role == RoleId.ancien && cause == DeathCause.vote) {
+      _villageLosesPowers(s);
+    }
+  }
+
+  /// Rétrograde tous les villageois à pouvoir en simples villageois (les
+  /// Loups ne sont pas concernés). Déclenché quand le village exécute
+  /// l'Ancien par erreur.
+  void _villageLosesPowers(GameState s) {
+    for (final p in s.alivePlayers) {
+      if (p.camp == Camp.village && p.role != RoleId.simpleVillageois) {
+        s.powerLossThisWave.add(PowerLossEntry(p.id, p.role));
+        p.role = RoleId.simpleVillageois;
+      }
     }
   }
 

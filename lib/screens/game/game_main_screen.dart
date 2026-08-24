@@ -17,6 +17,7 @@ import 'role_screens/voleur_screen.dart';
 import 'role_screens/voyante_screen.dart';
 import 'village_vote_screen.dart';
 import 'vote_result_screen.dart';
+import 'village_power_loss_screen.dart';
 
 /// Point d'entrée de la partie une fois la distribution des rôles terminée.
 /// Regarde `GameState.phase` et affiche l'écran correspondant — c'est la
@@ -34,6 +35,7 @@ class GameMainScreen extends StatelessWidget {
     GamePhase.debate,
     GamePhase.villageVote,
     GamePhase.voteResult,
+    GamePhase.villagePowerLoss,
   };
 
   @override
@@ -56,6 +58,7 @@ class GameMainScreen extends StatelessWidget {
       GamePhase.villageVote => const VillageVoteScreen(),
       GamePhase.voteResult => const VoteResultScreen(),
       GamePhase.endGame => const EndGameScreen(),
+      GamePhase.villagePowerLoss => const VillagePowerLossScreen(),
       // Les phases de setup (avant distribution) ne passent jamais par ici :
       // GameFlowScreen les intercepte plus haut. Filet de sécurité :
       _ => const SizedBox.shrink(),

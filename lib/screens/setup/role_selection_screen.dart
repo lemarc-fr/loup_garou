@@ -28,6 +28,7 @@ class RoleSelectionScreen extends StatelessWidget {
       RoleId.voyante,
       RoleId.sorciere,
       RoleId.chasseur,
+      RoleId.ancien,
       RoleId.cupidon,
       RoleId.petiteFille,
       RoleId.voleur,

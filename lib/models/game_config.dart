@@ -39,6 +39,7 @@ class GameConfig {
     if (playerCount >= 7) addIfRoom(RoleId.sorciere);
     if (playerCount >= 8) addIfRoom(RoleId.chasseur);
     if (playerCount >= 9) addIfRoom(RoleId.cupidon);
+    if (playerCount >= 10) addIfRoom(RoleId.ancien);
     if (playerCount >= 11) addIfRoom(RoleId.petiteFille);
 
     counts[RoleId.simpleVillageois] = remaining.clamp(0, 999);

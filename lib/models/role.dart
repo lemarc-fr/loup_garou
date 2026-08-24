@@ -15,6 +15,7 @@ enum RoleId {
   petiteFille,
   voleur,
   simpleVillageois,
+  ancien,
 }
 
 /// Cause de décès, utile pour l'affichage et pour la page de stats.
@@ -175,6 +176,22 @@ const Map<RoleId, RoleInfo> kRoleCatalog = {
     accent: AppColors.forest,
     actsAtNight: false,
     unique: false,
+  ),
+  RoleId.ancien: RoleInfo(
+    id: RoleId.ancien,
+    name: "L'Ancien",
+    nameShort: 'Ancien',
+    camp: Camp.village,
+    description:
+        "Grâce à sa sagesse, il résiste à une première attaque des Loups-Garous : "
+        "il survit en silence, sans que personne ne le sache. Si le village le "
+        "tue par erreur en votant contre lui, tous les villageois à pouvoir "
+        "perdent aussitôt leur don, punis pour leur imprudence.",
+    nightInstruction: "",
+    imageAsset: 'assets/images/roles/ancien.png',
+    fallbackIcon: Icons.elderly,
+    accent: AppColors.forest,
+    actsAtNight: false,
   ),
 };
 
