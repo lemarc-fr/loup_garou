@@ -1,3 +1,7 @@
+import com.android.build.api.dsl.ApplicationExtension
+import org.gradle.kotlin.dsl.configure
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 import java.util.Properties 
 import java.io.FileInputStream
 
@@ -11,7 +15,7 @@ val keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
      keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
-android {
+extensions.configure<ApplicationExtension>("android") {
     namespace = "com.example.loup_garou"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
@@ -48,8 +52,11 @@ android {
             signingConfigs.getByName("release")
         }
     }
-    kotlinOptions {
-        jvmTarget = "17"
+}
+
+extensions.configure<KotlinAndroidProjectExtension>("kotlin") {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
     }
 }
 
