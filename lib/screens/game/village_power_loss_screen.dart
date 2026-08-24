@@ -146,8 +146,8 @@ class _PowerLossCardState extends State<_PowerLossCard> {
                     child: FadeTransition(opacity: anim, child: child),
                   ),
                   child: _switched
-                      ? RoleImage(
-                          key: const ValueKey('villageois'),
+                      ? const RoleImage(
+                          key: ValueKey('villageois'),
                           role: RoleId.simpleVillageois,
                           size: 48,
                         )
