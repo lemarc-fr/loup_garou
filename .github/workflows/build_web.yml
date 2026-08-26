@@ -5,10 +5,10 @@ on:
   push:
 
 env:
-  FLUTTER_VERSION: 3.41.1
+  FLUTTER_VERSION: 3.47.1
 
 jobs:
-  build-android:
+  build-web:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
