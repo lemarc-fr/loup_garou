@@ -5,6 +5,7 @@ import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/confirm.dart';
 import '../game_flow_screen.dart';
+import '../settings/game_settings_screen.dart';
 import '../stats/stats_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -92,6 +93,16 @@ class HomeScreen extends StatelessWidget {
                       MaterialPageRoute(builder: (_) => const StatsScreen())),
                   icon: const Icon(Icons.bar_chart),
                   label: const Text('Statistiques'),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const GameSettingsScreen())),
+                  icon: const Icon(Icons.settings_outlined),
+                  label: const Text('Options de jeu'),
                 ),
               ),
               const SizedBox(height: 12),

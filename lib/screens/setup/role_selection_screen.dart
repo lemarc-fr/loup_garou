@@ -4,6 +4,7 @@ import '../../models/role.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/role_image.dart';
+import '../settings/game_settings_screen.dart';
 
 class RoleSelectionScreen extends StatelessWidget {
   const RoleSelectionScreen({super.key});
@@ -40,7 +41,18 @@ class RoleSelectionScreen extends StatelessWidget {
     final remaining = config.expectedTotalCards - othersSum;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Répartition des rôles')),
+      appBar: AppBar(
+        title: const Text('Répartition des rôles'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'Options de jeu',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const GameSettingsScreen()),
+            ),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Column(
           children: [
