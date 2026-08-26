@@ -78,10 +78,10 @@ class GameEngine {
       q.add(GamePhase.nightCupidon);
     }
     if (s.hasAliveRole(RoleId.voyante)) q.add(GamePhase.nightVoyante);
-    if (s.aliveWolves.isNotEmpty) q.add(GamePhase.nightLoups);
     if (s.hasAliveRole(RoleId.petiteFille) && s.aliveWolves.isNotEmpty) {
       q.add(GamePhase.nightPetiteFille);
     }
+    if (s.aliveWolves.isNotEmpty) q.add(GamePhase.nightLoups);
     final sorciereEncorePuissante = !s.sorciereVieUsed || !s.sorciereMortUsed;
     if (s.hasAliveRole(RoleId.sorciere) &&
         sorciereEncorePuissante &&

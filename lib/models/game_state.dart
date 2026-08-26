@@ -15,8 +15,8 @@ enum GamePhase {
   nightVoleur,
   nightCupidon,
   nightVoyante,
-  nightLoups,
   nightPetiteFille,
+  nightLoups,
   nightSorciere,
 
   // Actions différées déclenchées par une mort (chasseur / succession du maire)
