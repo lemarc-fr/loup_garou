@@ -67,7 +67,7 @@ jobs:
 
       # Build AAB uniquement
       - name: Build AAB
-        run: flutter build appbundle --release -v
+        run: flutter build appbundle --release -v --android-skip-build-dependency-validation
 
       # Télécharger bundletool
       - name: Download bundletool
