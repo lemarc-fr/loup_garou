@@ -118,6 +118,10 @@ class GameEngine {
       return;
     }
     s.phaseIndex++;
+    while (s.phaseIndex < s.phaseQueue.length &&
+        _shouldSkipPhase(s, s.phaseQueue[s.phaseIndex])) {
+      s.phaseIndex++;
+    }
     if (s.phaseIndex < s.phaseQueue.length) {
       s.phase = s.phaseQueue[s.phaseIndex];
       return;
@@ -126,6 +130,16 @@ class GameEngine {
     if (s.currentWave == 'night') {
       _finishNight(s);
     }
+  }
+  
+  bool _shouldSkipPhase(GameState s, GamePhase phase) {
+    if (phase == GamePhase.nightSorciere &&
+        !s.settings.allowWitchToPlayIfWerewolfDeathCause &&
+        s.hasAliveRole(RoleId.sorciere)) {
+      final sorciere = s.alivePlayersWithRole(RoleId.sorciere).first;
+      return s.finalNightVictimId == sorciere.id;
+    }
+    return false;
   }
 
   // ---------------------------------------------------------------------

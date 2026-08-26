@@ -29,4 +29,9 @@ class SettingsProvider extends ChangeNotifier {
       settings.allowWerewolfToKillThemselves;
 
   bool get allowHunterToShootAfterWitchDeathCause => settings.allowHunterToShootAfterWitchDeathCause;
+
+  bool get allowWitchToPlayIfWerewolfDeathCause =>
+      settings.allowWitchToPlayIfWerewolfDeathCause;
+
+  bool get allowWitchToSaveHerself => settings.allowWitchToSaveHerself;
 }

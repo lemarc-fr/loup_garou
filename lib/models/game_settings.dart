@@ -6,6 +6,8 @@
 enum SettingId {
   allowWerewolfToKillThemselves,
   allowHunterToShootAfterWitchDeathCause,
+  allowWitchToPlayIfWerewolfDeathCause,
+  allowWitchToSaveHerself,
 }
 
 /// Décrit une option pour l'affichage dans l'écran de réglages.
@@ -40,7 +42,25 @@ const List<GameSettingDefinition> kGameSettingDefinitions = [
     description:
         'Si activé, le Chasseur peut utiliser son pouvoir de tir après que la Sorcière l\'ait tué.',
     defaultValue: false,
-  )
+  ),
+  GameSettingDefinition(
+    id: SettingId.allowWitchToPlayIfWerewolfDeathCause,
+    label: 'La Sorcière joue même si elle est visée par les Loups',
+    description:
+    'Si activé, la Sorcière est quand même réveillée pour son tour '
+        'même si elle est la victime désignée par les Loups-Garous cette '
+        'nuit-là. Si désactivé (par défaut), elle ne joue pas et succombe '
+        'directement, sans utiliser ses potions.',
+    defaultValue: false,
+  ),
+  GameSettingDefinition(
+    id: SettingId.allowWitchToSaveHerself,
+    label: 'La Sorcière peut se sauver elle-même',
+    description:
+    'Si activé, la Sorcière peut utiliser sa potion de vie sur '
+        'elle-même lorsqu\'elle est la victime désignée par les Loups-Garous.',
+    defaultValue: false,
+  ),
 ];
 
 /// Valeurs courantes des options, avec repli sur la valeur par défaut du
@@ -65,6 +85,10 @@ class GameSettings {
       get(SettingId.allowWerewolfToKillThemselves);
 
   bool get allowHunterToShootAfterWitchDeathCause => get(SettingId.allowHunterToShootAfterWitchDeathCause);
+
+  bool get allowWitchToPlayIfWerewolfDeathCause => get(SettingId.allowWitchToPlayIfWerewolfDeathCause);
+
+  bool get allowWitchToSaveHerself => get(SettingId.allowWitchToSaveHerself);
 
   Map<String, dynamic> toJson() => {
     for (final e in _values.entries) e.key.name: e.value,

@@ -41,7 +41,10 @@ class _SorciereContentState extends State<_SorciereContent> {
 
     final sorciereId = state.alivePlayersWithRole(RoleId.sorciere).first.id;
     final victim = state.tryById(state.finalNightVictimId);
-    final canSave = !state.sorciereVieUsed && victim != null;
+    final victimIsSorciere = victim?.id == sorciereId;
+    final selfSaveBlocked =
+        victimIsSorciere && !state.settings.allowWitchToSaveHerself;
+    final canSave = !state.sorciereVieUsed && victim != null && !selfSaveBlocked;
     final canPoison = !state.sorciereMortUsed;
     final poisonTargets =
         state.alivePlayers.where((p) => p.id != sorciereId).toList();
@@ -75,6 +78,9 @@ class _SorciereContentState extends State<_SorciereContent> {
                   child: Text(
                     state.sorciereVieUsed
                         ? 'Potion de vie déjà utilisée.'
+                        : selfSaveBlocked
+                        ? 'Vous êtes vous-même la victime désignée, mais '
+                        'vous ne pouvez pas vous sauver vous-même.'
                         : 'Aucune victime à sauver cette nuit.',
                     style: theme.textTheme.bodyMedium,
                     textAlign: TextAlign.center,
