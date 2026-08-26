@@ -19,6 +19,7 @@ import 'village_vote_screen.dart';
 import 'vote_result_screen.dart';
 import 'village_power_loss_screen.dart';
 import 'mayor_reveal_screen.dart';
+import 'mayor_election_explain.dart';
 
 /// Point d'entrée de la partie une fois la distribution des rôles terminée.
 /// Regarde `GameState.phase` et affiche l'écran correspondant — c'est la
@@ -62,6 +63,7 @@ class GameMainScreen extends StatelessWidget {
       GamePhase.voteResult => const VoteResultScreen(),
       GamePhase.endGame => const EndGameScreen(),
       GamePhase.villagePowerLoss => const VillagePowerLossScreen(),
+      GamePhase.mayorElectionExplain => const MayorElectionExplainScreen(),
       // Les phases de setup (avant distribution) ne passent jamais par ici :
       // GameFlowScreen les intercepte plus haut. Filet de sécurité :
       _ => const SizedBox.shrink(),

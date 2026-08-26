@@ -221,4 +221,8 @@ class GameProvider extends ChangeNotifier {
     engine.confirmMayorReveal(state!);
     notifyListeners();
   }
+  void confirmMayorElectionExplain() {
+    engine.confirmMayorElectionExplain(state!);
+    notifyListeners();
+  }
 }

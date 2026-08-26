@@ -269,6 +269,7 @@ class GameEngine {
     s.deathsThisWave = [];
     final rest = <GamePhase>[GamePhase.dayReveal];
     if (s.mayorId == null) {
+      rest.add(GamePhase.mayorElectionExplain);
       rest.add(GamePhase.mayorElection);
       rest.add(GamePhase.mayorReveal);
     }
@@ -292,7 +293,7 @@ class GameEngine {
       s.phase = s.phaseQueue[s.phaseIndex];
     }
   }
-
+  void confirmMayorElectionExplain(GameState s) => advance2(s);
   void confirmDebate(GameState s) => advance2(s);
   void confirmMayorReveal(GameState s) => advance2(s);
 

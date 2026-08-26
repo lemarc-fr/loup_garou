@@ -1,0 +1,50 @@
+name: Build Web
+
+on:
+  workflow_dispatch:
+  push:
+
+concurrency:
+  group: multi-platform-release
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: 3.41.1
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - run: flutter doctor -v
+
+      - run: flutter pub get
+      - run: flutter build web --release --webasm
+      - run: tree
+      - run: ls build/web/
+
+      # SSH + envoi des artifacts
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.PRIVATE_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -p 18005 lemarc.fr >> ~/.ssh/known_hosts
+
+      - name: Send artifacts to server
+        run: |
+          ssh -p 18005 Marc@lemarc.fr "rm -rf /home/Marc/Web/loup_garou/*"
+          ssh -p 18005 Marc@lemarc.fr "mkdir -p /home/Marc/Web/loup_garou"
+
+          scp -P 18005 build/app/outputs/bundle/release/app-release.aab \
+            Marc@lemarc.fr:/home/Marc/Web/loup_garou/

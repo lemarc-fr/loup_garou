@@ -25,6 +25,7 @@ enum GamePhase {
 
   // Jour
   dayReveal,
+  mayorElectionExplain,
   mayorElection,
   mayorReveal,
   debate,
