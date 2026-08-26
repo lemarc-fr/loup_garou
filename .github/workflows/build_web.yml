@@ -42,5 +42,6 @@ jobs:
           ssh -p 18005 Marc@lemarc.fr "rm -rf /home/Marc/Web/loup_garou/*"
           ssh -p 18005 Marc@lemarc.fr "mkdir -p /home/Marc/Web/loup_garou"
 
-          scp -P 18005 build/web/ \
+          scp -r -P 18005 build/web/. \
             Marc@lemarc.fr:/home/Marc/Web/loup_garou/
+          
