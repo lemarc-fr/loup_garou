@@ -12,6 +12,8 @@ class PlayerNamesScreen extends StatefulWidget {
 
 class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
   late List<TextEditingController> _controllers;
+  late List<FocusNode> _focusNodes;
+
   String? _error;
 
   @override
@@ -20,6 +22,9 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
     final gp = context.read<GameProvider>();
     _controllers =
         List.generate(gp.draftNames.length, (_) => TextEditingController());
+    _focusNodes =
+        List.generate(gp.draftNames.length, (_) => FocusNode());
+
   }
 
   @override
@@ -28,6 +33,10 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
       c.dispose();
     }
     super.dispose();
+    for (final node in _focusNodes) {
+      node.dispose();
+    }
+
   }
 
   void _submit() {
@@ -75,14 +84,26 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
                 separatorBuilder: (_, __) => const SizedBox(height: 12),
                 itemBuilder: (context, index) => TextField(
                   controller: _controllers[index],
+                  focusNode: _focusNodes[index],
                   textCapitalization: TextCapitalization.words,
+                  textInputAction: index == _controllers.length - 1
+                      ? TextInputAction.done
+                      : TextInputAction.next,
+                  onSubmitted: (_) {
+                    if (index < _controllers.length - 1) {
+                      _focusNodes[index + 1].requestFocus();
+                    } else {
+                      _submit();
+                    }
+                  },
                   decoration: InputDecoration(
                     labelText: 'Joueur ${index + 1}',
                     prefixIcon: const Icon(Icons.person_outline),
                     filled: true,
                     fillColor: AppColors.nightAlt,
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14)),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
                 ),
               ),
