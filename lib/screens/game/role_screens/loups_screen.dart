@@ -13,14 +13,11 @@ class LoupsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gp = context.watch<GameProvider>();
-    final wolves = gp.state!.aliveWolves;
-    final names = wolves.map((w) => w.name).join(', ');
-
     return PassDeviceGate(
-      toName: wolves.length > 1 ? 'les Loups-Garous' : wolves.first.name,
+      toName: 'les Loups-Garous',
+      pluralToName: true,
       subtitle:
-          'Réveillez-vous ($names) et mettez-vous d\'accord en silence sur votre victime.',
+          'Réveillez-vous et mettez-vous d\'accord en silence sur votre victime.',
       accent: AppColors.blood,
       contentBuilder: (_) => const _LoupsContent(),
     );
