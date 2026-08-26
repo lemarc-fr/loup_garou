@@ -44,4 +44,3 @@ jobs:
 
           scp -r -P 18005 build/web/. \
             Marc@lemarc.fr:/home/Marc/Web/loup_garou/
-          

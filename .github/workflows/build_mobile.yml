@@ -49,15 +49,15 @@ jobs:
       - name: Decode keystore
         run: |
           mkdir -p android/app
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
+          echo "${{ secrets.KEYSTORE }}" | base64 --decode > android/app/keystore.jks
 
       # Key properties
       - name: Create key.properties
         run: |
           cat > android/key.properties <<EOF
-          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
-          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.KEYSTORE_KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEYSTORE_KEY_NAME }}
           storeFile=keystore.jks
           EOF
 
@@ -78,18 +78,18 @@ jobs:
             --bundle=build/app/outputs/bundle/release/app-release.aab \
             --output=build/app/outputs/apks/app.apks \
             --ks=android/app/keystore.jks \
-            --ks-pass=pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }} \
-            --ks-key-alias=${{ secrets.ANDROID_KEY_ALIAS }} \
-            --key-pass=pass:${{ secrets.ANDROID_KEY_PASSWORD }} \
+            --ks-pass=pass:${{ secrets.KEYSTORE_PASSWORD }} \
+            --ks-key-alias=${{ secrets.KEYSTORE_KEY_NAME }} \
+            --key-pass=pass:${{ secrets.KEYSTORE_KEY_PASSWORD }} \
             --mode=universal
           
           java -jar bundletool.jar build-apks \
             --bundle=build/app/outputs/bundle/release/app-release.aab \
             --output=build/app/outputs/apks/default.apks \
             --ks=android/app/keystore.jks \
-            --ks-pass=pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }} \
-            --ks-key-alias=${{ secrets.ANDROID_KEY_ALIAS }} \
-            --key-pass=pass:${{ secrets.ANDROID_KEY_PASSWORD }} \
+            --ks-pass=pass:${{ secrets.KEYSTORE_PASSWORD }} \
+            --ks-key-alias=${{ secrets.KEYSTORE_KEY_NAME }} \
+            --key-pass=pass:${{ secrets.KEYSTORE_KEY_PASSWORD }} \
             --mode=default
 
       # Extraire l'APK universel du .apks (archive zip)
