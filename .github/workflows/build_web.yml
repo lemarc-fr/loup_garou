@@ -4,10 +4,6 @@ on:
   workflow_dispatch:
   push:
 
-concurrency:
-  group: multi-platform-release
-  cancel-in-progress: true
-
 env:
   FLUTTER_VERSION: 3.41.1
 
