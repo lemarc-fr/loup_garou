@@ -16,7 +16,7 @@ class VoyanteScreen extends StatelessWidget {
 
     return PassDeviceGate(
       toName: voyante.name,
-      subtitle: 'C\'est le rôle de la Voyante. Réveille-toi.',
+      subtitle: 'C\'est le tour de la Voyante. Réveille-toi.',
       accent: RoleId.voyante.info.accent,
       contentBuilder: (_) => const _VoyanteContent(),
     );

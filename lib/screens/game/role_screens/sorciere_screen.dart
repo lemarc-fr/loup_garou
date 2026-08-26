@@ -15,7 +15,7 @@ class SorciereScreen extends StatelessWidget {
 
     return PassDeviceGate(
       toName: sorciere.name,
-      subtitle: 'C\'est le rôle de la Sorcière. Réveille-toi.',
+      subtitle: 'C\'est le tour de la Sorcière. Réveille-toi.',
       accent: RoleId.sorciere.info.accent,
       contentBuilder: (_) => const _SorciereContent(),
     );
