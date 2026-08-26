@@ -25,7 +25,7 @@ jobs:
       - run: flutter doctor -v
 
       - run: flutter pub get
-      - run: flutter build web --release --webasm
+      - run: flutter build web --release --wasm
       - run: tree
       - run: ls build/web/
 
@@ -42,5 +42,5 @@ jobs:
           ssh -p 18005 Marc@lemarc.fr "rm -rf /home/Marc/Web/loup_garou/*"
           ssh -p 18005 Marc@lemarc.fr "mkdir -p /home/Marc/Web/loup_garou"
 
-          scp -P 18005 build/app/outputs/bundle/release/app-release.aab \
+          scp -P 18005 build/web/ \
             Marc@lemarc.fr:/home/Marc/Web/loup_garou/
