@@ -19,6 +19,8 @@ class SequentialVoteFlow extends StatefulWidget {
   final List<Player> voters;
   final List<Player> initialCandidates;
   final void Function(String winnerId) onResolved;
+  final bool allowSelfVote;
+
 
   const SequentialVoteFlow({
     super.key,
@@ -28,6 +30,7 @@ class SequentialVoteFlow extends StatefulWidget {
     required this.initialCandidates,
     required this.onResolved,
     this.accent = AppColors.lantern,
+    this.allowSelfVote = true,
   });
 
   @override
@@ -75,7 +78,7 @@ class _SequentialVoteFlowState extends State<SequentialVoteFlow> {
   Widget build(BuildContext context) {
     final voter = widget.voters[voterIndex];
     final theme = Theme.of(context);
-    final selectable = candidates.where((c) => c.id != voter.id).toList();
+    final selectable = widget.allowSelfVote ? [...candidates] : candidates.where((c) => c.id != voter.id).toList();
 
     return PassDeviceGate(
       key: ValueKey('vote-${voter.id}-$isRunoff-${candidates.length}'),
