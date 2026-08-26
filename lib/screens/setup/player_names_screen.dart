@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
+import '../../providers/settings_provider.dart';
 import '../../theme/app_theme.dart';
 
 class PlayerNamesScreen extends StatefulWidget {
@@ -41,6 +42,7 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
 
   void _submit() {
     final gp = context.read<GameProvider>();
+    final settings = context.read<SettingsProvider>().settings;
     final names = _controllers.map((c) => c.text.trim()).toList();
 
     if (names.any((n) => n.isEmpty)) {
@@ -50,7 +52,7 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
     final unique = names.map((n) => n.toLowerCase()).toSet();
     if (unique.length != names.length) {
       setState(
-          () => _error = 'Deux joueurs ne peuvent pas avoir le même prénom.');
+              () => _error = 'Deux joueurs ne peuvent pas avoir le même prénom.');
       return;
     }
 
@@ -58,7 +60,7 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
       gp.setPlayerName(i, names[i]);
     }
     setState(() => _error = null);
-    gp.confirmNamesAndDeal();
+    gp.confirmNamesAndDeal(settings);
   }
 
   @override

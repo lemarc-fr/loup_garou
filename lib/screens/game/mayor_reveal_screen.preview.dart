@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/widget_previews.dart';
+import 'package:thiercelieux/models/game_settings.dart';
 import '../../models/game_config.dart';
 import '../../models/role.dart';
 import '../../providers/game_provider.dart';
@@ -16,6 +17,7 @@ Widget mayorRevealPreview() {
       RoleId.simpleVillageois: 4,
     }),
     ['Alice', 'Bob', 'Chloé', 'David', 'Emma'],
+    GameSettings()
   );
   gp.state!.mayorId = gp.state!.players[2].id; // Chloé maire
 

@@ -5,6 +5,7 @@
 /// automatiquement.
 enum SettingId {
   allowWerewolfToKillThemselves,
+  allowHunterToShootAfterWitchDeathCause,
 }
 
 /// Décrit une option pour l'affichage dans l'écran de réglages.
@@ -33,6 +34,13 @@ const List<GameSettingDefinition> kGameSettingDefinitions = [
         'coéquipiers pendant la phase des Loups.',
     defaultValue: false,
   ),
+  GameSettingDefinition(
+    id: SettingId.allowHunterToShootAfterWitchDeathCause,
+    label: 'Le Chasseur peut tirer si il est tué par la sorcière',
+    description:
+        'Si activé, le Chasseur peut utiliser son pouvoir de tir après que la Sorcière l\'ait tué.',
+    defaultValue: false,
+  )
 ];
 
 /// Valeurs courantes des options, avec repli sur la valeur par défaut du
@@ -55,6 +63,8 @@ class GameSettings {
   // à l'usage dans le reste du code.
   bool get allowWerewolfToKillThemselves =>
       get(SettingId.allowWerewolfToKillThemselves);
+
+  bool get allowHunterToShootAfterWitchDeathCause => get(SettingId.allowHunterToShootAfterWitchDeathCause);
 
   Map<String, dynamic> toJson() => {
     for (final e in _values.entries) e.key.name: e.value,

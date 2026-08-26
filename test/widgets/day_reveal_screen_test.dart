@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:thiercelieux/models/game_config.dart';
+import 'package:thiercelieux/models/game_settings.dart';
 import 'package:thiercelieux/models/game_state.dart';
 import 'package:thiercelieux/models/role.dart';
 import 'package:thiercelieux/providers/game_provider.dart';
@@ -17,7 +18,7 @@ void main() {
         RoleId.loupGarou: 1,
         RoleId.simpleVillageois: 2,
       }),
-      ['Alice', 'Bob', 'Chloé'],
+      ['Alice', 'Bob', 'Chloé'],GameSettings()
     );
     gp.state!.deathsThisWave = [gp.state!.players[1].id];
     gp.state!.players[1].alive = false;

@@ -1,4 +1,5 @@
 import 'game_config.dart';
+import 'game_settings.dart';
 import 'player.dart';
 import 'role.dart';
 
@@ -70,6 +71,7 @@ class GameState {
   final DateTime startedAt;
   final GameConfig config;
   final List<Player> players;
+  final GameSettings settings;
 
   int night = 1;
   int day = 0;
@@ -114,6 +116,7 @@ class GameState {
     required this.startedAt,
     required this.config,
     required this.players,
+    required this.settings,
     this.phase = GamePhase.roleReveal,
   });
 

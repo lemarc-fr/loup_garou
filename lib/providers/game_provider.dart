@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../models/game_config.dart';
+import '../models/game_settings.dart';
 import '../models/game_state.dart';
 import '../models/role.dart';
 import '../services/game_engine.dart';
@@ -82,9 +83,12 @@ class GameProvider extends ChangeNotifier {
       draftNames.map((n) => n.trim().toLowerCase()).toSet().length ==
           draftNames.length;
 
-  void confirmNamesAndDeal() {
-    state =
-        engine.initGame(draftConfig!, draftNames.map((n) => n.trim()).toList());
+  void confirmNamesAndDeal(GameSettings settings) {
+    state = engine.initGame(
+      draftConfig!,
+      draftNames.map((n) => n.trim()).toList(),
+      settings,
+    );
     setupStep = SetupStep.reveal;
     revealIndex = 0;
     revealCardVisible = false;

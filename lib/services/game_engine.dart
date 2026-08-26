@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:uuid/uuid.dart';
 import '../models/game_config.dart';
+import '../models/game_settings.dart';
 import '../models/game_state.dart';
 import '../models/player.dart';
 import '../models/role.dart';
@@ -23,7 +24,11 @@ class GameEngine {
   // Initialisation
   // ---------------------------------------------------------------------
 
-  GameState initGame(GameConfig config, List<String> playerNames) {
+  GameState initGame(
+      GameConfig config,
+      List<String> playerNames,
+      GameSettings settings,
+      ) {
     final pool = <RoleId>[];
     config.roleCounts.forEach((role, count) {
       for (var i = 0; i < count; i++) {
@@ -46,6 +51,7 @@ class GameEngine {
       startedAt: DateTime.now(),
       config: config,
       players: players,
+      settings: settings,
       phase: GamePhase.roleReveal,
     );
     state.voleurTableCards = tableCards;
@@ -363,10 +369,13 @@ class GameEngine {
       _applyDeath(s, lover.id, DeathCause.chagrinDAmour);
     }
 
-    // Vengeance du chasseur : uniquement mort par les loups ou par le vote,
-    // conformément à la règle donnée.
-    if (p.role == RoleId.chasseur &&
-        (cause == DeathCause.devoreParLesLoups || cause == DeathCause.vote)) {
+    final hunterRevengeCauses = <DeathCause>{
+      DeathCause.devoreParLesLoups,
+      DeathCause.vote,
+      if (s.settings.allowHunterToShootAfterWitchDeathCause)
+        DeathCause.potionDeMort,
+    };
+    if (p.role == RoleId.chasseur && hunterRevengeCauses.contains(cause)) {
       s.pendingActions
           .add(PendingAction(playerId: p.id, isHunterRevenge: true));
     }

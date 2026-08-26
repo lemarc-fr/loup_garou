@@ -1,6 +1,7 @@
 // test/services/game_engine_test.dart
 import 'package:flutter_test/flutter_test.dart';
 import 'package:thiercelieux/models/game_config.dart';
+import 'package:thiercelieux/models/game_settings.dart';
 import 'package:thiercelieux/models/game_state.dart';
 import 'package:thiercelieux/models/role.dart';
 import 'package:thiercelieux/services/game_engine.dart';
@@ -17,7 +18,7 @@ void main() {
     required List<String> names,
   }) {
     final config = GameConfig(playerCount: names.length, roleCounts: roles);
-    return engine.initGame(config, names);
+    return engine.initGame(config, names, GameSettings());
   }
 
   group('initGame', () {
@@ -40,7 +41,7 @@ void main() {
         RoleId.voleur: 1,
         RoleId.simpleVillageois: 5, // + 2 cartes table = 7 cartes au total
       });
-      final state = engine.initGame(config, ['A', 'B', 'C', 'D', 'E']);
+      final state = engine.initGame(config, ['A', 'B', 'C', 'D', 'E'], GameSettings());
       expect(state.voleurTableCards.length, 2);
       expect(state.players.length, 5);
     });
