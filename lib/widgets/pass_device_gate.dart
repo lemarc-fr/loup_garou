@@ -9,6 +9,7 @@ class PassDeviceGate extends StatefulWidget {
   final String? subtitle;
   final Color accent;
   final WidgetBuilder contentBuilder;
+  final bool pluralToName;
 
   const PassDeviceGate({
     super.key,
@@ -16,6 +17,7 @@ class PassDeviceGate extends StatefulWidget {
     required this.contentBuilder,
     this.subtitle,
     this.accent = AppColors.lantern,
+    this.pluralToName = false,
   });
 
   @override
@@ -48,7 +50,7 @@ class _PassDeviceGateState extends State<PassDeviceGate> {
             children: [
               Icon(Icons.phonelink_ring, size: 72, color: widget.accent),
               const SizedBox(height: 28),
-              Text('Passe le téléphone à',
+              Text(widget.pluralToName ? 'Passe le téléphone aux' : 'Passe le téléphone à',
                   style: theme.textTheme.titleLarge,
                   textAlign: TextAlign.center),
               const SizedBox(height: 8),
