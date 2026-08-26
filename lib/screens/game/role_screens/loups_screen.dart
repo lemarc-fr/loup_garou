@@ -11,7 +11,7 @@ class LoupsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PassDeviceGate(
-      toName: 'les Loups-Garous',
+      toName: 'Loups-Garous',
       pluralToName: true,
       subtitle:
       'Réveillez-vous et mettez-vous d\'accord en silence sur votre victime.',

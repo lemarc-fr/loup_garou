@@ -11,11 +11,9 @@ class VoyanteScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gp = context.watch<GameProvider>();
-    final voyante = gp.state!.alivePlayersWithRole(RoleId.voyante).first;
 
     return PassDeviceGate(
-      toName: voyante.name,
+      toName: "La Voyante",
       subtitle: 'C\'est le tour de la Voyante. Réveille-toi.',
       accent: RoleId.voyante.info.accent,
       contentBuilder: (_) => const _VoyanteContent(),

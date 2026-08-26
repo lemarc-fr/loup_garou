@@ -10,11 +10,9 @@ class SorciereScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gp = context.watch<GameProvider>();
-    final sorciere = gp.state!.alivePlayersWithRole(RoleId.sorciere).first;
 
     return PassDeviceGate(
-      toName: sorciere.name,
+      toName: "La Sorcière",
       subtitle: 'C\'est le tour de la Sorcière. Réveille-toi.',
       accent: RoleId.sorciere.info.accent,
       contentBuilder: (_) => const _SorciereContent(),

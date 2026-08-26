@@ -1,13 +1,15 @@
-﻿C:\Users\marcb\Developpement\loup_garou\loup_garou\lib
+﻿C:\Users\marcb\StudioProjects\loup_garou\lib
 ├── main.dart
 ├── models
 │   ├── game_config.dart
+│   ├── game_settings.dart
 │   ├── game_state.dart
 │   ├── player.dart
 │   ├── player_stats.dart
 │   └── role.dart
 ├── providers
 │   ├── game_provider.dart
+│   ├── settings_provider.dart
 │   └── stats_provider.dart
 ├── screens
 │   ├── game
@@ -16,6 +18,8 @@
 │   │   ├── end_game_screen.dart
 │   │   ├── game_main_screen.dart
 │   │   ├── mayor_election_screen.dart
+│   │   ├── mayor_reveal_screen.dart
+│   │   ├── mayor_reveal_screen.preview.dart
 │   │   ├── night_intro_screen.dart
 │   │   ├── pending_action_screen.dart
 │   │   ├── role_screens
@@ -26,11 +30,14 @@
 │   │   │   ├── voleur_screen.dart
 │   │   │   └── voyante_screen.dart
 │   │   ├── sequential_vote_flow.dart
+│   │   ├── village_power_loss_screen.dart
 │   │   ├── village_vote_screen.dart
 │   │   └── vote_result_screen.dart
 │   ├── game_flow_screen.dart
 │   ├── home
 │   │   └── home_screen.dart
+│   ├── settings
+│   │   └── game_settings_screen.dart
 │   ├── setup
 │   │   ├── player_count_screen.dart
 │   │   ├── player_names_screen.dart

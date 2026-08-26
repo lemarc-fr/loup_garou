@@ -1,13 +1,15 @@
-C:\Users\marcb\Developpement\loup_garou\loup_garou\lib
+C:\Users\marcb\StudioProjects\loup_garou\lib
 ├── main.dart
 ├── models
 │   ├── game_config.dart
+│   ├── game_settings.dart
 │   ├── game_state.dart
 │   ├── player.dart
 │   ├── player_stats.dart
 │   └── role.dart
 ├── providers
 │   ├── game_provider.dart
+│   ├── settings_provider.dart
 │   └── stats_provider.dart
 ├── screens
 │   ├── game
@@ -16,6 +18,8 @@ C:\Users\marcb\Developpement\loup_garou\loup_garou\lib
 │   │   ├── end_game_screen.dart
 │   │   ├── game_main_screen.dart
 │   │   ├── mayor_election_screen.dart
+│   │   ├── mayor_reveal_screen.dart
+│   │   ├── mayor_reveal_screen.preview.dart
 │   │   ├── night_intro_screen.dart
 │   │   ├── pending_action_screen.dart
 │   │   ├── role_screens
@@ -26,11 +30,14 @@ C:\Users\marcb\Developpement\loup_garou\loup_garou\lib
 │   │   │   ├── voleur_screen.dart
 │   │   │   └── voyante_screen.dart
 │   │   ├── sequential_vote_flow.dart
+│   │   ├── village_power_loss_screen.dart
 │   │   ├── village_vote_screen.dart
 │   │   └── vote_result_screen.dart
 │   ├── game_flow_screen.dart
 │   ├── home
 │   │   └── home_screen.dart
+│   ├── settings
+│   │   └── game_settings_screen.dart
 │   ├── setup
 │   │   ├── player_count_screen.dart
 │   │   ├── player_names_screen.dart
@@ -49,39 +56,16 @@ C:\Users\marcb\Developpement\loup_garou\loup_garou\lib
     ├── player_grid_selector.dart
     └── role_image.dart
 
-C:\Users\marcb\Developpement\loup_garou\loup_garou\assets
-└── images
-    └── roles
-        ├── ancien.png
-        ├── ange.png
-        ├── chasseur.png
-        ├── chevalier_a_l_epee_rouille.png
-        ├── chien_loup.png
-        ├── cupidon.png
-        ├── enfant_sauvage.png
-        ├── grand_mechant_loup.png
-        ├── infect_pere_des_loups.png
-        ├── joueur_de_flutte.png
-        ├── loup_blanc.png
-        ├── loup_garou.png
-        ├── mayor_insign.png
-        ├── montreur_d_ours.png
-        ├── petite_fille.png
-        ├── renard.png
-        ├── soeurs.png
-        ├── soriere.png
-        ├── villageois.png
-        └── voyante.png
-
 
 ===== Fichier: main.dart =====
 
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'providers/game_provider.dart';
-import 'providers/stats_provider.dart';
-import 'screens/home/home_screen.dart';
-import 'theme/app_theme.dart';
+import 'package:flutter/material.dart' show MaterialApp, StatelessWidget, BuildContext, runApp, Widget;
+import 'package:provider/provider.dart' show MultiProvider, ChangeNotifierProvider;
+import 'package:thiercelieux/providers/settings_provider.dart' show SettingsProvider;
+import 'providers/game_provider.dart' show GameProvider;
+import 'providers/stats_provider.dart' show StatsProvider;
+import 'screens/home/home_screen.dart' show HomeScreen;
+import 'theme/app_theme.dart' show AppTheme;
 
 void main() {
   runApp(const ThiercelieuxApp());
@@ -96,6 +80,7 @@ class ThiercelieuxApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => GameProvider()),
         ChangeNotifierProvider(create: (_) => StatsProvider()..load()),
+        ChangeNotifierProvider(create: (_) => SettingsProvider()..load()),
       ],
       child: MaterialApp(
         title: 'Thiercelieux',
@@ -150,6 +135,7 @@ class GameConfig {
     if (playerCount >= 7) addIfRoom(RoleId.sorciere);
     if (playerCount >= 8) addIfRoom(RoleId.chasseur);
     if (playerCount >= 9) addIfRoom(RoleId.cupidon);
+    if (playerCount >= 10) addIfRoom(RoleId.ancien);
     if (playerCount >= 11) addIfRoom(RoleId.petiteFille);
 
     counts[RoleId.simpleVillageois] = remaining.clamp(0, 999);
@@ -157,9 +143,94 @@ class GameConfig {
   }
 }
 
+===== Fichier: models\game_settings.dart =====
+
+/// Identifiant unique de chaque option de jeu. Pour ajouter une nouvelle
+/// option : ajoute une valeur ici, puis une entrée dans
+/// [kGameSettingDefinitions] juste en dessous. C'est tout — l'écran
+/// d'options, la persistance et l'accès via SettingsProvider suivent
+/// automatiquement.
+enum SettingId {
+  allowWerewolfToKillThemselves,
+  allowHunterToShootAfterWitchDeathCause,
+}
+
+/// Décrit une option pour l'affichage dans l'écran de réglages.
+class GameSettingDefinition {
+  final SettingId id;
+  final String label;
+  final String description;
+  final bool defaultValue;
+
+  const GameSettingDefinition({
+    required this.id,
+    required this.label,
+    required this.description,
+    this.defaultValue = false,
+  });
+}
+
+/// Catalogue de toutes les options disponibles. L'ordre ici est l'ordre
+/// d'affichage dans l'écran de réglages.
+const List<GameSettingDefinition> kGameSettingDefinitions = [
+  GameSettingDefinition(
+    id: SettingId.allowWerewolfToKillThemselves,
+    label: 'Les Loups peuvent se dévorer entre eux',
+    description:
+    'Si activé, un Loup-Garou peut être désigné comme victime par ses '
+        'coéquipiers pendant la phase des Loups.',
+    defaultValue: false,
+  ),
+  GameSettingDefinition(
+    id: SettingId.allowHunterToShootAfterWitchDeathCause,
+    label: 'Le Chasseur peut tirer si il est tué par la sorcière',
+    description:
+        'Si activé, le Chasseur peut utiliser son pouvoir de tir après que la Sorcière l\'ait tué.',
+    defaultValue: false,
+  )
+];
+
+/// Valeurs courantes des options, avec repli sur la valeur par défaut du
+/// catalogue si une option n'a jamais été sauvegardée (ex : après une
+/// mise à jour de l'app qui ajoute une nouvelle option).
+class GameSettings {
+  final Map<SettingId, bool> _values;
+
+  GameSettings({Map<SettingId, bool>? values})
+      : _values = values ??
+      {for (final d in kGameSettingDefinitions) d.id: d.defaultValue};
+
+  bool get(SettingId id) =>
+      _values[id] ??
+          kGameSettingDefinitions.firstWhere((d) => d.id == id).defaultValue;
+
+  void set(SettingId id, bool value) => _values[id] = value;
+
+  // Raccourcis typés pratiques, un par option — optionnel mais confortable
+  // à l'usage dans le reste du code.
+  bool get allowWerewolfToKillThemselves =>
+      get(SettingId.allowWerewolfToKillThemselves);
+
+  bool get allowHunterToShootAfterWitchDeathCause => get(SettingId.allowHunterToShootAfterWitchDeathCause);
+
+  Map<String, dynamic> toJson() => {
+    for (final e in _values.entries) e.key.name: e.value,
+  };
+
+  static GameSettings fromJson(Map<String, dynamic> json) {
+    final values = <SettingId, bool>{};
+    for (final d in kGameSettingDefinitions) {
+      final raw = json[d.id.name];
+      values[d.id] = raw is bool ? raw : d.defaultValue;
+    }
+    return GameSettings(values: values);
+  }
+}
+
 ===== Fichier: models\game_state.dart =====
 
 import 'game_config.dart';
+import 'game_settings.dart';
 import 'player.dart';
 import 'role.dart';
 
@@ -176,8 +247,8 @@ enum GamePhase {
   nightVoleur,
   nightCupidon,
   nightVoyante,
-  nightLoups,
   nightPetiteFille,
+  nightLoups,
   nightSorciere,
 
   // Actions différées déclenchées par une mort (chasseur / succession du maire)
@@ -186,15 +257,26 @@ enum GamePhase {
   // Jour
   dayReveal,
   mayorElection,
+  mayorReveal,
   debate,
   villageVote,
   voteResult,
+  villagePowerLoss,
 
   // Fin
   endGame,
 }
 
 enum WinnerType { village, loups, amoureux }
+
+/// Un villageois qui vient de perdre son pouvoir suite à l'exécution
+/// erronée de l'Ancien. On garde son ancien rôle pour l'animation de
+/// révélation, même si Player.role a déjà basculé sur simpleVillageois.
+class PowerLossEntry {
+  final String playerId;
+  final RoleId previousRole;
+  const PowerLossEntry(this.playerId, this.previousRole);
+}
 
 class GameResult {
   final WinnerType winner;
@@ -220,6 +302,7 @@ class GameState {
   final DateTime startedAt;
   final GameConfig config;
   final List<Player> players;
+  final GameSettings settings;
 
   int night = 1;
   int day = 0;
@@ -231,6 +314,9 @@ class GameState {
   int phaseIndex = 0;
 
   String? mayorId;
+  bool ancienExtraLifeUsed =
+      false; // vie supplémentaire de l'Ancien face aux Loups
+  List<PowerLossEntry> powerLossThisWave = [];
 
   // --- Données temporaires de la nuit en cours ---
   String? loupsVictimId; // victime désignée par les loups, avant substitution
@@ -261,6 +347,7 @@ class GameState {
     required this.startedAt,
     required this.config,
     required this.players,
+    required this.settings,
     this.phase = GamePhase.roleReveal,
   });
 
@@ -443,6 +530,7 @@ enum RoleId {
   petiteFille,
   voleur,
   simpleVillageois,
+  ancien,
 }
 
 /// Cause de décès, utile pour l'affichage et pour la page de stats.
@@ -598,11 +686,27 @@ const Map<RoleId, RoleInfo> kRoleCatalog = {
     description:
         "Aucun pouvoir particulier. Son arme : l'observation, l'écoute, et le vote le jour venu.",
     nightInstruction: "",
-    imageAsset: 'assets/images/roles/simple_villageois.png',
+    imageAsset: 'assets/images/roles/villageois.png',
     fallbackIcon: Icons.person,
     accent: AppColors.forest,
     actsAtNight: false,
     unique: false,
+  ),
+  RoleId.ancien: RoleInfo(
+    id: RoleId.ancien,
+    name: "L'Ancien",
+    nameShort: 'Ancien',
+    camp: Camp.village,
+    description:
+        "Grâce à sa sagesse, il résiste à une première attaque des Loups-Garous : "
+        "il survit en silence, sans que personne ne le sache. Si le village le "
+        "tue par erreur en votant contre lui, tous les villageois à pouvoir "
+        "perdent aussitôt leur don, punis pour leur imprudence.",
+    nightInstruction: "",
+    imageAsset: 'assets/images/roles/ancien.png',
+    fallbackIcon: Icons.elderly,
+    accent: AppColors.forest,
+    actsAtNight: false,
   ),
 };
 
@@ -614,6 +718,7 @@ extension RoleInfoX on RoleId {
 
 import 'package:flutter/foundation.dart';
 import '../models/game_config.dart';
+import '../models/game_settings.dart';
 import '../models/game_state.dart';
 import '../models/role.dart';
 import '../services/game_engine.dart';
@@ -696,9 +801,12 @@ class GameProvider extends ChangeNotifier {
       draftNames.map((n) => n.trim().toLowerCase()).toSet().length ==
           draftNames.length;
 
-  void confirmNamesAndDeal() {
-    state =
-        engine.initGame(draftConfig!, draftNames.map((n) => n.trim()).toList());
+  void confirmNamesAndDeal(GameSettings settings) {
+    state = engine.initGame(
+      draftConfig!,
+      draftNames.map((n) => n.trim()).toList(),
+      settings,
+    );
     setupStep = SetupStep.reveal;
     revealIndex = 0;
     revealCardVisible = false;
@@ -821,6 +929,51 @@ class GameProvider extends ChangeNotifier {
     engine.confirmVoteResult(state!);
     notifyListeners();
   }
+
+  void confirmPowerLossReveal() {
+    engine.confirmPowerLossReveal(state!);
+    notifyListeners();
+  }
+
+  void confirmMayorReveal() {
+    engine.confirmMayorReveal(state!);
+    notifyListeners();
+  }
+}
+
+===== Fichier: providers\settings_provider.dart =====
+
+import 'package:flutter/foundation.dart';
+import '../models/game_settings.dart';
+import '../services/storage_service.dart';
+
+/// Expose les options de jeu au reste de l'app et les persiste dès qu'une
+/// valeur change. À utiliser partout où une règle de jeu doit être
+/// consultée (écrans de nuit, moteur de jeu, etc.) via
+/// `context.watch<SettingsProvider>().get(SettingId.xxx)`.
+class SettingsProvider extends ChangeNotifier {
+  final StorageService _storage = StorageService();
+  GameSettings settings = GameSettings();
+  bool loaded = false;
+
+  Future<void> load() async {
+    settings = await _storage.loadSettings();
+    loaded = true;
+    notifyListeners();
+  }
+
+  bool get(SettingId id) => settings.get(id);
+
+  Future<void> setValue(SettingId id, bool value) async {
+    settings.set(id, value);
+    notifyListeners();
+    await _storage.saveSettings(settings);
+  }
+
+  bool get allowWerewolfToKillThemselves =>
+      settings.allowWerewolfToKillThemselves;
+
+  bool get allowHunterToShootAfterWitchDeathCause => settings.allowHunterToShootAfterWitchDeathCause;
 }
 
 ===== Fichier: providers\stats_provider.dart =====
@@ -1212,6 +1365,8 @@ import 'role_screens/voleur_screen.dart';
 import 'role_screens/voyante_screen.dart';
 import 'village_vote_screen.dart';
 import 'vote_result_screen.dart';
+import 'village_power_loss_screen.dart';
+import 'mayor_reveal_screen.dart';
 
 /// Point d'entrée de la partie une fois la distribution des rôles terminée.
 /// Regarde `GameState.phase` et affiche l'écran correspondant — c'est la
@@ -1226,9 +1381,11 @@ class GameMainScreen extends StatelessWidget {
   static const _dayPhases = {
     GamePhase.dayReveal,
     GamePhase.mayorElection,
+    GamePhase.mayorReveal,
     GamePhase.debate,
     GamePhase.villageVote,
     GamePhase.voteResult,
+    GamePhase.villagePowerLoss,
   };
 
   @override
@@ -1247,10 +1404,12 @@ class GameMainScreen extends StatelessWidget {
       GamePhase.pendingAction => const PendingActionScreen(),
       GamePhase.dayReveal => const DayRevealScreen(),
       GamePhase.mayorElection => const MayorElectionScreen(),
+      GamePhase.mayorReveal => const MayorRevealScreen(),
       GamePhase.debate => const DebateScreen(),
       GamePhase.villageVote => const VillageVoteScreen(),
       GamePhase.voteResult => const VoteResultScreen(),
       GamePhase.endGame => const EndGameScreen(),
+      GamePhase.villagePowerLoss => const VillagePowerLossScreen(),
       // Les phases de setup (avant distribution) ne passent jamais par ici :
       // GameFlowScreen les intercepte plus haut. Filet de sécurité :
       _ => const SizedBox.shrink(),
@@ -1288,6 +1447,136 @@ class MayorElectionScreen extends StatelessWidget {
       onResolved: (winnerId) => gp.resolveMayorElection(winnerId),
     );
   }
+}
+
+===== Fichier: screens\game\mayor_reveal_screen.dart =====
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../providers/game_provider.dart';
+import '../../theme/app_theme.dart';
+
+/// Public reveal after the mayor election — the whole table sees who won,
+/// with a short badge animation before moving on to the debate.
+class MayorRevealScreen extends StatefulWidget {
+  const MayorRevealScreen({super.key});
+
+  @override
+  State<MayorRevealScreen> createState() => _MayorRevealScreenState();
+}
+
+class _MayorRevealScreenState extends State<MayorRevealScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _scale = CurvedAnimation(parent: _controller, curve: Curves.elasticOut);
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final gp = context.read<GameProvider>();
+    final state = gp.state!;
+    final mayor = state.byId(state.mayorId!);
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ScaleTransition(
+                scale: _scale,
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: const BoxDecoration(
+                    color: AppColors.lantern,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.emoji_events,
+                      size: 56, color: AppColors.night),
+                ),
+              ),
+              const SizedBox(height: 28),
+              Text(
+                'The village has chosen its mayor',
+                style: theme.textTheme.titleLarge,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                mayor.name,
+                style: theme.textTheme.displayMedium
+                    ?.copyWith(color: AppColors.lantern),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Their vote will count double during ties.',
+                style: theme.textTheme.bodyLarge,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 40),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: gp.confirmMayorReveal,
+                  child: const Text('Continue to the debate'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+===== Fichier: screens\game\mayor_reveal_screen.preview.dart =====
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter/widget_previews.dart';
+import 'package:thiercelieux/models/game_settings.dart';
+import '../../models/game_config.dart';
+import '../../models/role.dart';
+import '../../providers/game_provider.dart';
+import '../../theme/app_theme.dart';
+import 'mayor_reveal_screen.dart';
+
+@Preview(name: 'Mayor reveal — party of 5')
+Widget mayorRevealPreview() {
+  final gp = GameProvider();
+  gp.state = gp.engine.initGame(
+    GameConfig(playerCount: 5, roleCounts: {
+      RoleId.loupGarou: 1,
+      RoleId.simpleVillageois: 4,
+    }),
+    ['Alice', 'Bob', 'Chloé', 'David', 'Emma'],
+    GameSettings()
+  );
+  gp.state!.mayorId = gp.state!.players[2].id; // Chloé maire
+
+  return ChangeNotifierProvider.value(
+    value: gp,
+    child: MaterialApp(theme: AppTheme.day, home: const MayorRevealScreen()),
+  );
 }
 
 ===== Fichier: screens\game\night_intro_screen.dart =====
@@ -1425,6 +1714,8 @@ class SequentialVoteFlow extends StatefulWidget {
   final List<Player> voters;
   final List<Player> initialCandidates;
   final void Function(String winnerId) onResolved;
+  final bool allowSelfVote;
+
 
   const SequentialVoteFlow({
     super.key,
@@ -1434,6 +1725,7 @@ class SequentialVoteFlow extends StatefulWidget {
     required this.initialCandidates,
     required this.onResolved,
     this.accent = AppColors.lantern,
+    this.allowSelfVote = true,
   });
 
   @override
@@ -1481,7 +1773,7 @@ class _SequentialVoteFlowState extends State<SequentialVoteFlow> {
   Widget build(BuildContext context) {
     final voter = widget.voters[voterIndex];
     final theme = Theme.of(context);
-    final selectable = candidates.where((c) => c.id != voter.id).toList();
+    final selectable = widget.allowSelfVote ? [...candidates] : candidates.where((c) => c.id != voter.id).toList();
 
     return PassDeviceGate(
       key: ValueKey('vote-${voter.id}-$isRunoff-${candidates.length}'),
@@ -1519,6 +1811,202 @@ class _SequentialVoteFlowState extends State<SequentialVoteFlow> {
                     child: PlayerGridSelector(
                         players: selectable, onSelect: _castVote),
                   ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+===== Fichier: screens\game\village_power_loss_screen.dart =====
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../models/role.dart';
+import '../../providers/game_provider.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/role_image.dart';
+
+/// Révélation animée : le village a pendu l'Ancien par erreur, tous les
+/// villageois à pouvoir perdent leur don. Chaque carte se dévoile avec un
+/// léger décalage puis bascule visuellement vers "Simple Villageois".
+class VillagePowerLossScreen extends StatefulWidget {
+  const VillagePowerLossScreen({super.key});
+
+  @override
+  State<VillagePowerLossScreen> createState() => _VillagePowerLossScreenState();
+}
+
+class _VillagePowerLossScreenState extends State<VillagePowerLossScreen> {
+  bool _introDone = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) setState(() => _introDone = true);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final gp = context.read<GameProvider>();
+    final state = gp.state!;
+    final theme = Theme.of(context);
+    final entries = state.powerLossThisWave;
+
+    return Scaffold(
+      appBar: AppBar(title: const Text("La sagesse s'éteint")),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            children: [
+              AnimatedOpacity(
+                opacity: _introDone ? 1 : 0,
+                duration: const Duration(milliseconds: 500),
+                child: Column(
+                  children: [
+                    const Icon(Icons.auto_awesome_outlined,
+                        size: 56, color: AppColors.blood),
+                    const SizedBox(height: 12),
+                    Text(
+                      "Le village a fait pendre l'Ancien par erreur.",
+                      style: theme.textTheme.headlineMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Privé de sa sagesse, le village voit ses pouvoirs se tarir...',
+                      style: theme.textTheme.bodyLarge,
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              Expanded(
+                child: ListView.separated(
+                  itemCount: entries.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  itemBuilder: (context, index) => _PowerLossCard(
+                    playerName: state.byId(entries[index].playerId).name,
+                    previousRole: entries[index].previousRole,
+                    delay: Duration(milliseconds: 500 + index * 350),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: gp.confirmPowerLossReveal,
+                  child: const Text('La nuit tombe à nouveau'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PowerLossCard extends StatefulWidget {
+  final String playerName;
+  final RoleId previousRole;
+  final Duration delay;
+
+  const _PowerLossCard({
+    required this.playerName,
+    required this.previousRole,
+    required this.delay,
+  });
+
+  @override
+  State<_PowerLossCard> createState() => _PowerLossCardState();
+}
+
+class _PowerLossCardState extends State<_PowerLossCard> {
+  bool _visible = false;
+  bool _switched = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(widget.delay, () {
+      if (mounted) setState(() => _visible = true);
+    });
+    Future.delayed(widget.delay + const Duration(milliseconds: 550), () {
+      if (mounted) setState(() => _switched = true);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final info = widget.previousRole.info;
+    final mutedColor =
+        theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.6);
+
+    return AnimatedSlide(
+      offset: _visible ? Offset.zero : const Offset(0, 0.15),
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeOut,
+      child: AnimatedOpacity(
+        opacity: _visible ? 1 : 0,
+        duration: const Duration(milliseconds: 400),
+        child: Card(
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 500),
+                  transitionBuilder: (child, anim) => ScaleTransition(
+                    scale: anim,
+                    child: FadeTransition(opacity: anim, child: child),
+                  ),
+                  child: _switched
+                      ? const RoleImage(
+                          key: ValueKey('villageois'),
+                          role: RoleId.simpleVillageois,
+                          size: 48,
+                        )
+                      : RoleImage(
+                          key: const ValueKey('previous'),
+                          role: widget.previousRole,
+                          size: 48,
+                        ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(widget.playerName,
+                          style: theme.textTheme.titleLarge),
+                      const SizedBox(height: 2),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 400),
+                        child: Text(
+                          _switched ? 'Devient Simple Villageois' : info.name,
+                          key: ValueKey(_switched),
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: _switched ? mutedColor : info.accent,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                AnimatedOpacity(
+                  opacity: _switched ? 1 : 0,
+                  duration: const Duration(milliseconds: 400),
+                  child: const Icon(Icons.power_off, color: AppColors.blood),
                 ),
               ],
             ),
@@ -1720,22 +2208,16 @@ import '../../../theme/app_theme.dart';
 import '../../../widgets/pass_device_gate.dart';
 import '../../../widgets/player_grid_selector.dart';
 
-/// Contrairement aux autres rôles, les Loups-Garous se réveillent tous
-/// ensemble (pas de passage individuel du téléphone) et se mettent d'accord
-/// en silence avant qu'un seul d'entre eux ne pointe la victime.
 class LoupsScreen extends StatelessWidget {
   const LoupsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final gp = context.watch<GameProvider>();
-    final wolves = gp.state!.aliveWolves;
-    final names = wolves.map((w) => w.name).join(', ');
-
     return PassDeviceGate(
-      toName: wolves.length > 1 ? 'les Loups-Garous' : wolves.first.name,
+      toName: 'les Loups-Garous',
+      pluralToName: true,
       subtitle:
-          'Réveillez-vous ($names) et mettez-vous d\'accord en silence sur votre victime.',
+      'Réveillez-vous et mettez-vous d\'accord en silence sur votre victime.',
       accent: AppColors.blood,
       contentBuilder: (_) => const _LoupsContent(),
     );
@@ -1751,10 +2233,10 @@ class _LoupsContent extends StatelessWidget {
     final state = gp.state!;
     final theme = Theme.of(context);
 
-    // Les Loups ne peuvent pas se dévorer entre eux : on les retire des cibles.
     final wolfIds = state.aliveWolves.map((w) => w.id).toSet();
-    final targets =
-        state.alivePlayers.where((p) => !wolfIds.contains(p.id)).toList();
+    final targets = state.settings.allowWerewolfToKillThemselves
+        ? state.alivePlayers
+        : state.alivePlayers.where((p) => !wolfIds.contains(p.id)).toList();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Les Loups-Garous')),
@@ -1883,7 +2365,7 @@ class SorciereScreen extends StatelessWidget {
 
     return PassDeviceGate(
       toName: sorciere.name,
-      subtitle: 'C\'est le rôle de la Sorcière. Réveille-toi.',
+      subtitle: 'C\'est le tour de la Sorcière. Réveille-toi.',
       accent: RoleId.sorciere.info.accent,
       contentBuilder: (_) => const _SorciereContent(),
     );
@@ -2151,7 +2633,7 @@ class VoyanteScreen extends StatelessWidget {
 
     return PassDeviceGate(
       toName: voyante.name,
-      subtitle: 'C\'est le rôle de la Voyante. Réveille-toi.',
+      subtitle: 'C\'est le tour de la Voyante. Réveille-toi.',
       accent: RoleId.voyante.info.accent,
       contentBuilder: (_) => const _VoyanteContent(),
     );
@@ -2245,6 +2727,7 @@ import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/confirm.dart';
 import '../game_flow_screen.dart';
+import '../settings/game_settings_screen.dart';
 import '../stats/stats_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -2335,6 +2818,16 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const GameSettingsScreen())),
+                  icon: const Icon(Icons.settings_outlined),
+                  label: const Text('Options de jeu'),
+                ),
+              ),
+              const SizedBox(height: 12),
               TextButton.icon(
                 onPressed: () => _showRulesSheet(context),
                 icon: const Icon(Icons.menu_book, size: 18),
@@ -2379,6 +2872,55 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 18),
             ],
           ],
+        ),
+      ),
+    );
+  }
+}
+
+===== Fichier: screens\settings\game_settings_screen.dart =====
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../models/game_settings.dart' show kGameSettingDefinitions;
+import '../../providers/settings_provider.dart' show SettingsProvider;
+
+/// Écran des options de jeu. C'est un écran poussé normalement
+/// (Navigator.push) : le bouton retour système et la flèche de l'AppBar
+/// le ferment tous les deux sans rien à coder de spécifique.
+class GameSettingsScreen extends StatelessWidget {
+  const GameSettingsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final sp = context.watch<SettingsProvider>();
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Options de jeu')),
+      body: SafeArea(
+        child: !sp.loaded
+            ? const Center(child: CircularProgressIndicator())
+            : ListView.separated(
+          padding: const EdgeInsets.all(16),
+          itemCount: kGameSettingDefinitions.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 10),
+          itemBuilder: (context, index) {
+            final def = kGameSettingDefinitions[index];
+            return Card(
+              child: SwitchListTile(
+                value: sp.get(def.id),
+                onChanged: (v) => sp.setValue(def.id, v),
+                title: Text(def.label,
+                    style: theme.textTheme.titleMedium),
+                subtitle: Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(def.description,
+                      style: theme.textTheme.bodyMedium),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -2478,6 +3020,7 @@ class _PlayerCountScreenState extends State<PlayerCountScreen> {
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
+import '../../providers/settings_provider.dart';
 import '../../theme/app_theme.dart';
 
 class PlayerNamesScreen extends StatefulWidget {
@@ -2489,6 +3032,8 @@ class PlayerNamesScreen extends StatefulWidget {
 
 class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
   late List<TextEditingController> _controllers;
+  late List<FocusNode> _focusNodes;
+
   String? _error;
 
   @override
@@ -2497,6 +3042,9 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
     final gp = context.read<GameProvider>();
     _controllers =
         List.generate(gp.draftNames.length, (_) => TextEditingController());
+    _focusNodes =
+        List.generate(gp.draftNames.length, (_) => FocusNode());
+
   }
 
   @override
@@ -2505,10 +3053,15 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
       c.dispose();
     }
     super.dispose();
+    for (final node in _focusNodes) {
+      node.dispose();
+    }
+
   }
 
   void _submit() {
     final gp = context.read<GameProvider>();
+    final settings = context.read<SettingsProvider>().settings;
     final names = _controllers.map((c) => c.text.trim()).toList();
 
     if (names.any((n) => n.isEmpty)) {
@@ -2518,7 +3071,7 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
     final unique = names.map((n) => n.toLowerCase()).toSet();
     if (unique.length != names.length) {
       setState(
-          () => _error = 'Deux joueurs ne peuvent pas avoir le même prénom.');
+              () => _error = 'Deux joueurs ne peuvent pas avoir le même prénom.');
       return;
     }
 
@@ -2526,7 +3079,7 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
       gp.setPlayerName(i, names[i]);
     }
     setState(() => _error = null);
-    gp.confirmNamesAndDeal();
+    gp.confirmNamesAndDeal(settings);
   }
 
   @override
@@ -2552,14 +3105,26 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
                 separatorBuilder: (_, __) => const SizedBox(height: 12),
                 itemBuilder: (context, index) => TextField(
                   controller: _controllers[index],
+                  focusNode: _focusNodes[index],
                   textCapitalization: TextCapitalization.words,
+                  textInputAction: index == _controllers.length - 1
+                      ? TextInputAction.done
+                      : TextInputAction.next,
+                  onSubmitted: (_) {
+                    if (index < _controllers.length - 1) {
+                      _focusNodes[index + 1].requestFocus();
+                    } else {
+                      _submit();
+                    }
+                  },
                   decoration: InputDecoration(
                     labelText: 'Joueur ${index + 1}',
                     prefixIcon: const Icon(Icons.person_outline),
                     filled: true,
                     fillColor: AppColors.nightAlt,
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14)),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
                 ),
               ),
@@ -2713,6 +3278,7 @@ import '../../models/role.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/role_image.dart';
+import '../settings/game_settings_screen.dart';
 
 class RoleSelectionScreen extends StatelessWidget {
   const RoleSelectionScreen({super.key});
@@ -2737,6 +3303,7 @@ class RoleSelectionScreen extends StatelessWidget {
       RoleId.voyante,
       RoleId.sorciere,
       RoleId.chasseur,
+      RoleId.ancien,
       RoleId.cupidon,
       RoleId.petiteFille,
       RoleId.voleur,
@@ -2748,7 +3315,18 @@ class RoleSelectionScreen extends StatelessWidget {
     final remaining = config.expectedTotalCards - othersSum;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Répartition des rôles')),
+      appBar: AppBar(
+        title: const Text('Répartition des rôles'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'Options de jeu',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const GameSettingsScreen()),
+            ),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -2987,6 +3565,7 @@ class _PlayerStatsCard extends StatelessWidget {
 import 'dart:math';
 import 'package:uuid/uuid.dart';
 import '../models/game_config.dart';
+import '../models/game_settings.dart';
 import '../models/game_state.dart';
 import '../models/player.dart';
 import '../models/role.dart';
@@ -3009,7 +3588,11 @@ class GameEngine {
   // Initialisation
   // ---------------------------------------------------------------------
 
-  GameState initGame(GameConfig config, List<String> playerNames) {
+  GameState initGame(
+      GameConfig config,
+      List<String> playerNames,
+      GameSettings settings,
+      ) {
     final pool = <RoleId>[];
     config.roleCounts.forEach((role, count) {
       for (var i = 0; i < count; i++) {
@@ -3032,6 +3615,7 @@ class GameEngine {
       startedAt: DateTime.now(),
       config: config,
       players: players,
+      settings: settings,
       phase: GamePhase.roleReveal,
     );
     state.voleurTableCards = tableCards;
@@ -3064,10 +3648,10 @@ class GameEngine {
       q.add(GamePhase.nightCupidon);
     }
     if (s.hasAliveRole(RoleId.voyante)) q.add(GamePhase.nightVoyante);
-    if (s.aliveWolves.isNotEmpty) q.add(GamePhase.nightLoups);
     if (s.hasAliveRole(RoleId.petiteFille) && s.aliveWolves.isNotEmpty) {
       q.add(GamePhase.nightPetiteFille);
     }
+    if (s.aliveWolves.isNotEmpty) q.add(GamePhase.nightLoups);
     final sorciereEncorePuissante = !s.sorciereVieUsed || !s.sorciereMortUsed;
     if (s.hasAliveRole(RoleId.sorciere) &&
         sorciereEncorePuissante &&
@@ -3234,7 +3818,10 @@ class GameEngine {
     // aux morts du vote qui va suivre (cf. VoteResultScreen).
     s.deathsThisWave = [];
     final rest = <GamePhase>[GamePhase.dayReveal];
-    if (s.mayorId == null) rest.add(GamePhase.mayorElection);
+    if (s.mayorId == null) {
+      rest.add(GamePhase.mayorElection);
+      rest.add(GamePhase.mayorReveal);
+    }
     rest.add(GamePhase.debate);
     rest.add(GamePhase.villageVote);
     s.phaseQueue = rest;
@@ -3257,6 +3844,7 @@ class GameEngine {
   }
 
   void confirmDebate(GameState s) => advance2(s);
+  void confirmMayorReveal(GameState s) => advance2(s);
 
   VoteTally tallyVotes(GameState s, Map<String, String> votes) {
     final counts = <String, int>{};
@@ -3286,6 +3874,7 @@ class GameEngine {
   }
 
   /// À appeler quand le groupe a fini de lire le résultat du vote.
+  /// À appeler quand le groupe a fini de lire le résultat du vote.
   void confirmVoteResult(GameState s) {
     final result = checkWinCondition(s);
     if (result != null) {
@@ -3293,6 +3882,20 @@ class GameEngine {
       s.phase = GamePhase.endGame;
       return;
     }
+    if (s.powerLossThisWave.isNotEmpty) {
+      s.phase = GamePhase.villagePowerLoss;
+      return;
+    }
+    _startNextNight(s);
+  }
+
+  /// À appeler quand le groupe a fini de lire la révélation de perte de pouvoirs.
+  void confirmPowerLossReveal(GameState s) {
+    s.powerLossThisWave = [];
+    _startNextNight(s);
+  }
+
+  void _startNextNight(GameState s) {
     s.night += 1;
     s.currentWave = 'night';
     _resetNightTempData(s);
@@ -3308,6 +3911,16 @@ class GameEngine {
   void _applyDeath(GameState s, String playerId, DeathCause cause) {
     final p = s.byId(playerId);
     if (!p.alive) return; // déjà mort (ex. sauvé puis reciblé ailleurs)
+
+    // L'Ancien résiste à une première attaque des Loups-Garous : il survit
+    // en silence, sans qu'aucun mort ne soit annoncé cette nuit-là.
+    if (p.role == RoleId.ancien &&
+        cause == DeathCause.devoreParLesLoups &&
+        !s.ancienExtraLifeUsed) {
+      s.ancienExtraLifeUsed = true;
+      return;
+    }
+
     p.alive = false;
     p.deathCause = cause;
     p.deathAtNight = s.currentWave == 'night' ? s.night : null;
@@ -3320,10 +3933,13 @@ class GameEngine {
       _applyDeath(s, lover.id, DeathCause.chagrinDAmour);
     }
 
-    // Vengeance du chasseur : uniquement mort par les loups ou par le vote,
-    // conformément à la règle donnée.
-    if (p.role == RoleId.chasseur &&
-        (cause == DeathCause.devoreParLesLoups || cause == DeathCause.vote)) {
+    final hunterRevengeCauses = <DeathCause>{
+      DeathCause.devoreParLesLoups,
+      DeathCause.vote,
+      if (s.settings.allowHunterToShootAfterWitchDeathCause)
+        DeathCause.potionDeMort,
+    };
+    if (p.role == RoleId.chasseur && hunterRevengeCauses.contains(cause)) {
       s.pendingActions
           .add(PendingAction(playerId: p.id, isHunterRevenge: true));
     }
@@ -3333,6 +3949,24 @@ class GameEngine {
       p.isMayor = false;
       s.pendingActions
           .add(PendingAction(playerId: p.id, isMayorSuccession: true));
+    }
+
+    // Le village a fait pendre l'Ancien par erreur : tous les villageois à
+    // pouvoir perdent leur don pour le reste de la partie.
+    if (p.role == RoleId.ancien && cause == DeathCause.vote) {
+      _villageLosesPowers(s);
+    }
+  }
+
+  /// Rétrograde tous les villageois à pouvoir en simples villageois (les
+  /// Loups ne sont pas concernés). Déclenché quand le village exécute
+  /// l'Ancien par erreur.
+  void _villageLosesPowers(GameState s) {
+    for (final p in s.alivePlayers) {
+      if (p.camp == Camp.village && p.role != RoleId.simpleVillageois) {
+        s.powerLossThisWave.add(PowerLossEntry(p.id, p.role));
+        p.role = RoleId.simpleVillageois;
+      }
     }
   }
 
@@ -3369,6 +4003,8 @@ class GameEngine {
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/player_stats.dart';
+import '../models/game_settings.dart';
+
 
 /// Encapsule toute la persistance locale. Aujourd'hui : SharedPreferences
 /// avec une simple liste JSON. Si le volume de données grossit beaucoup
@@ -3376,6 +4012,8 @@ import '../models/player_stats.dart';
 /// changer l'API de cette classe.
 class StorageService {
   static const _statsKey = 'thiercelieux.player_stats.v1';
+  static const _settingsKey = 'thiercelieux.game_settings.v1';
+
 
   Future<List<PlayerStats>> loadAllStats() async {
     final prefs = await SharedPreferences.getInstance();
@@ -3397,6 +4035,24 @@ class StorageService {
     final prefs = await SharedPreferences.getInstance();
     final raw = jsonEncode(stats.map((s) => s.toJson()).toList());
     await prefs.setString(_statsKey, raw);
+  }
+
+  Future<GameSettings> loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_settingsKey);
+    if (raw == null || raw.isEmpty) return GameSettings();
+    try {
+      return GameSettings.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+    } catch (_) {
+      // Format corrompu ou d'une version antérieure : on repart des
+      // valeurs par défaut plutôt que de faire planter l'app.
+      return GameSettings();
+    }
+  }
+
+  Future<void> saveSettings(GameSettings settings) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_settingsKey, jsonEncode(settings.toJson()));
   }
 }
 
@@ -3614,6 +4270,7 @@ class PassDeviceGate extends StatefulWidget {
   final String? subtitle;
   final Color accent;
   final WidgetBuilder contentBuilder;
+  final bool pluralToName;
 
   const PassDeviceGate({
     super.key,
@@ -3621,6 +4278,7 @@ class PassDeviceGate extends StatefulWidget {
     required this.contentBuilder,
     this.subtitle,
     this.accent = AppColors.lantern,
+    this.pluralToName = false,
   });
 
   @override
@@ -3653,7 +4311,7 @@ class _PassDeviceGateState extends State<PassDeviceGate> {
             children: [
               Icon(Icons.phonelink_ring, size: 72, color: widget.accent),
               const SizedBox(height: 28),
-              Text('Passe le téléphone à',
+              Text(widget.pluralToName ? 'Passe le téléphone aux' : 'Passe le téléphone à',
                   style: theme.textTheme.titleLarge,
                   textAlign: TextAlign.center),
               const SizedBox(height: 8),
@@ -3775,3 +4433,46 @@ class PlayerGridSelector extends StatelessWidget {
 
 ===== Fichier: widgets\role_image.dart =====
 
+import 'package:flutter/material.dart';
+import '../models/role.dart';
+
+/// Affiche l'illustration d'un rôle si le fichier existe dans les assets,
+/// sinon retombe proprement sur une icône colorée. Ça permet de développer
+/// et faire tourner l'app avant même que les images finales soient prêtes
+/// (voir assets/IMAGES_A_CREER.md).
+class RoleImage extends StatelessWidget {
+  final RoleId role;
+  final double size;
+  final bool circular;
+
+  const RoleImage(
+      {super.key, required this.role, this.size = 96, this.circular = true});
+
+  @override
+  Widget build(BuildContext context) {
+    final info = role.info;
+    final fallback = Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: info.accent.withValues(alpha: 0.18),
+        shape: circular ? BoxShape.circle : BoxShape.rectangle,
+        borderRadius: circular ? null : BorderRadius.circular(16),
+        border: Border.all(color: info.accent, width: 2),
+      ),
+      child: Icon(info.fallbackIcon, color: info.accent, size: size * 0.5),
+    );
+
+    return ClipRRect(
+      borderRadius:
+          circular ? BorderRadius.circular(size) : BorderRadius.circular(16),
+      child: Image.asset(
+        info.imageAsset,
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => fallback,
+      ),
+    );
+  }
+}

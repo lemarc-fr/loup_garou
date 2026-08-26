@@ -10,11 +10,9 @@ class CupidonScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gp = context.watch<GameProvider>();
-    final cupidon = gp.state!.alivePlayersWithRole(RoleId.cupidon).first;
 
     return PassDeviceGate(
-      toName: cupidon.name,
+      toName: "Cupidon",
       subtitle: 'C\'est le rôle de Cupidon. Réveille-toi.',
       accent: RoleId.cupidon.info.accent,
       contentBuilder: (_) => const _CupidonContent(),

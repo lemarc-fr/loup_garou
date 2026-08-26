@@ -11,11 +11,9 @@ class VoleurScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gp = context.watch<GameProvider>();
-    final voleur = gp.state!.alivePlayersWithRole(RoleId.voleur).first;
 
     return PassDeviceGate(
-      toName: voleur.name,
+      toName: "La Voleuse",
       subtitle: 'C\'est le rôle du Voleur. Réveille-toi.',
       accent: RoleId.voleur.info.accent,
       contentBuilder: (_) => const _VoleurContent(),

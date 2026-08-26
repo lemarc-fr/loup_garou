@@ -82,31 +82,12 @@ jobs:
             --ks-key-alias=${{ secrets.KEYSTORE_KEY_NAME }} \
             --key-pass=pass:${{ secrets.KEYSTORE_KEY_PASSWORD }} \
             --mode=universal
-          
-          java -jar bundletool.jar build-apks \
-            --bundle=build/app/outputs/bundle/release/app-release.aab \
-            --output=build/app/outputs/apks/default.apks \
-            --ks=android/app/keystore.jks \
-            --ks-pass=pass:${{ secrets.KEYSTORE_PASSWORD }} \
-            --ks-key-alias=${{ secrets.KEYSTORE_KEY_NAME }} \
-            --key-pass=pass:${{ secrets.KEYSTORE_KEY_PASSWORD }} \
-            --mode=default
 
       # Extraire l'APK universel du .apks (archive zip)
       - name: Extract APKs
         run: |
          mkdir -p build/app/outputs/universal-apk
-         mkdir -p build/app/outputs/split-apks
-
-         # APK universel — was "universal.apks", should be "app.apks"
-         unzip -j build/app/outputs/apks/app.apks \
-         "universal.apk" \
-         -d build/app/outputs/universal-apk/
-
-          # APKs splittés — was "universal.apks", should be "default.apks"
-         unzip build/app/outputs/apks/default.apks \
-         "splits/*.apk" \
-         -d build/app/outputs/split-apks/
+         unzip -j build/app/outputs/apks/app.apks "universal.apk" -d build/app/outputs/universal-apk/
 
       # SSH + envoi des artifacts
       - name: Setup SSH
@@ -126,10 +107,6 @@ jobs:
 
           scp -P 18005 build/app/outputs/universal-apk/universal.apk \
             Marc@lemarc.fr:/home/Marc/build/loup_garou/
-          
-          scp -r -P 18005 build/app/outputs/split-apks/ \
-            Marc@lemarc.fr:/home/Marc/build/loup_garou/
-            # Publier l'APK universel comme artifact GitHub
             
       - name: Upload Universal APK artifact
         uses: actions/upload-artifact@v4

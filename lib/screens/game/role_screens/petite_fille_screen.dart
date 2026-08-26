@@ -10,11 +10,9 @@ class PetiteFilleScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gp = context.watch<GameProvider>();
-    final pf = gp.state!.alivePlayersWithRole(RoleId.petiteFille).first;
 
     return PassDeviceGate(
-      toName: pf.name,
+      toName: "Petite Fille",
       subtitle: 'C\'est le rôle de la Petite Fille. Réveille-toi.',
       accent: RoleId.petiteFille.info.accent,
       contentBuilder: (_) => const _PetiteFilleContent(),
