@@ -34,14 +34,14 @@ const List<GameSettingDefinition> kGameSettingDefinitions = [
     description:
     'Si activé, un Loup-Garou peut être désigné comme victime par ses '
         'coéquipiers pendant la phase des Loups.',
-    defaultValue: false,
+    defaultValue: true,
   ),
   GameSettingDefinition(
     id: SettingId.allowHunterToShootAfterWitchDeathCause,
     label: 'Le Chasseur peut tirer si il est tué par la sorcière',
     description:
         'Si activé, le Chasseur peut utiliser son pouvoir de tir après que la Sorcière l\'ait tué.',
-    defaultValue: false,
+    defaultValue: true,
   ),
   GameSettingDefinition(
     id: SettingId.allowWitchToPlayIfWerewolfDeathCause,
@@ -51,7 +51,7 @@ const List<GameSettingDefinition> kGameSettingDefinitions = [
         'même si elle est la victime désignée par les Loups-Garous cette '
         'nuit-là. Si désactivé (par défaut), elle ne joue pas et succombe '
         'directement, sans utiliser ses potions.',
-    defaultValue: false,
+    defaultValue: true,
   ),
   GameSettingDefinition(
     id: SettingId.allowWitchToSaveHerself,
@@ -59,7 +59,7 @@ const List<GameSettingDefinition> kGameSettingDefinitions = [
     description:
     'Si activé, la Sorcière peut utiliser sa potion de vie sur '
         'elle-même lorsqu\'elle est la victime désignée par les Loups-Garous.',
-    defaultValue: false,
+    defaultValue: true,
   ),
 ];
 
