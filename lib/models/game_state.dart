@@ -13,31 +13,47 @@ enum GamePhase {
 
   // Nuit
   nightIntro,
+
+  //premiere nuit
   nightVoleur,
   nightCupidon,
+  nightEnfantSauvage,
+
+  nightSalvateur,
   nightVoyante,
   nightPetiteFille,
   nightLoups,
+  nightLoupBlanc,
+  nightGrandMechantLoup,
+  nightInfectPereDesLoups,
   nightSorciere,
+  nightRenard,
 
-  // Actions différées déclenchées par une mort (chasseur / succession du maire)
-  pendingAction,
+  chasseurRevange,
+  successionMaire,
+  enfantsauvageReveal,
 
   // Jour
   dayReveal,
+
   mayorElectionExplain,
   mayorElection,
   mayorReveal,
+
   debate,
   villageVote,
   voteResult,
+
   villagePowerLoss,
+  servanteDevouee,
+  boucEmissaire,
+  idiotduvillageCivicRightLoss,
+  // successionMaire si tué par le vote
 
   // Fin
   endGame,
 }
 
-enum WinnerType { village, loups, amoureux }
 
 /// Un villageois qui vient de perdre son pouvoir suite à l'exécution
 /// erronée de l'Ancien. On garde son ancien rôle pour l'animation de
@@ -49,22 +65,9 @@ class PowerLossEntry {
 }
 
 class GameResult {
-  final WinnerType winner;
+  final Camp winner;
   final List<String> winningPlayerIds;
   const GameResult(this.winner, this.winningPlayerIds);
-}
-
-/// Une action différée à jouer (vengeance du chasseur, succession du maire)
-/// avant de pouvoir révéler publiquement les morts.
-class PendingAction {
-  final String playerId; // le joueur mort qui doit encore agir
-  final bool isHunterRevenge;
-  final bool isMayorSuccession;
-  const PendingAction({
-    required this.playerId,
-    this.isHunterRevenge = false,
-    this.isMayorSuccession = false,
-  });
 }
 
 class GameState {
@@ -91,8 +94,6 @@ class GameState {
   // --- Données temporaires de la nuit en cours ---
   String? loupsVictimId; // victime désignée par les loups, avant substitution
   String? finalNightVictimId; // victime finale après passage de la petite fille
-  bool petiteFilleTriedTonight = false;
-  bool petiteFilleCaughtTonight = false;
 
   bool sorciereVieUsed = false;
   bool sorciereMortUsed = false;
@@ -104,9 +105,6 @@ class GameState {
 
   List<String> loversIds = []; // 0 ou 2 ids
 
-  // File d'actions différées (chasseur / succession maire) à traiter avant
-  // de révéler publiquement les morts de cette vague (nuit ou vote).
-  List<PendingAction> pendingActions = [];
   // Morts survenues pendant la vague en cours (nuit ou vote), pas encore révélées.
   List<String> deathsThisWave = [];
 
@@ -135,6 +133,10 @@ class GameState {
       alivePlayers.where((p) => p.camp == Camp.loups).toList();
   List<Player> get aliveVillagers =>
       alivePlayers.where((p) => p.camp == Camp.village).toList();
+
+  get deathbyvillagevote => null;
+
+  String get renardTarget => null;
 }
 
 extension _FirstOrNull<T> on Iterable<T> {

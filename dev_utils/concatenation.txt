@@ -1,4 +1,4 @@
-C:\Users\marcb\StudioProjects\loup_garou\lib
+/Users/marc/Desktop/loup_garou/lib
 ├── main.dart
 ├── models
 │   ├── game_config.dart
@@ -17,15 +17,27 @@ C:\Users\marcb\StudioProjects\loup_garou\lib
 │   │   ├── debate_screen.dart
 │   │   ├── end_game_screen.dart
 │   │   ├── game_main_screen.dart
+│   │   ├── mayor_election_explain.dart
+│   │   ├── mayor_election_explain.preview.dart
 │   │   ├── mayor_election_screen.dart
 │   │   ├── mayor_reveal_screen.dart
 │   │   ├── mayor_reveal_screen.preview.dart
 │   │   ├── night_intro_screen.dart
-│   │   ├── pending_action_screen.dart
 │   │   ├── role_screens
+│   │   │   ├── bouc_emissaire_screen.dart
+│   │   │   ├── chasseur_screen.dart
+│   │   │   ├── corbeau_screen.dart
 │   │   │   ├── cupidon_screen.dart
+│   │   │   ├── enfant_sauvage_screen.dart
+│   │   │   ├── grand_mechant_loup_screen.dart
+│   │   │   ├── infect_pere_des_loups_screen.dart
+│   │   │   ├── juge_begue_screen.dart
+│   │   │   ├── loup_blanc_screen.dart
 │   │   │   ├── loups_screen.dart
 │   │   │   ├── petite_fille_screen.dart
+│   │   │   ├── renard_screen.dart
+│   │   │   ├── salvateur_screen.dart
+│   │   │   ├── servante_devouee_screen.dart
 │   │   │   ├── sorciere_screen.dart
 │   │   │   ├── voleur_screen.dart
 │   │   │   └── voyante_screen.dart
@@ -54,8 +66,8 @@ C:\Users\marcb\StudioProjects\loup_garou\lib
     ├── confirm.dart
     ├── pass_device_gate.dart
     ├── player_grid_selector.dart
-    └── role_image.dart
-
+    ├── role_image.dart
+    └── role_image.preview.dart
 
 ===== Fichier: main.dart =====
 
@@ -92,7 +104,7 @@ class ThiercelieuxApp extends StatelessWidget {
   }
 }
 
-===== Fichier: models\game_config.dart =====
+===== Fichier: models/game_config.dart =====
 
 import 'role.dart';
 
@@ -143,7 +155,7 @@ class GameConfig {
   }
 }
 
-===== Fichier: models\game_settings.dart =====
+===== Fichier: models/game_settings.dart =====
 
 /// Identifiant unique de chaque option de jeu. Pour ajouter une nouvelle
 /// option : ajoute une valeur ici, puis une entrée dans
@@ -153,6 +165,8 @@ class GameConfig {
 enum SettingId {
   allowWerewolfToKillThemselves,
   allowHunterToShootAfterWitchDeathCause,
+  allowWitchToPlayIfWerewolfDeathCause,
+  allowWitchToSaveHerself,
 }
 
 /// Décrit une option pour l'affichage dans l'écran de réglages.
@@ -179,15 +193,33 @@ const List<GameSettingDefinition> kGameSettingDefinitions = [
     description:
     'Si activé, un Loup-Garou peut être désigné comme victime par ses '
         'coéquipiers pendant la phase des Loups.',
-    defaultValue: false,
+    defaultValue: true,
   ),
   GameSettingDefinition(
     id: SettingId.allowHunterToShootAfterWitchDeathCause,
     label: 'Le Chasseur peut tirer si il est tué par la sorcière',
     description:
         'Si activé, le Chasseur peut utiliser son pouvoir de tir après que la Sorcière l\'ait tué.',
-    defaultValue: false,
-  )
+    defaultValue: true,
+  ),
+  GameSettingDefinition(
+    id: SettingId.allowWitchToPlayIfWerewolfDeathCause,
+    label: 'La Sorcière joue même si elle est visée par les Loups',
+    description:
+    'Si activé, la Sorcière est quand même réveillée pour son tour '
+        'même si elle est la victime désignée par les Loups-Garous cette '
+        'nuit-là. Si désactivé (par défaut), elle ne joue pas et succombe '
+        'directement, sans utiliser ses potions.',
+    defaultValue: true,
+  ),
+  GameSettingDefinition(
+    id: SettingId.allowWitchToSaveHerself,
+    label: 'La Sorcière peut se sauver elle-même',
+    description:
+    'Si activé, la Sorcière peut utiliser sa potion de vie sur '
+        'elle-même lorsqu\'elle est la victime désignée par les Loups-Garous.',
+    defaultValue: true,
+  ),
 ];
 
 /// Valeurs courantes des options, avec repli sur la valeur par défaut du
@@ -213,6 +245,10 @@ class GameSettings {
 
   bool get allowHunterToShootAfterWitchDeathCause => get(SettingId.allowHunterToShootAfterWitchDeathCause);
 
+  bool get allowWitchToPlayIfWerewolfDeathCause => get(SettingId.allowWitchToPlayIfWerewolfDeathCause);
+
+  bool get allowWitchToSaveHerself => get(SettingId.allowWitchToSaveHerself);
+
   Map<String, dynamic> toJson() => {
     for (final e in _values.entries) e.key.name: e.value,
   };
@@ -226,8 +262,7 @@ class GameSettings {
     return GameSettings(values: values);
   }
 }
-
-===== Fichier: models\game_state.dart =====
+===== Fichier: models/game_state.dart =====
 
 import 'game_config.dart';
 import 'game_settings.dart';
@@ -244,30 +279,47 @@ enum GamePhase {
 
   // Nuit
   nightIntro,
+
+  //premiere nuit
   nightVoleur,
   nightCupidon,
+  nightEnfantSauvage,
+
+  nightSalvateur,
   nightVoyante,
   nightPetiteFille,
   nightLoups,
+  nightLoupBlanc,
+  nightGrandMechantLoup,
+  nightInfectPereDesLoups,
   nightSorciere,
+  nightRenard,
 
-  // Actions différées déclenchées par une mort (chasseur / succession du maire)
-  pendingAction,
+  chasseurRevange,
+  successionMaire,
+  enfantsauvageReveal,
 
   // Jour
   dayReveal,
+
+  mayorElectionExplain,
   mayorElection,
   mayorReveal,
+
   debate,
   villageVote,
   voteResult,
+
   villagePowerLoss,
+  servanteDevouee,
+  boucEmissaire,
+  idiotduvillageCivicRightLoss,
+  // successionMaire si tué par le vote
 
   // Fin
   endGame,
 }
 
-enum WinnerType { village, loups, amoureux }
 
 /// Un villageois qui vient de perdre son pouvoir suite à l'exécution
 /// erronée de l'Ancien. On garde son ancien rôle pour l'animation de
@@ -279,22 +331,9 @@ class PowerLossEntry {
 }
 
 class GameResult {
-  final WinnerType winner;
+  final Camp winner;
   final List<String> winningPlayerIds;
   const GameResult(this.winner, this.winningPlayerIds);
-}
-
-/// Une action différée à jouer (vengeance du chasseur, succession du maire)
-/// avant de pouvoir révéler publiquement les morts.
-class PendingAction {
-  final String playerId; // le joueur mort qui doit encore agir
-  final bool isHunterRevenge;
-  final bool isMayorSuccession;
-  const PendingAction({
-    required this.playerId,
-    this.isHunterRevenge = false,
-    this.isMayorSuccession = false,
-  });
 }
 
 class GameState {
@@ -321,8 +360,6 @@ class GameState {
   // --- Données temporaires de la nuit en cours ---
   String? loupsVictimId; // victime désignée par les loups, avant substitution
   String? finalNightVictimId; // victime finale après passage de la petite fille
-  bool petiteFilleTriedTonight = false;
-  bool petiteFilleCaughtTonight = false;
 
   bool sorciereVieUsed = false;
   bool sorciereMortUsed = false;
@@ -334,9 +371,6 @@ class GameState {
 
   List<String> loversIds = []; // 0 ou 2 ids
 
-  // File d'actions différées (chasseur / succession maire) à traiter avant
-  // de révéler publiquement les morts de cette vague (nuit ou vote).
-  List<PendingAction> pendingActions = [];
   // Morts survenues pendant la vague en cours (nuit ou vote), pas encore révélées.
   List<String> deathsThisWave = [];
 
@@ -365,13 +399,17 @@ class GameState {
       alivePlayers.where((p) => p.camp == Camp.loups).toList();
   List<Player> get aliveVillagers =>
       alivePlayers.where((p) => p.camp == Camp.village).toList();
+
+  get deathbyvillagevote => null;
+
+  String get renardTarget => null;
 }
 
 extension _FirstOrNull<T> on Iterable<T> {
   T? get firstOrNull => isEmpty ? null : first;
 }
 
-===== Fichier: models\player.dart =====
+===== Fichier: models/player.dart =====
 
 import 'role.dart';
 
@@ -382,6 +420,7 @@ class Player {
   bool alive;
   bool isMayor;
   String? loverId; // id de l'autre Amoureux, si Cupidon est passé
+  String? mentorOf; // id de l'Enfant Sauvage dont il est le mentor, si Enfant Sauvage est passé
   DeathCause? deathCause;
   int? deathAtNight; // numéro de nuit du décès (null si mort le jour ou vivant)
   int? deathAtDay; // numéro de jour du décès (null si mort la nuit ou vivant)
@@ -433,7 +472,7 @@ class Player {
   }
 }
 
-===== Fichier: models\player_stats.dart =====
+===== Fichier: models/player_stats.dart =====
 
 import 'role.dart';
 
@@ -511,7 +550,7 @@ class PlayerStats {
       );
 }
 
-===== Fichier: models\role.dart =====
+===== Fichier: models/role.dart =====
 
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
@@ -519,9 +558,10 @@ import '../theme/app_theme.dart';
 /// Camp d'appartenance d'un rôle. Les Amoureux ne sont pas un camp à part :
 /// c'est un statut transversal (voir Player.loverId) qui peut créer une
 /// victoire spéciale si les deux amoureux sont de camps différents.
-enum Camp { loups, village }
+enum Camp { loups, village, seul, amoureux }
 
 enum RoleId {
+  // jeu de base :
   loupGarou,
   voyante,
   sorciere,
@@ -530,14 +570,32 @@ enum RoleId {
   petiteFille,
   voleur,
   simpleVillageois,
+
+  // Extension Nouvelle Lune :
   ancien,
+  boucEmissaire, // option : si il meurt, il designe un joueur qui ne se reveille pas la nuit suivante
+  idiotDuVillage,
+  salvateur,
+
+  // Extension le village :
+  corbeau,
+  loupBlanc,
+
+  grandMechantLoup,
+  infectPereDesLoups,
+  enfantSauvage,
+  jugeBegue,
+  servanteDevouee,
+  montreurDours,
+  renard,
+
 }
 
 /// Cause de décès, utile pour l'affichage et pour la page de stats.
 enum DeathCause {
   devoreParLesLoups,
   potionDeMort,
-  chagrinDAmour,
+  chagrinDAmourCupidon,
   vengeanceDuChasseur,
   vote,
 }
@@ -572,119 +630,183 @@ class RoleInfo {
   });
 }
 
-/// Catalogue statique de tous les rôles disponibles dans le jeu de base.
+/// Catalogue statique de tous les rôles disponibles dans le jeu.
 const Map<RoleId, RoleInfo> kRoleCatalog = {
+  // ─────────────────────────────────────────────────────────────────────────
+  // CAMP DES LOUPS
+  // ─────────────────────────────────────────────────────────────────────────
+
   RoleId.loupGarou: RoleInfo(
     id: RoleId.loupGarou,
     name: 'Loup-Garou',
     nameShort: 'Loup',
     camp: Camp.loups,
     description:
-        "Chaque nuit, les Loups-Garous se réunissent pour dévorer un villageois. "
+    "Chaque nuit, les Loups-Garous se réunissent pour dévorer un villageois. "
         "Le jour, ils se fondent dans la foule et bluffent pour ne pas être démasqués.",
     nightInstruction:
-        "Mettez-vous d'accord en silence, puis désignez votre victime.",
+    "Mettez-vous d'accord en silence, puis désignez votre victime.",
     imageAsset: 'assets/images/roles/loup_garou.png',
     fallbackIcon: Icons.dark_mode,
     accent: AppColors.blood,
     actsAtNight: true,
     unique: false,
   ),
+
+  RoleId.grandMechantLoup: RoleInfo(
+    id: RoleId.grandMechantLoup,
+    name: 'Grand Méchant Loup',
+    nameShort: 'Grand Méchant Loup',
+    camp: Camp.loups,
+    description:
+    "Il agit avec les autres Loups-Garous et peut, tant qu'aucun Loup-Garou "
+        "n'est mort, dévorer une seconde victime chaque nuit.",
+    nightInstruction:
+    "Avec les autres loups, désignez la victime. Vous pouvez ensuite désigner une seconde victime.",
+    imageAsset: 'assets/images/roles/grand_mechant_loup.png',
+    fallbackIcon: Icons.pets,
+    accent: AppColors.blood,
+    actsAtNight: true,
+  ),
+
+  RoleId.infectPereDesLoups: RoleInfo(
+    id: RoleId.infectPereDesLoups,
+    name: 'Infect Père des Loups',
+    nameShort: 'Infect',
+    camp: Camp.loups,
+    description:
+    "Il est un Loup-Garou. Une fois par partie, il peut infecter la victime "
+        "des loups afin de la transformer en Loup-Garou au lieu de la tuer.",
+    nightInstruction:
+    "Désignez la victime des loups, puis décidez si vous utilisez votre pouvoir d'infection.",
+    imageAsset: 'assets/images/roles/infect_pere_des_loups.png',
+    fallbackIcon: Icons.coronavirus,
+    accent: AppColors.blood,
+    actsAtNight: true,
+  ),
+
+  RoleId.loupBlanc: RoleInfo(
+    id: RoleId.loupBlanc,
+    name: 'Loup-Garou Blanc',
+    nameShort: 'Loup Blanc',
+    camp: Camp.seul,
+    description:
+    "Il est considéré comme un Loup-Garou par les autres loups, mais son "
+        "objectif est de rester le dernier survivant. Une nuit sur deux, il "
+        "peut éliminer secrètement un autre Loup-Garou.",
+    nightInstruction:
+    "Les loups désignent leur victime. Si votre pouvoir est disponible, vous pouvez éliminer un loup.",
+    imageAsset: 'assets/images/roles/loup_blanc.png',
+    fallbackIcon: Icons.ac_unit,
+    accent: AppColors.blood,
+    actsAtNight: true,
+  ),
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // CAMP DU VILLAGE
+  // ─────────────────────────────────────────────────────────────────────────
+
   RoleId.voyante: RoleInfo(
     id: RoleId.voyante,
     name: 'La Voyante',
     nameShort: 'Voyante',
     camp: Camp.village,
     description:
-        "Chaque nuit, elle découvre en secret la véritable identité d'un joueur de son choix.",
+    "Chaque nuit, elle découvre en secret la véritable identité d'un joueur de son choix.",
     nightInstruction: "Choisissez un joueur pour découvrir son rôle.",
     imageAsset: 'assets/images/roles/voyante.png',
     fallbackIcon: Icons.remove_red_eye,
     accent: AppColors.amethyst,
     actsAtNight: true,
   ),
+
   RoleId.sorciere: RoleInfo(
     id: RoleId.sorciere,
     name: 'La Sorcière',
     nameShort: 'Sorcière',
     camp: Camp.village,
     description:
-        "Elle possède deux potions à usage unique : une potion de vie pour sauver la "
-        "victime des loups, une potion de mort pour éliminer un joueur de son choix.",
+    "Elle possède deux potions à usage unique : une potion de vie pour sauver "
+        "la victime des loups, et une potion de mort pour éliminer un joueur de son choix.",
     nightInstruction:
-        "Découvrez la victime des loups, puis utilisez vos potions si vous le souhaitez.",
+    "Découvrez la victime des loups, puis utilisez vos potions si vous le souhaitez.",
     imageAsset: 'assets/images/roles/sorciere.png',
     fallbackIcon: Icons.science,
     accent: AppColors.amethyst,
     actsAtNight: true,
   ),
+
   RoleId.chasseur: RoleInfo(
     id: RoleId.chasseur,
     name: 'Le Chasseur',
     nameShort: 'Chasseur',
     camp: Camp.village,
     description:
-        "S'il meurt, de nuit comme de jour, il réplique aussitôt en abattant un autre joueur de son choix.",
+    "S'il meurt, de nuit comme de jour, il réplique aussitôt en abattant un autre joueur de son choix.",
     nightInstruction: "",
     imageAsset: 'assets/images/roles/chasseur.png',
     fallbackIcon: Icons.gps_fixed,
     accent: AppColors.forest,
     actsAtNight: false,
   ),
+
   RoleId.cupidon: RoleInfo(
     id: RoleId.cupidon,
     name: 'Cupidon',
     nameShort: 'Cupidon',
     camp: Camp.village,
     description:
-        "La première nuit seulement, il désigne deux joueurs qui tombent amoureux. "
+    "La première nuit seulement, il désigne deux joueurs qui tombent amoureux. "
         "Si l'un meurt, l'autre meurt aussitôt de chagrin.",
     nightInstruction:
-        "Désignez les deux Amoureux (vous pouvez vous choisir vous-même).",
+    "Désignez les deux Amoureux (vous pouvez vous choisir vous-même).",
     imageAsset: 'assets/images/roles/cupidon.png',
     fallbackIcon: Icons.favorite,
     accent: AppColors.amethyst,
     actsAtNight: true,
     firstNightOnly: true,
   ),
+
   RoleId.petiteFille: RoleInfo(
     id: RoleId.petiteFille,
     name: 'La Petite Fille',
     nameShort: 'Petite Fille',
     camp: Camp.village,
     description:
-        "Pendant le tour des loups, elle peut entrouvrir les yeux pour espionner. "
+    "Pendant le tour des loups, elle peut entrouvrir les yeux pour espionner. "
         "Si elle se fait surprendre, elle meurt à la place de la victime prévue.",
     nightInstruction:
-        "Vous pouvez tenter d'espionner les loups. Restez discrète...",
+    "Vous pouvez tenter d'espionner les loups. Restez discrète...",
     imageAsset: 'assets/images/roles/petite_fille.png',
     fallbackIcon: Icons.visibility,
     accent: AppColors.forest,
-    actsAtNight: true,
+    actsAtNight: false,
   ),
+
   RoleId.voleur: RoleInfo(
     id: RoleId.voleur,
     name: 'Le Voleur',
     nameShort: 'Voleur',
     camp: Camp.village,
     description:
-        "La première nuit, il regarde deux cartes restées sur la table et peut échanger "
-        "son rôle contre l'une d'elles (obligatoire si ce sont deux Loups-Garous).",
+    "La première nuit, il regarde deux cartes restées sur la table et peut échanger "
+        "son rôle contre l'une d'elles.",
     nightInstruction:
-        "Regardez les deux cartes restantes et choisissez d'échanger ou non.",
-    imageAsset: 'assets/images/roles/voleur.png',
+    "Regardez les deux cartes restantes et choisissez d'échanger ou non.",
+    imageAsset: '',
     fallbackIcon: Icons.swap_horiz,
     accent: AppColors.lantern,
     actsAtNight: true,
     firstNightOnly: true,
   ),
+
   RoleId.simpleVillageois: RoleInfo(
     id: RoleId.simpleVillageois,
     name: 'Simple Villageois',
     nameShort: 'Villageois',
     camp: Camp.village,
     description:
-        "Aucun pouvoir particulier. Son arme : l'observation, l'écoute, et le vote le jour venu.",
+    "Aucun pouvoir particulier. Son arme : l'observation, l'écoute, et le vote le jour venu.",
     nightInstruction: "",
     imageAsset: 'assets/images/roles/villageois.png',
     fallbackIcon: Icons.person,
@@ -692,21 +814,144 @@ const Map<RoleId, RoleInfo> kRoleCatalog = {
     actsAtNight: false,
     unique: false,
   ),
+
   RoleId.ancien: RoleInfo(
     id: RoleId.ancien,
     name: "L'Ancien",
     nameShort: 'Ancien',
     camp: Camp.village,
     description:
-        "Grâce à sa sagesse, il résiste à une première attaque des Loups-Garous : "
-        "il survit en silence, sans que personne ne le sache. Si le village le "
-        "tue par erreur en votant contre lui, tous les villageois à pouvoir "
-        "perdent aussitôt leur don, punis pour leur imprudence.",
+    "Grâce à sa sagesse, il résiste à une première attaque des Loups-Garous. "
+        "S'il est tué par le village, les villageois à pouvoir perdent leurs capacités.",
     nightInstruction: "",
     imageAsset: 'assets/images/roles/ancien.png',
     fallbackIcon: Icons.elderly,
     accent: AppColors.forest,
     actsAtNight: false,
+  ),
+
+  RoleId.boucEmissaire: RoleInfo(
+    id: RoleId.boucEmissaire,
+    name: 'Le Bouc Émissaire',
+    nameShort: 'Bouc Émissaire',
+    camp: Camp.village,
+    description:
+    "S'il est éliminé par le vote du village, il peut désigner un joueur "
+        "qui ne se réveillera pas lors de la nuit suivante.",
+    nightInstruction: "",
+    imageAsset: '',
+    fallbackIcon: Icons.how_to_vote,
+    accent: AppColors.forest,
+    actsAtNight: false,
+  ),
+
+  RoleId.idiotDuVillage: RoleInfo(
+    id: RoleId.idiotDuVillage,
+    name: "L'Idiot du Village",
+    nameShort: 'Idiot',
+    camp: Camp.village,
+    description:
+    "S'il est condamné par le vote du village, il révèle son rôle et reste en vie, "
+        "mais perd définitivement son droit de vote.",
+    nightInstruction: "",
+    imageAsset: '',
+    fallbackIcon: Icons.sentiment_very_satisfied,
+    accent: AppColors.forest,
+    actsAtNight: false,
+  ),
+
+  RoleId.salvateur: RoleInfo(
+    id: RoleId.salvateur,
+    name: 'Le Salvateur',
+    nameShort: 'Salvateur',
+    camp: Camp.village,
+    description:
+    "Chaque nuit, il protège un joueur contre les Loups-Garous. "
+        "Il ne peut pas protéger le même joueur deux nuits consécutives.",
+    nightInstruction:
+    "Choisissez le joueur que vous souhaitez protéger cette nuit.",
+    imageAsset: '',
+    fallbackIcon: Icons.shield,
+    accent: AppColors.forest,
+    actsAtNight: true,
+  ),
+
+  RoleId.enfantSauvage: RoleInfo(
+    id: RoleId.enfantSauvage,
+    name: "L'Enfant Sauvage",
+    nameShort: 'Enfant Sauvage',
+    camp: Camp.village,
+    description:
+    "Au début de la partie, il choisit un modèle parmi les autres joueurs. "
+        "Si son modèle meurt, il devient Loup-Garou.",
+    nightInstruction:
+    "Choisissez le joueur qui sera votre modèle.",
+    imageAsset: 'assets/images/roles/enfant_sauvage.png',
+    fallbackIcon: Icons.child_care,
+    accent: AppColors.forest,
+    actsAtNight: true,
+    firstNightOnly: true,
+  ),
+
+  RoleId.jugeBegue: RoleInfo(
+    id: RoleId.jugeBegue,
+    name: 'Le Juge Bègue',
+    nameShort: 'Juge Bègue',
+    camp: Camp.village,
+    description:
+    "Une fois par partie, il peut décider secrètement que le vote du village "
+        "sera rejoué immédiatement.",
+    nightInstruction: "",
+    imageAsset: '',
+    fallbackIcon: Icons.gavel,
+    accent: AppColors.forest,
+    actsAtNight: false,
+  ),
+
+  RoleId.servanteDevouee: RoleInfo(
+    id: RoleId.servanteDevouee,
+    name: 'La Servante Dévouée',
+    nameShort: 'Servante',
+    camp: Camp.village,
+    description:
+    "Lorsqu'un joueur est éliminé par le vote, elle peut révéler son rôle "
+        "et prendre immédiatement sa carte.",
+    nightInstruction: "",
+    imageAsset: '',
+    fallbackIcon: Icons.volunteer_activism,
+    accent: AppColors.forest,
+    actsAtNight: false,
+  ),
+
+  RoleId.montreurDours: RoleInfo(
+    id: RoleId.montreurDours,
+    name: "Le Montreur d'Ours",
+    nameShort: "Montreur d'Ours",
+    camp: Camp.village,
+    description:
+    "Chaque matin, si un Loup-Garou se trouve parmi ses voisins encore vivants, "
+        "l'ours grogne.",
+    nightInstruction: "",
+    imageAsset: 'assets/images/roles/montreur_d_ours.png',
+    fallbackIcon: Icons.pets,
+    accent: AppColors.forest,
+    actsAtNight: false,
+  ),
+
+  RoleId.renard: RoleInfo(
+    id: RoleId.renard,
+    name: 'Le Renard',
+    nameShort: 'Renard',
+    camp: Camp.village,
+    description:
+    "La nuit, il peut désigner un groupe de trois joueurs. Le meneur lui indique "
+        "si au moins un Loup-Garou se trouve parmi eux.",
+    nightInstruction:
+    "Choisissez trois joueurs voisins pour utiliser votre flair.",
+    imageAsset: 'assets/images/roles/renard.png',
+    fallbackIcon: Icons.pets,
+    accent: AppColors.forest,
+    actsAtNight: true,
   ),
 };
 
@@ -714,7 +959,7 @@ extension RoleInfoX on RoleId {
   RoleInfo get info => kRoleCatalog[this]!;
 }
 
-===== Fichier: providers\game_provider.dart =====
+===== Fichier: providers/game_provider.dart =====
 
 import 'package:flutter/foundation.dart';
 import '../models/game_config.dart';
@@ -939,9 +1184,34 @@ class GameProvider extends ChangeNotifier {
     engine.confirmMayorReveal(state!);
     notifyListeners();
   }
+  void confirmMayorElectionExplain() {
+    engine.confirmMayorElectionExplain(state!);
+    notifyListeners();
+  }
+  void setHunterTarget(String targetId) {}
+
+  void setBoucEmissaireTarget(String id) {}
+
+  void setSalvateurTarget(String id) {}
+
+  void setCorbeauVictim(String id) {}
+
+  void setLoupBlancVictim(String id) {}
+
+  void setEnfantSauvageMentor(String id) {}
+
+  void setInfectPereDesLoups(bool bool) {}
+
+  void setJugeBegueTarget(String id) {}
+
+  int getwolfbeside(String id) {}
+
+  void setServanteDevoueeChoice(bool bool) {}
+
+  void setRenardTarget(String id) {}
 }
 
-===== Fichier: providers\settings_provider.dart =====
+===== Fichier: providers/settings_provider.dart =====
 
 import 'package:flutter/foundation.dart';
 import '../models/game_settings.dart';
@@ -974,11 +1244,16 @@ class SettingsProvider extends ChangeNotifier {
       settings.allowWerewolfToKillThemselves;
 
   bool get allowHunterToShootAfterWitchDeathCause => settings.allowHunterToShootAfterWitchDeathCause;
-}
 
-===== Fichier: providers\stats_provider.dart =====
+  bool get allowWitchToPlayIfWerewolfDeathCause =>
+      settings.allowWitchToPlayIfWerewolfDeathCause;
+
+  bool get allowWitchToSaveHerself => settings.allowWitchToSaveHerself;
+}
+===== Fichier: providers/stats_provider.dart =====
 
 import 'package:flutter/foundation.dart';
+import 'package:thiercelieux/models/role.dart';
 import '../models/game_state.dart';
 import '../models/player_stats.dart';
 import '../services/storage_service.dart';
@@ -1015,10 +1290,10 @@ class StatsProvider extends ChangeNotifier {
     if (result == null) return;
 
     for (final player in finalState.players) {
-      final won = result.winner == WinnerType.amoureux
+      final won = result.winner == Camp.amoureux
           ? result.winningPlayerIds.contains(player.id)
           : player.camp.name ==
-              (result.winner == WinnerType.village ? 'village' : 'loups');
+              (result.winner == Camp.village ? 'village' : 'loups');
 
       final entry = GameHistoryEntry(
         date: finalState.startedAt,
@@ -1041,50 +1316,7 @@ class StatsProvider extends ChangeNotifier {
   }
 }
 
-===== Fichier: screens\game_flow_screen.dart =====
-
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/game_provider.dart';
-import 'game/game_main_screen.dart';
-import 'setup/player_count_screen.dart';
-import 'setup/player_names_screen.dart';
-import 'setup/role_reveal_screen.dart';
-import 'setup/role_selection_screen.dart';
-
-/// Point d'entrée unique de tout le déroulé "création + partie". Regarde
-/// l'état du [GameProvider] et affiche l'écran correspondant — pas de
-/// pile de navigation complexe, la machine à états fait déjà tout le travail.
-class GameFlowScreen extends StatelessWidget {
-  const GameFlowScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final gp = context.watch<GameProvider>();
-
-    if (gp.state == null) {
-      switch (gp.setupStep) {
-        case SetupStep.playerCount:
-          return const PlayerCountScreen();
-        case SetupStep.roles:
-          return const RoleSelectionScreen();
-        case SetupStep.names:
-          return const PlayerNamesScreen();
-        case SetupStep.reveal:
-        case SetupStep.done:
-          return const PlayerCountScreen();
-      }
-    }
-
-    if (gp.setupStep == SetupStep.reveal) {
-      return const RoleRevealScreen();
-    }
-
-    return const GameMainScreen();
-  }
-}
-
-===== Fichier: screens\game\day_reveal_screen.dart =====
+===== Fichier: screens/game/day_reveal_screen.dart =====
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -1157,19 +1389,19 @@ class DayRevealScreen extends StatelessWidget {
         return 'dévoré(e) par les Loups-Garous';
       case DeathCause.potionDeMort:
         return 'empoisonné(e) par la Sorcière';
-      case DeathCause.chagrinDAmour:
+      case DeathCause.chagrinDAmourCupidon:
         return 'mort(e) de chagrin d\'amour';
       case DeathCause.vengeanceDuChasseur:
         return 'abattu(e) par le Chasseur';
       case DeathCause.vote:
         return 'pendu(e) par le village';
-      case null:
+      default :
         return '';
     }
   }
 }
 
-===== Fichier: screens\game\debate_screen.dart =====
+===== Fichier: screens/game/debate_screen.dart =====
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -1219,11 +1451,10 @@ class DebateScreen extends StatelessWidget {
   }
 }
 
-===== Fichier: screens\game\end_game_screen.dart =====
+===== Fichier: screens/game/end_game_screen.dart =====
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../models/game_state.dart';
 import '../../providers/game_provider.dart';
 import '../../providers/stats_provider.dart';
 import '../../theme/app_theme.dart';
@@ -1256,14 +1487,16 @@ class _EndGameScreenState extends State<EndGameScreen> {
     }
   }
 
-  String _winnerLabel(WinnerType w) {
+  String _winnerLabel(Camp w) {
     switch (w) {
-      case WinnerType.village:
+      case Camp.village:
         return 'Le Village l\'emporte !';
-      case WinnerType.loups:
+      case Camp.loups:
         return 'Les Loups-Garous l\'emportent !';
-      case WinnerType.amoureux:
+      case Camp.amoureux:
         return 'Les Amoureux l\'emportent !';
+      case Camp.seul:
+        return 'Il l\'emporte !';
     }
   }
 
@@ -1344,7 +1577,7 @@ class _EndGameScreenState extends State<EndGameScreen> {
   }
 }
 
-===== Fichier: screens\game\game_main_screen.dart =====
+===== Fichier: screens/game/game_main_screen.dart =====
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -1356,7 +1589,6 @@ import 'debate_screen.dart';
 import 'end_game_screen.dart';
 import 'mayor_election_screen.dart';
 import 'night_intro_screen.dart';
-import 'pending_action_screen.dart';
 import 'role_screens/cupidon_screen.dart';
 import 'role_screens/loups_screen.dart';
 import 'role_screens/petite_fille_screen.dart';
@@ -1367,6 +1599,7 @@ import 'village_vote_screen.dart';
 import 'vote_result_screen.dart';
 import 'village_power_loss_screen.dart';
 import 'mayor_reveal_screen.dart';
+import 'mayor_election_explain.dart';
 
 /// Point d'entrée de la partie une fois la distribution des rôles terminée.
 /// Regarde `GameState.phase` et affiche l'écran correspondant — c'est la
@@ -1401,7 +1634,6 @@ class GameMainScreen extends StatelessWidget {
       GamePhase.nightLoups => const LoupsScreen(),
       GamePhase.nightPetiteFille => const PetiteFilleScreen(),
       GamePhase.nightSorciere => const SorciereScreen(),
-      GamePhase.pendingAction => const PendingActionScreen(),
       GamePhase.dayReveal => const DayRevealScreen(),
       GamePhase.mayorElection => const MayorElectionScreen(),
       GamePhase.mayorReveal => const MayorRevealScreen(),
@@ -1410,6 +1642,7 @@ class GameMainScreen extends StatelessWidget {
       GamePhase.voteResult => const VoteResultScreen(),
       GamePhase.endGame => const EndGameScreen(),
       GamePhase.villagePowerLoss => const VillagePowerLossScreen(),
+      GamePhase.mayorElectionExplain => const MayorElectionExplainScreen(),
       // Les phases de setup (avant distribution) ne passent jamais par ici :
       // GameFlowScreen les intercepte plus haut. Filet de sécurité :
       _ => const SizedBox.shrink(),
@@ -1422,7 +1655,126 @@ class GameMainScreen extends StatelessWidget {
   }
 }
 
-===== Fichier: screens\game\mayor_election_screen.dart =====
+===== Fichier: screens/game/mayor_election_explain.dart =====
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../providers/game_provider.dart';
+import '../../theme/app_theme.dart';
+
+
+class MayorElectionExplainScreen extends StatefulWidget {
+  const MayorElectionExplainScreen({super.key});
+
+  @override
+  State<MayorElectionExplainScreen> createState() => _MayorElectionExplainScreenState();
+}
+
+class _MayorElectionExplainScreenState extends State<MayorElectionExplainScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _scale = CurvedAnimation(parent: _controller, curve: Curves.elasticOut);
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final gp = context.read<GameProvider>();
+    return Scaffold(
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ScaleTransition(
+                scale: _scale,
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: const BoxDecoration(
+                    color: AppColors.lantern,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Image.asset('assets/images/roles/mayor_insign.png')
+                ),
+              ),
+              const SizedBox(height: 28),
+              const Text("you're going to elect the mayor"),
+              const SizedBox(height: 40),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: gp.confirmMayorElectionExplain,
+                  child: const Text('Continue to the vote'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+===== Fichier: screens/game/mayor_election_explain.preview.dart =====
+
+import 'package:flutter/material.dart';
+import 'package:flutter/widget_previews.dart';
+import 'package:provider/provider.dart';
+
+import '../../models/game_config.dart';
+import '../../models/game_settings.dart';
+import '../../models/role.dart';
+import '../../providers/game_provider.dart';
+import '../../theme/app_theme.dart';
+import 'mayor_election_explain.dart';
+
+@Preview(name: 'Mayor ElectionExplain — party of 5')
+Widget mayorElectionExplainPreview() {
+  final gp = GameProvider();
+
+  gp.state = gp.engine.initGame(
+    GameConfig(
+      playerCount: 5,
+      roleCounts: {
+        RoleId.loupGarou: 1,
+        RoleId.simpleVillageois: 4,
+      },
+    ),
+    ['Alice', 'Bob', 'Chloé', 'David', 'Emma'],
+    GameSettings(),
+  );
+
+  // Chloé est maire.
+  gp.state!.mayorId = gp.state!.players[2].id;
+
+  return ChangeNotifierProvider.value(
+    value: gp,
+    child: MaterialApp(
+      theme: AppTheme.day,
+      home: const SizedBox(
+        child: MayorElectionExplainScreen(),
+      ),
+    ),
+  );
+}
+
+===== Fichier: screens/game/mayor_election_screen.dart =====
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -1449,7 +1801,7 @@ class MayorElectionScreen extends StatelessWidget {
   }
 }
 
-===== Fichier: screens\game\mayor_reveal_screen.dart =====
+===== Fichier: screens/game/mayor_reveal_screen.dart =====
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -1548,7 +1900,7 @@ class _MayorRevealScreenState extends State<MayorRevealScreen>
   }
 }
 
-===== Fichier: screens\game\mayor_reveal_screen.preview.dart =====
+===== Fichier: screens/game/mayor_reveal_screen.preview.dart =====
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -1579,7 +1931,7 @@ Widget mayorRevealPreview() {
   );
 }
 
-===== Fichier: screens\game\night_intro_screen.dart =====
+===== Fichier: screens/game/night_intro_screen.dart =====
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -1629,38 +1981,105 @@ class NightIntroScreen extends StatelessWidget {
   }
 }
 
-===== Fichier: screens\game\pending_action_screen.dart =====
+===== Fichier: screens/game/role_screens/bouc_emissaire_screen.dart =====
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/game_provider.dart';
-import '../../widgets/player_grid_selector.dart';
 
-/// Traite les actions différées empilées par le moteur (vengeance du
-/// Chasseur, succession du Maire) avant de pouvoir révéler publiquement
-/// les morts de la vague en cours. Ces moments sont publics (le joueur
-/// concerné vient de mourir) : pas de PassDeviceGate ici.
-class PendingActionScreen extends StatelessWidget {
-  const PendingActionScreen({super.key});
+import '../../../providers/game_provider.dart';
+import '../../../widgets/player_grid_selector.dart';
+
+class MyWidget extends StatelessWidget {
+  const MyWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final gp = context.watch<GameProvider>();
-    final state = gp.state!;
-    final action = state.pendingActions.first;
-    final theme = Theme.of(context);
-    final deadPlayer = state.byId(action.playerId);
-    final targets = state.alivePlayers;
-
-    final title = action.isHunterRevenge
-        ? 'Vengeance du Chasseur'
-        : 'Succession du Maire';
-    final instruction = action.isHunterRevenge
-        ? '${deadPlayer.name} était le Chasseur ! Avant de mourir, il abat un dernier joueur.'
-        : '${deadPlayer.name} était le Maire. Il désigne son successeur avant de rendre son dernier souffle.';
+    final gp = context.read<GameProvider>();
 
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+        body: Column(
+          children: [
+            const Text('Ecran Mort Bouc Emissaire : choisir celui qui ne va pas jouer la prochaine fois'),
+            Expanded(
+              child: SingleChildScrollView(
+                child: PlayerGridSelector(
+                  players: gp.state!.alivePlayers,
+                  onSelect: (id) => gp.setBoucEmissaireTarget(id),
+                ),
+              ),
+            ),
+          ],
+        )
+    );
+  }
+}
+===== Fichier: screens/game/role_screens/chasseur_screen.dart =====
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../../providers/game_provider.dart';
+import '../../../widgets/player_grid_selector.dart';
+
+class MyWidget extends StatelessWidget {
+  const MyWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final gp = context.read<GameProvider>();
+
+    return Scaffold(
+      body: Column(
+        children: [
+          const Text('Ecran Chasseur'),
+          Expanded(
+            child: SingleChildScrollView(
+              child: PlayerGridSelector(
+                players: gp.state!.alivePlayers,
+                onSelect: (id) => gp.setHunterTarget(id),
+              ),
+            ),
+          ),
+        ],
+      )
+    );
+  }
+}
+===== Fichier: screens/game/role_screens/corbeau_screen.dart =====
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../providers/game_provider.dart';
+import '../../../theme/app_theme.dart';
+import '../../../widgets/pass_device_gate.dart';
+import '../../../widgets/player_grid_selector.dart';
+
+class CorbeauScreen extends StatelessWidget {
+  const CorbeauScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return PassDeviceGate(
+      toName: 'Corbeau',
+      pluralToName: true,
+      subtitle:
+      'Choisis ta victime',
+      accent: AppColors.blood,
+      contentBuilder: (_) => const _CorbeauContent(),
+    );
+  }
+}
+
+class _CorbeauContent extends StatelessWidget {
+  const _CorbeauContent();
+
+  @override
+  Widget build(BuildContext context) {
+    final gp = context.read<GameProvider>();
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Les Corbeau')),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -1668,7 +2087,331 @@ class PendingActionScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                instruction,
+                'Désigne ta victime.',
+                style: theme.textTheme.bodyLarge,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: PlayerGridSelector(
+                    players: gp.state!.alivePlayers,
+                    onSelect: (id) => gp.setCorbeauVictim(id),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+===== Fichier: screens/game/role_screens/cupidon_screen.dart =====
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../models/role.dart';
+import '../../../providers/game_provider.dart';
+import '../../../widgets/pass_device_gate.dart';
+import '../../../widgets/player_grid_selector.dart';
+
+class CupidonScreen extends StatelessWidget {
+  const CupidonScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+
+    return PassDeviceGate(
+      toName: "Cupidon",
+      subtitle: 'C\'est le rôle de Cupidon. Réveille-toi.',
+      accent: RoleId.cupidon.info.accent,
+      contentBuilder: (_) => const _CupidonContent(),
+    );
+  }
+}
+
+class _CupidonContent extends StatefulWidget {
+  const _CupidonContent();
+  @override
+  State<_CupidonContent> createState() => _CupidonContentState();
+}
+
+class _CupidonContentState extends State<_CupidonContent> {
+  final List<String> chosen = [];
+
+  void _toggle(String id) {
+    setState(() {
+      if (chosen.contains(id)) {
+        chosen.remove(id);
+      } else if (chosen.length < 2) {
+        chosen.add(id);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final gp = context.read<GameProvider>();
+    final players = gp.state!.alivePlayers;
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Cupidon')),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Désigne les deux Amoureux (${chosen.length}/2). Tu peux te choisir toi-même.',
+                style: theme.textTheme.bodyLarge,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: PlayerGridSelector(
+                    players: players,
+                    selectedId: null,
+                    highlightedIds: chosen.toSet(),
+                    onSelect: _toggle,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: chosen.length == 2
+                    ? () => gp.resolveCupidon(chosen[0], chosen[1])
+                    : null,
+                child: const Text('Confirmer les Amoureux'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+===== Fichier: screens/game/role_screens/enfant_sauvage_screen.dart =====
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../../providers/game_provider.dart';
+import '../../../widgets/player_grid_selector.dart';
+
+class EnfantSauvageScreen extends StatelessWidget {
+  const EnfantSauvageScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final gp = context.read<GameProvider>();
+
+    return Scaffold(
+        body: Column(
+          children: [
+            const Text('Ecran_enfant_sauvage'),
+            Expanded(
+              child: SingleChildScrollView(
+                child: PlayerGridSelector(
+                  players: gp.state!.alivePlayers,
+                  onSelect: (id) => gp.setEnfantSauvageMentor(id),
+                ),
+              ),
+            ),
+          ],
+        )
+    );
+  }
+}
+===== Fichier: screens/game/role_screens/grand_mechant_loup_screen.dart =====
+
+
+===== Fichier: screens/game/role_screens/infect_pere_des_loups_screen.dart =====
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../../providers/game_provider.dart';
+
+class InfectPereDesLoupsScreen extends StatelessWidget {
+  const InfectPereDesLoupsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final gp = context.read<GameProvider>();
+
+    return Scaffold(
+        body: Column(
+          children: [
+            Text('Ecran Infect Pére des Loups : choisir si la victime des loup (${gp.state!.loupsVictimId}) va etre infectée'),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    ElevatedButton(
+                      onPressed: () => gp.setInfectPereDesLoups(true),
+                      child: const Text('Infecter'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => gp.setInfectPereDesLoups(false),
+                      child: const Text('Ne pas infecter'),
+                    ),
+                  ],
+                )
+              ),
+            ),
+          ],
+        )
+    );
+  }
+}
+===== Fichier: screens/game/role_screens/juge_begue_screen.dart =====
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../../providers/game_provider.dart';
+import '../../../widgets/player_grid_selector.dart';
+
+class JugeBegueScreen extends StatelessWidget {
+  const JugeBegueScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final gp = context.read<GameProvider>();
+
+    return Scaffold(
+        body: Column(
+          children: [
+            const Text('Choisir celui pour qui tu votes pendant la journée'),
+            Expanded(
+              child: SingleChildScrollView(
+                child: PlayerGridSelector(
+                  players: gp.state!.alivePlayers,
+                  onSelect: (id) => gp.setJugeBegueTarget(id),
+                ),
+              ),
+            ),
+          ],
+        )
+    );
+  }
+}
+===== Fichier: screens/game/role_screens/loup_blanc_screen.dart =====
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../providers/game_provider.dart';
+import '../../../theme/app_theme.dart';
+import '../../../widgets/pass_device_gate.dart';
+import '../../../widgets/player_grid_selector.dart';
+
+class LoupBlancScreen extends StatelessWidget {
+  const LoupBlancScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return PassDeviceGate(
+      toName: 'Loup Blanc',
+      pluralToName: true,
+      subtitle:
+      'Choisis ta victime',
+      accent: AppColors.blood,
+      contentBuilder: (_) => const _LoupBlancContent(),
+    );
+  }
+}
+
+class _LoupBlancContent extends StatelessWidget {
+  const _LoupBlancContent();
+
+  @override
+  Widget build(BuildContext context) {
+    final gp = context.read<GameProvider>();
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Les Loup Blanc')),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Désigne ta victime.',
+                style: theme.textTheme.bodyLarge,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: PlayerGridSelector(
+                    players: gp.state!.alivePlayers,
+                    onSelect: (id) => gp.setLoupBlancVictim(id),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+===== Fichier: screens/game/role_screens/loups_screen.dart =====
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../providers/game_provider.dart';
+import '../../../theme/app_theme.dart';
+import '../../../widgets/pass_device_gate.dart';
+import '../../../widgets/player_grid_selector.dart';
+
+class LoupsScreen extends StatelessWidget {
+  const LoupsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return PassDeviceGate(
+      toName: 'Loups-Garous',
+      pluralToName: true,
+      subtitle:
+      'Réveillez-vous et mettez-vous d\'accord en silence sur votre victime.',
+      accent: AppColors.blood,
+      contentBuilder: (_) => const _LoupsContent(),
+    );
+  }
+}
+
+class _LoupsContent extends StatelessWidget {
+  const _LoupsContent();
+
+  @override
+  Widget build(BuildContext context) {
+    final gp = context.read<GameProvider>();
+    final state = gp.state!;
+    final theme = Theme.of(context);
+
+    final wolfIds = state.aliveWolves.map((w) => w.id).toSet();
+    final targets = state.settings.allowWerewolfToKillThemselves
+        ? state.alivePlayers
+        : state.alivePlayers.where((p) => !wolfIds.contains(p.id)).toList();
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Les Loups-Garous')),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Désignez votre victime.',
                 style: theme.textTheme.bodyLarge,
                 textAlign: TextAlign.center,
               ),
@@ -1677,9 +2420,591 @@ class PendingActionScreen extends StatelessWidget {
                 child: SingleChildScrollView(
                   child: PlayerGridSelector(
                     players: targets,
-                    onSelect: (id) => action.isHunterRevenge
-                        ? gp.resolvePendingAction(hunterTargetId: id)
-                        : gp.resolvePendingAction(mayorSuccessorId: id),
+                    onSelect: (id) => gp.setLoupsVictim(id),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+===== Fichier: screens/game/role_screens/petite_fille_screen.dart =====
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../models/role.dart';
+import '../../../providers/game_provider.dart';
+import '../../../theme/app_theme.dart';
+import '../../../widgets/pass_device_gate.dart';
+
+class PetiteFilleScreen extends StatelessWidget {
+  const PetiteFilleScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+
+    return PassDeviceGate(
+      toName: "Petite Fille",
+      subtitle: 'C\'est le rôle de la Petite Fille. Réveille-toi.',
+      accent: RoleId.petiteFille.info.accent,
+      contentBuilder: (_) => const _PetiteFilleContent(),
+    );
+  }
+}
+
+class _PetiteFilleContent extends StatelessWidget {
+  const _PetiteFilleContent();
+
+  @override
+  Widget build(BuildContext context) {
+    final gp = context.read<GameProvider>();
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('La Petite Fille')),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                RoleId.petiteFille.info.nightInstruction,
+                style: theme.textTheme.bodyLarge,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Attention : si les Loups-Garous te surprennent, tu prendras la place de leur victime.',
+                style: theme.textTheme.bodyMedium
+                    ?.copyWith(color: AppColors.blood),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 40),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => gp.resolvePetiteFille(tried: true),
+                  child: const Text('Entrouvrir les yeux et espionner'),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () => gp.resolvePetiteFille(tried: false),
+                  child: const Text('Rester sagement endormie'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+===== Fichier: screens/game/role_screens/renard_screen.dart =====
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../../providers/game_provider.dart';
+import '../../../widgets/player_grid_selector.dart';
+
+class RenardScreen extends StatelessWidget {
+  const RenardScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final gp = context.read<GameProvider>();
+
+    return Scaffold(
+        body: Column(
+          children: [
+            const Text('Ecran Renard : Choisir celui que tu veux espionner '),
+            Expanded(
+              child: SingleChildScrollView(
+                child: PlayerGridSelector(
+                  players: gp.state!.alivePlayers,
+                  onSelect: (id) => gp.setRenardTarget(id),
+                ),
+              ),
+            ),
+            Text('Il y a ${gp.getwolfbeside(gp.state!.renardTarget)} loups vivant dans ces trois joueurs'),
+          ],
+        )
+    );
+  }
+}
+===== Fichier: screens/game/role_screens/salvateur_screen.dart =====
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../providers/game_provider.dart';
+import '../../../theme/app_theme.dart';
+import '../../../widgets/pass_device_gate.dart';
+import '../../../widgets/player_grid_selector.dart';
+
+class SalvateurScreen extends StatelessWidget {
+  const SalvateurScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return PassDeviceGate(
+      toName: 'Salvateur-Garous',
+      pluralToName: true,
+      subtitle:'Reveille-toi et designe ton protégé',
+      accent: AppColors.blood,
+      contentBuilder: (_) => const _SalvateurContent(),
+    );
+  }
+}
+
+class _SalvateurContent extends StatelessWidget {
+  const _SalvateurContent();
+
+  @override
+  Widget build(BuildContext context) {
+    final gp = context.read<GameProvider>();
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Le Salvateur')),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Désignez votre protégé.',
+                style: theme.textTheme.bodyLarge,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: PlayerGridSelector(
+                    players: gp.state!.alivePlayers,
+                    onSelect: (id) => gp.setSalvateurTarget(id),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+===== Fichier: screens/game/role_screens/servante_devouee_screen.dart =====
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../../providers/game_provider.dart';
+
+class ServanteDevoueeScreen extends StatelessWidget {
+  const ServanteDevoueeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final gp = context.read<GameProvider>();
+
+    return Scaffold(
+        body: Column(
+          children: [
+            Text('Ecrant Servante Devou veux tu le role de ${gp.state!.deathbyvillagevote.name} qui etait ${gp.state!.deathbyvillagevote.role} ?'),
+            Expanded(
+              child: SingleChildScrollView(
+                child:
+                Column(
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        gp.setServanteDevoueeChoice(true);
+                      },
+                      child: const Text('Oui'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        gp.setServanteDevoueeChoice(false);
+                      },
+                      child: const Text('Non'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        )
+    );
+  }
+}
+===== Fichier: screens/game/role_screens/sorciere_screen.dart =====
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../models/role.dart';
+import '../../../providers/game_provider.dart';
+import '../../../widgets/pass_device_gate.dart';
+import '../../../widgets/player_grid_selector.dart';
+
+class SorciereScreen extends StatelessWidget {
+  const SorciereScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+
+    return PassDeviceGate(
+      toName: "La Sorcière",
+      subtitle: 'C\'est le tour de la Sorcière. Réveille-toi.',
+      accent: RoleId.sorciere.info.accent,
+      contentBuilder: (_) => const _SorciereContent(),
+    );
+  }
+}
+
+class _SorciereContent extends StatefulWidget {
+  const _SorciereContent();
+  @override
+  State<_SorciereContent> createState() => _SorciereContentState();
+}
+
+class _SorciereContentState extends State<_SorciereContent> {
+  bool saveVictim = false;
+  bool poisoning = false;
+  String? poisonTargetId;
+
+  @override
+  Widget build(BuildContext context) {
+    final gp = context.read<GameProvider>();
+    final state = gp.state!;
+    final theme = Theme.of(context);
+
+    final sorciereId = state.alivePlayersWithRole(RoleId.sorciere).first.id;
+    final victim = state.tryById(state.finalNightVictimId);
+    final victimIsSorciere = victim?.id == sorciereId;
+    final selfSaveBlocked =
+        victimIsSorciere && !state.settings.allowWitchToSaveHerself;
+    final canSave = !state.sorciereVieUsed && victim != null && !selfSaveBlocked;
+    final canPoison = !state.sorciereMortUsed;
+    final poisonTargets =
+        state.alivePlayers.where((p) => p.id != sorciereId).toList();
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('La Sorcière')),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                victim != null
+                    ? 'Cette nuit, les Loups-Garous ont désigné ${victim.name}.'
+                    : 'Cette nuit, les Loups-Garous n\'ont désigné personne.',
+                style: theme.textTheme.bodyLarge,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              if (canSave)
+                SwitchListTile(
+                  value: saveVictim,
+                  onChanged: (v) => setState(() => saveVictim = v),
+                  title: Text(
+                      'Utiliser la potion de vie pour sauver ${victim.name}'),
+                )
+              else
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Text(
+                    state.sorciereVieUsed
+                        ? 'Potion de vie déjà utilisée.'
+                        : selfSaveBlocked
+                        ? 'Vous êtes vous-même la victime désignée, mais '
+                        'vous ne pouvez pas vous sauver vous-même.'
+                        : 'Aucune victime à sauver cette nuit.',
+                    style: theme.textTheme.bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              const Divider(height: 32),
+              if (canPoison) ...[
+                SwitchListTile(
+                  value: poisoning,
+                  onChanged: (v) => setState(() {
+                    poisoning = v;
+                    if (!v) poisonTargetId = null;
+                  }),
+                  title: const Text('Utiliser la potion de mort'),
+                ),
+                if (poisoning) ...[
+                  const SizedBox(height: 8),
+                  Text('Choisissez la victime de la potion :',
+                      style: theme.textTheme.bodyMedium,
+                      textAlign: TextAlign.center),
+                  const SizedBox(height: 12),
+                  PlayerGridSelector(
+                    players: poisonTargets,
+                    selectedId: poisonTargetId,
+                    onSelect: (id) => setState(() => poisonTargetId = id),
+                  ),
+                ],
+              ] else
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Text('Potion de mort déjà utilisée.',
+                      style: theme.textTheme.bodyMedium,
+                      textAlign: TextAlign.center),
+                ),
+              const SizedBox(height: 28),
+              ElevatedButton(
+                onPressed: () => gp.resolveSorciere(
+                  useVie: saveVictim,
+                  poisonTargetId: poisoning ? poisonTargetId : null,
+                ),
+                child: const Text('Confirmer et se rendormir'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+===== Fichier: screens/game/role_screens/voleur_screen.dart =====
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../models/role.dart';
+import '../../../providers/game_provider.dart';
+import '../../../theme/app_theme.dart';
+import '../../../widgets/pass_device_gate.dart';
+import '../../../widgets/role_image.dart';
+
+class VoleurScreen extends StatelessWidget {
+  const VoleurScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+
+    return PassDeviceGate(
+      toName: "La Voleuse",
+      subtitle: 'C\'est le rôle du Voleur. Réveille-toi.',
+      accent: RoleId.voleur.info.accent,
+      contentBuilder: (_) => const _VoleurContent(),
+    );
+  }
+}
+
+class _VoleurContent extends StatefulWidget {
+  const _VoleurContent();
+  @override
+  State<_VoleurContent> createState() => _VoleurContentState();
+}
+
+class _VoleurContentState extends State<_VoleurContent> {
+  RoleId? selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final gp = context.read<GameProvider>();
+    final state = gp.state!;
+    final theme = Theme.of(context);
+    final cards = state.voleurTableCards;
+    final forced =
+        cards.isNotEmpty && cards.every((c) => c == RoleId.loupGarou);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Le Voleur')),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            children: [
+              Text(
+                RoleId.voleur.info.nightInstruction,
+                style: theme.textTheme.bodyLarge,
+                textAlign: TextAlign.center,
+              ),
+              if (forced) ...[
+                const SizedBox(height: 8),
+                Text(
+                  'Les deux cartes sont des Loups-Garous : tu es obligé d\'en prendre une !',
+                  style: theme.textTheme.bodyMedium
+                      ?.copyWith(color: AppColors.blood),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+              const SizedBox(height: 28),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  for (final card in cards) ...[
+                    _CardChoice(
+                      role: card,
+                      selected: selected == card,
+                      onTap: () => setState(() => selected = card),
+                    ),
+                    const SizedBox(width: 20),
+                  ],
+                ],
+              ),
+              const Spacer(),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: selected == null
+                      ? null
+                      : () => gp.resolveVoleur(selected),
+                  child: const Text('Échanger mon rôle contre celle-ci'),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: forced ? null : () => gp.resolveVoleur(null),
+                  child: const Text('Garder mon rôle actuel'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CardChoice extends StatelessWidget {
+  final RoleId role;
+  final bool selected;
+  final VoidCallback onTap;
+  const _CardChoice(
+      {required this.role, required this.selected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.nightAlt,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+              color: selected ? AppColors.lantern : AppColors.nightLine,
+              width: selected ? 2.5 : 1),
+        ),
+        child: Column(
+          children: [
+            RoleImage(role: role, size: 84),
+            const SizedBox(height: 8),
+            Text(role.info.name, style: Theme.of(context).textTheme.bodyMedium),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+===== Fichier: screens/game/role_screens/voyante_screen.dart =====
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../models/role.dart';
+import '../../../providers/game_provider.dart';
+import '../../../widgets/pass_device_gate.dart';
+import '../../../widgets/player_grid_selector.dart';
+import '../../../widgets/role_image.dart';
+
+class VoyanteScreen extends StatelessWidget {
+  const VoyanteScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+
+    return PassDeviceGate(
+      toName: "La Voyante",
+      subtitle: 'C\'est le tour de la Voyante. Réveille-toi.',
+      accent: RoleId.voyante.info.accent,
+      contentBuilder: (_) => const _VoyanteContent(),
+    );
+  }
+}
+
+class _VoyanteContent extends StatefulWidget {
+  const _VoyanteContent();
+  @override
+  State<_VoyanteContent> createState() => _VoyanteContentState();
+}
+
+class _VoyanteContentState extends State<_VoyanteContent> {
+  String? targetId;
+
+  @override
+  Widget build(BuildContext context) {
+    final gp = context.read<GameProvider>();
+    final state = gp.state!;
+    final theme = Theme.of(context);
+
+    if (targetId != null) {
+      final target = state.byId(targetId!);
+      final info = target.role.info;
+      return Scaffold(
+        appBar: AppBar(title: const Text('La Voyante')),
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                const Spacer(),
+                Text(target.name,
+                    style: theme.textTheme.headlineMedium,
+                    textAlign: TextAlign.center),
+                const SizedBox(height: 20),
+                RoleImage(role: target.role, size: 120),
+                const SizedBox(height: 16),
+                Text(info.name,
+                    style: theme.textTheme.displayMedium
+                        ?.copyWith(color: info.accent),
+                    textAlign: TextAlign.center),
+                const Spacer(),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                      onPressed: gp.confirmVoyanteDone,
+                      child: const Text("J'ai vu, continuer")),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('La Voyante')),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text('Choisis un joueur pour découvrir son rôle.',
+                  style: theme.textTheme.bodyLarge,
+                  textAlign: TextAlign.center),
+              const SizedBox(height: 20),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: PlayerGridSelector(
+                    players: state.alivePlayers,
+                    onSelect: (id) => setState(() => targetId = id),
                   ),
                 ),
               ),
@@ -1691,7 +3016,7 @@ class PendingActionScreen extends StatelessWidget {
   }
 }
 
-===== Fichier: screens\game\sequential_vote_flow.dart =====
+===== Fichier: screens/game/sequential_vote_flow.dart =====
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -1821,7 +3146,7 @@ class _SequentialVoteFlowState extends State<SequentialVoteFlow> {
   }
 }
 
-===== Fichier: screens\game\village_power_loss_screen.dart =====
+===== Fichier: screens/game/village_power_loss_screen.dart =====
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -2017,7 +3342,7 @@ class _PowerLossCardState extends State<_PowerLossCard> {
   }
 }
 
-===== Fichier: screens\game\village_vote_screen.dart =====
+===== Fichier: screens/game/village_vote_screen.dart =====
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -2044,7 +3369,7 @@ class VillageVoteScreen extends StatelessWidget {
   }
 }
 
-===== Fichier: screens\game\vote_result_screen.dart =====
+===== Fichier: screens/game/vote_result_screen.dart =====
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -2109,616 +3434,50 @@ class VoteResultScreen extends StatelessWidget {
   }
 }
 
-===== Fichier: screens\game\role_screens\cupidon_screen.dart =====
+===== Fichier: screens/game_flow_screen.dart =====
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../models/role.dart';
-import '../../../providers/game_provider.dart';
-import '../../../widgets/pass_device_gate.dart';
-import '../../../widgets/player_grid_selector.dart';
+import '../providers/game_provider.dart';
+import 'game/game_main_screen.dart';
+import 'setup/player_count_screen.dart';
+import 'setup/player_names_screen.dart';
+import 'setup/role_reveal_screen.dart';
+import 'setup/role_selection_screen.dart';
 
-class CupidonScreen extends StatelessWidget {
-  const CupidonScreen({super.key});
+/// Point d'entrée unique de tout le déroulé "création + partie". Regarde
+/// l'état du [GameProvider] et affiche l'écran correspondant — pas de
+/// pile de navigation complexe, la machine à états fait déjà tout le travail.
+class GameFlowScreen extends StatelessWidget {
+  const GameFlowScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final gp = context.watch<GameProvider>();
-    final cupidon = gp.state!.alivePlayersWithRole(RoleId.cupidon).first;
 
-    return PassDeviceGate(
-      toName: cupidon.name,
-      subtitle: 'C\'est le rôle de Cupidon. Réveille-toi.',
-      accent: RoleId.cupidon.info.accent,
-      contentBuilder: (_) => const _CupidonContent(),
-    );
-  }
-}
-
-class _CupidonContent extends StatefulWidget {
-  const _CupidonContent();
-  @override
-  State<_CupidonContent> createState() => _CupidonContentState();
-}
-
-class _CupidonContentState extends State<_CupidonContent> {
-  final List<String> chosen = [];
-
-  void _toggle(String id) {
-    setState(() {
-      if (chosen.contains(id)) {
-        chosen.remove(id);
-      } else if (chosen.length < 2) {
-        chosen.add(id);
+    if (gp.state == null) {
+      switch (gp.setupStep) {
+        case SetupStep.playerCount:
+          return const PlayerCountScreen();
+        case SetupStep.roles:
+          return const RoleSelectionScreen();
+        case SetupStep.names:
+          return const PlayerNamesScreen();
+        case SetupStep.reveal:
+        case SetupStep.done:
+          return const PlayerCountScreen();
       }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final gp = context.read<GameProvider>();
-    final players = gp.state!.alivePlayers;
-    final theme = Theme.of(context);
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Cupidon')),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Désigne les deux Amoureux (${chosen.length}/2). Tu peux te choisir toi-même.',
-                style: theme.textTheme.bodyLarge,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: PlayerGridSelector(
-                    players: players,
-                    selectedId: null,
-                    highlightedIds: chosen.toSet(),
-                    onSelect: _toggle,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              ElevatedButton(
-                onPressed: chosen.length == 2
-                    ? () => gp.resolveCupidon(chosen[0], chosen[1])
-                    : null,
-                child: const Text('Confirmer les Amoureux'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-===== Fichier: screens\game\role_screens\loups_screen.dart =====
-
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../../providers/game_provider.dart';
-import '../../../theme/app_theme.dart';
-import '../../../widgets/pass_device_gate.dart';
-import '../../../widgets/player_grid_selector.dart';
-
-class LoupsScreen extends StatelessWidget {
-  const LoupsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return PassDeviceGate(
-      toName: 'les Loups-Garous',
-      pluralToName: true,
-      subtitle:
-      'Réveillez-vous et mettez-vous d\'accord en silence sur votre victime.',
-      accent: AppColors.blood,
-      contentBuilder: (_) => const _LoupsContent(),
-    );
-  }
-}
-
-class _LoupsContent extends StatelessWidget {
-  const _LoupsContent();
-
-  @override
-  Widget build(BuildContext context) {
-    final gp = context.read<GameProvider>();
-    final state = gp.state!;
-    final theme = Theme.of(context);
-
-    final wolfIds = state.aliveWolves.map((w) => w.id).toSet();
-    final targets = state.settings.allowWerewolfToKillThemselves
-        ? state.alivePlayers
-        : state.alivePlayers.where((p) => !wolfIds.contains(p.id)).toList();
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Les Loups-Garous')),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Désignez votre victime.',
-                style: theme.textTheme.bodyLarge,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: PlayerGridSelector(
-                    players: targets,
-                    onSelect: (id) => gp.setLoupsVictim(id),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-===== Fichier: screens\game\role_screens\petite_fille_screen.dart =====
-
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../../models/role.dart';
-import '../../../providers/game_provider.dart';
-import '../../../theme/app_theme.dart';
-import '../../../widgets/pass_device_gate.dart';
-
-class PetiteFilleScreen extends StatelessWidget {
-  const PetiteFilleScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final gp = context.watch<GameProvider>();
-    final pf = gp.state!.alivePlayersWithRole(RoleId.petiteFille).first;
-
-    return PassDeviceGate(
-      toName: pf.name,
-      subtitle: 'C\'est le rôle de la Petite Fille. Réveille-toi.',
-      accent: RoleId.petiteFille.info.accent,
-      contentBuilder: (_) => const _PetiteFilleContent(),
-    );
-  }
-}
-
-class _PetiteFilleContent extends StatelessWidget {
-  const _PetiteFilleContent();
-
-  @override
-  Widget build(BuildContext context) {
-    final gp = context.read<GameProvider>();
-    final theme = Theme.of(context);
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('La Petite Fille')),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                RoleId.petiteFille.info.nightInstruction,
-                style: theme.textTheme.bodyLarge,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Attention : si les Loups-Garous te surprennent, tu prendras la place de leur victime.',
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(color: AppColors.blood),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 40),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => gp.resolvePetiteFille(tried: true),
-                  child: const Text('Entrouvrir les yeux et espionner'),
-                ),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () => gp.resolvePetiteFille(tried: false),
-                  child: const Text('Rester sagement endormie'),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-===== Fichier: screens\game\role_screens\sorciere_screen.dart =====
-
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../../models/role.dart';
-import '../../../providers/game_provider.dart';
-import '../../../widgets/pass_device_gate.dart';
-import '../../../widgets/player_grid_selector.dart';
-
-class SorciereScreen extends StatelessWidget {
-  const SorciereScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final gp = context.watch<GameProvider>();
-    final sorciere = gp.state!.alivePlayersWithRole(RoleId.sorciere).first;
-
-    return PassDeviceGate(
-      toName: sorciere.name,
-      subtitle: 'C\'est le tour de la Sorcière. Réveille-toi.',
-      accent: RoleId.sorciere.info.accent,
-      contentBuilder: (_) => const _SorciereContent(),
-    );
-  }
-}
-
-class _SorciereContent extends StatefulWidget {
-  const _SorciereContent();
-  @override
-  State<_SorciereContent> createState() => _SorciereContentState();
-}
-
-class _SorciereContentState extends State<_SorciereContent> {
-  bool saveVictim = false;
-  bool poisoning = false;
-  String? poisonTargetId;
-
-  @override
-  Widget build(BuildContext context) {
-    final gp = context.read<GameProvider>();
-    final state = gp.state!;
-    final theme = Theme.of(context);
-
-    final sorciereId = state.alivePlayersWithRole(RoleId.sorciere).first.id;
-    final victim = state.tryById(state.finalNightVictimId);
-    final canSave = !state.sorciereVieUsed && victim != null;
-    final canPoison = !state.sorciereMortUsed;
-    final poisonTargets =
-        state.alivePlayers.where((p) => p.id != sorciereId).toList();
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('La Sorcière')),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                victim != null
-                    ? 'Cette nuit, les Loups-Garous ont désigné ${victim.name}.'
-                    : 'Cette nuit, les Loups-Garous n\'ont désigné personne.',
-                style: theme.textTheme.bodyLarge,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              if (canSave)
-                SwitchListTile(
-                  value: saveVictim,
-                  onChanged: (v) => setState(() => saveVictim = v),
-                  title: Text(
-                      'Utiliser la potion de vie pour sauver ${victim.name}'),
-                )
-              else
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Text(
-                    state.sorciereVieUsed
-                        ? 'Potion de vie déjà utilisée.'
-                        : 'Aucune victime à sauver cette nuit.',
-                    style: theme.textTheme.bodyMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              const Divider(height: 32),
-              if (canPoison) ...[
-                SwitchListTile(
-                  value: poisoning,
-                  onChanged: (v) => setState(() {
-                    poisoning = v;
-                    if (!v) poisonTargetId = null;
-                  }),
-                  title: const Text('Utiliser la potion de mort'),
-                ),
-                if (poisoning) ...[
-                  const SizedBox(height: 8),
-                  Text('Choisissez la victime de la potion :',
-                      style: theme.textTheme.bodyMedium,
-                      textAlign: TextAlign.center),
-                  const SizedBox(height: 12),
-                  PlayerGridSelector(
-                    players: poisonTargets,
-                    selectedId: poisonTargetId,
-                    onSelect: (id) => setState(() => poisonTargetId = id),
-                  ),
-                ],
-              ] else
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Text('Potion de mort déjà utilisée.',
-                      style: theme.textTheme.bodyMedium,
-                      textAlign: TextAlign.center),
-                ),
-              const SizedBox(height: 28),
-              ElevatedButton(
-                onPressed: () => gp.resolveSorciere(
-                  useVie: saveVictim,
-                  poisonTargetId: poisoning ? poisonTargetId : null,
-                ),
-                child: const Text('Confirmer et se rendormir'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-===== Fichier: screens\game\role_screens\voleur_screen.dart =====
-
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../../models/role.dart';
-import '../../../providers/game_provider.dart';
-import '../../../theme/app_theme.dart';
-import '../../../widgets/pass_device_gate.dart';
-import '../../../widgets/role_image.dart';
-
-class VoleurScreen extends StatelessWidget {
-  const VoleurScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final gp = context.watch<GameProvider>();
-    final voleur = gp.state!.alivePlayersWithRole(RoleId.voleur).first;
-
-    return PassDeviceGate(
-      toName: voleur.name,
-      subtitle: 'C\'est le rôle du Voleur. Réveille-toi.',
-      accent: RoleId.voleur.info.accent,
-      contentBuilder: (_) => const _VoleurContent(),
-    );
-  }
-}
-
-class _VoleurContent extends StatefulWidget {
-  const _VoleurContent();
-  @override
-  State<_VoleurContent> createState() => _VoleurContentState();
-}
-
-class _VoleurContentState extends State<_VoleurContent> {
-  RoleId? selected;
-
-  @override
-  Widget build(BuildContext context) {
-    final gp = context.read<GameProvider>();
-    final state = gp.state!;
-    final theme = Theme.of(context);
-    final cards = state.voleurTableCards;
-    final forced =
-        cards.isNotEmpty && cards.every((c) => c == RoleId.loupGarou);
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Le Voleur')),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              Text(
-                RoleId.voleur.info.nightInstruction,
-                style: theme.textTheme.bodyLarge,
-                textAlign: TextAlign.center,
-              ),
-              if (forced) ...[
-                const SizedBox(height: 8),
-                Text(
-                  'Les deux cartes sont des Loups-Garous : tu es obligé d\'en prendre une !',
-                  style: theme.textTheme.bodyMedium
-                      ?.copyWith(color: AppColors.blood),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-              const SizedBox(height: 28),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  for (final card in cards) ...[
-                    _CardChoice(
-                      role: card,
-                      selected: selected == card,
-                      onTap: () => setState(() => selected = card),
-                    ),
-                    const SizedBox(width: 20),
-                  ],
-                ],
-              ),
-              const Spacer(),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: selected == null
-                      ? null
-                      : () => gp.resolveVoleur(selected),
-                  child: const Text('Échanger mon rôle contre celle-ci'),
-                ),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: forced ? null : () => gp.resolveVoleur(null),
-                  child: const Text('Garder mon rôle actuel'),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CardChoice extends StatelessWidget {
-  final RoleId role;
-  final bool selected;
-  final VoidCallback onTap;
-  const _CardChoice(
-      {required this.role, required this.selected, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: AppColors.nightAlt,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-              color: selected ? AppColors.lantern : AppColors.nightLine,
-              width: selected ? 2.5 : 1),
-        ),
-        child: Column(
-          children: [
-            RoleImage(role: role, size: 84),
-            const SizedBox(height: 8),
-            Text(role.info.name, style: Theme.of(context).textTheme.bodyMedium),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-===== Fichier: screens\game\role_screens\voyante_screen.dart =====
-
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../../models/role.dart';
-import '../../../providers/game_provider.dart';
-import '../../../widgets/pass_device_gate.dart';
-import '../../../widgets/player_grid_selector.dart';
-import '../../../widgets/role_image.dart';
-
-class VoyanteScreen extends StatelessWidget {
-  const VoyanteScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final gp = context.watch<GameProvider>();
-    final voyante = gp.state!.alivePlayersWithRole(RoleId.voyante).first;
-
-    return PassDeviceGate(
-      toName: voyante.name,
-      subtitle: 'C\'est le tour de la Voyante. Réveille-toi.',
-      accent: RoleId.voyante.info.accent,
-      contentBuilder: (_) => const _VoyanteContent(),
-    );
-  }
-}
-
-class _VoyanteContent extends StatefulWidget {
-  const _VoyanteContent();
-  @override
-  State<_VoyanteContent> createState() => _VoyanteContentState();
-}
-
-class _VoyanteContentState extends State<_VoyanteContent> {
-  String? targetId;
-
-  @override
-  Widget build(BuildContext context) {
-    final gp = context.read<GameProvider>();
-    final state = gp.state!;
-    final theme = Theme.of(context);
-
-    if (targetId != null) {
-      final target = state.byId(targetId!);
-      final info = target.role.info;
-      return Scaffold(
-        appBar: AppBar(title: const Text('La Voyante')),
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              children: [
-                const Spacer(),
-                Text(target.name,
-                    style: theme.textTheme.headlineMedium,
-                    textAlign: TextAlign.center),
-                const SizedBox(height: 20),
-                RoleImage(role: target.role, size: 120),
-                const SizedBox(height: 16),
-                Text(info.name,
-                    style: theme.textTheme.displayMedium
-                        ?.copyWith(color: info.accent),
-                    textAlign: TextAlign.center),
-                const Spacer(),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                      onPressed: gp.confirmVoyanteDone,
-                      child: const Text("J'ai vu, continuer")),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
     }
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('La Voyante')),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text('Choisis un joueur pour découvrir son rôle.',
-                  style: theme.textTheme.bodyLarge,
-                  textAlign: TextAlign.center),
-              const SizedBox(height: 20),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: PlayerGridSelector(
-                    players: state.alivePlayers,
-                    onSelect: (id) => setState(() => targetId = id),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    if (gp.setupStep == SetupStep.reveal) {
+      return const RoleRevealScreen();
+    }
+
+    return const GameMainScreen();
   }
 }
 
-===== Fichier: screens\home\home_screen.dart =====
+===== Fichier: screens/home/home_screen.dart =====
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -2878,7 +3637,7 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-===== Fichier: screens\settings\game_settings_screen.dart =====
+===== Fichier: screens/settings/game_settings_screen.dart =====
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -2926,8 +3685,7 @@ class GameSettingsScreen extends StatelessWidget {
     );
   }
 }
-
-===== Fichier: screens\setup\player_count_screen.dart =====
+===== Fichier: screens/setup/player_count_screen.dart =====
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -3015,7 +3773,7 @@ class _PlayerCountScreenState extends State<PlayerCountScreen> {
   }
 }
 
-===== Fichier: screens\setup\player_names_screen.dart =====
+===== Fichier: screens/setup/player_names_screen.dart =====
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -3152,7 +3910,7 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
   }
 }
 
-===== Fichier: screens\setup\role_reveal_screen.dart =====
+===== Fichier: screens/setup/role_reveal_screen.dart =====
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -3270,7 +4028,7 @@ class _RevealContent extends StatelessWidget {
   }
 }
 
-===== Fichier: screens\setup\role_selection_screen.dart =====
+===== Fichier: screens/setup/role_selection_screen.dart =====
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -3436,7 +4194,7 @@ class RoleSelectionScreen extends StatelessWidget {
   }
 }
 
-===== Fichier: screens\stats\stats_screen.dart =====
+===== Fichier: screens/stats/stats_screen.dart =====
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -3560,7 +4318,7 @@ class _PlayerStatsCard extends StatelessWidget {
   }
 }
 
-===== Fichier: services\game_engine.dart =====
+===== Fichier: services/game_engine.dart =====
 
 import 'dart:math';
 import 'package:uuid/uuid.dart';
@@ -3682,6 +4440,10 @@ class GameEngine {
       return;
     }
     s.phaseIndex++;
+    while (s.phaseIndex < s.phaseQueue.length &&
+        _shouldSkipPhase(s, s.phaseQueue[s.phaseIndex])) {
+      s.phaseIndex++;
+    }
     if (s.phaseIndex < s.phaseQueue.length) {
       s.phase = s.phaseQueue[s.phaseIndex];
       return;
@@ -3690,6 +4452,16 @@ class GameEngine {
     if (s.currentWave == 'night') {
       _finishNight(s);
     }
+  }
+  
+  bool _shouldSkipPhase(GameState s, GamePhase phase) {
+    if (phase == GamePhase.nightSorciere &&
+        !s.settings.allowWitchToPlayIfWerewolfDeathCause &&
+        s.hasAliveRole(RoleId.sorciere)) {
+      final sorciere = s.alivePlayersWithRole(RoleId.sorciere).first;
+      return s.finalNightVictimId == sorciere.id;
+    }
+    return false;
   }
 
   // ---------------------------------------------------------------------
@@ -3754,20 +4526,6 @@ class GameEngine {
     advance(s);
   }
 
-  void _finishNight(GameState s) {
-    if (s.finalNightVictimId != null) {
-      _applyDeath(s, s.finalNightVictimId!, DeathCause.devoreParLesLoups);
-    }
-    if (s.sorciereKilledIdTonight != null) {
-      _applyDeath(s, s.sorciereKilledIdTonight!, DeathCause.potionDeMort);
-    }
-    if (s.pendingActions.isNotEmpty) {
-      s.phase = GamePhase.pendingAction;
-      return;
-    }
-    _goToDayReveal(s);
-  }
-
   void _goToDayReveal(GameState s) {
     s.day += 1;
     s.currentWave = 'day';
@@ -3795,30 +4553,41 @@ class GameEngine {
       return;
     }
     if (s.currentWave == 'night') {
-      _goToDayReveal(s);
+      _afterNightDeathsResolved(s);
     } else {
       s.phase = GamePhase.voteResult;
     }
   }
-
-  // ---------------------------------------------------------------------
-  // Phase de jour
-  // ---------------------------------------------------------------------
+  void _finishNight(GameState s) {
+    if (s.finalNightVictimId != null) {
+      _applyDeath(s, s.finalNightVictimId!, DeathCause.devoreParLesLoups);
+    }
+    if (s.sorciereKilledIdTonight != null) {
+      _applyDeath(s, s.sorciereKilledIdTonight!, DeathCause.potionDeMort);
+    }
+    _goToDayReveal(s); // always go to day reveal now, regardless of pending actions
+  }
 
   /// À appeler quand le groupe a fini de lire le récapitulatif des morts de la nuit.
   void confirmDayReveal(GameState s) {
+    if (s.pendingActions.isNotEmpty) {
+      s.phase = GamePhase.pendingAction;
+      return;
+    }
+    _afterNightDeathsResolved(s);
+  }
+
+  void _afterNightDeathsResolved(GameState s) {
     final result = checkWinCondition(s);
     if (result != null) {
       s.result = result;
       s.phase = GamePhase.endGame;
       return;
     }
-    // On repart d'une liste vierge pour la vague "jour" : les morts de la
-    // nuit viennent d'être révélées, on ne veut pas les revoir mélangées
-    // aux morts du vote qui va suivre (cf. VoteResultScreen).
     s.deathsThisWave = [];
     final rest = <GamePhase>[GamePhase.dayReveal];
     if (s.mayorId == null) {
+      rest.add(GamePhase.mayorElectionExplain);
       rest.add(GamePhase.mayorElection);
       rest.add(GamePhase.mayorReveal);
     }
@@ -3842,7 +4611,7 @@ class GameEngine {
       s.phase = s.phaseQueue[s.phaseIndex];
     }
   }
-
+  void confirmMayorElectionExplain(GameState s) => advance2(s);
   void confirmDebate(GameState s) => advance2(s);
   void confirmMayorReveal(GameState s) => advance2(s);
 
@@ -3873,8 +4642,6 @@ class GameEngine {
     s.phase = GamePhase.voteResult;
   }
 
-  /// À appeler quand le groupe a fini de lire le résultat du vote.
-  /// À appeler quand le groupe a fini de lire le résultat du vote.
   void confirmVoteResult(GameState s) {
     final result = checkWinCondition(s);
     if (result != null) {
@@ -3930,7 +4697,7 @@ class GameEngine {
     // Chagrin d'amour : mort immédiate et inconditionnelle de l'autre Amoureux.
     final lover = s.tryById(p.loverId);
     if (lover != null && lover.alive) {
-      _applyDeath(s, lover.id, DeathCause.chagrinDAmour);
+      _applyDeath(s, lover.id, DeathCause.chagrinDAmourCupidon);
     }
 
     final hunterRevengeCauses = <DeathCause>{
@@ -3998,7 +4765,7 @@ class GameEngine {
   }
 }
 
-===== Fichier: services\storage_service.dart =====
+===== Fichier: services/storage_service.dart =====
 
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -4056,7 +4823,7 @@ class StorageService {
   }
 }
 
-===== Fichier: theme\app_theme.dart =====
+===== Fichier: theme/app_theme.dart =====
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -4222,7 +4989,7 @@ class AppTheme {
   }
 }
 
-===== Fichier: widgets\confirm.dart =====
+===== Fichier: widgets/confirm.dart =====
 
 import 'package:flutter/material.dart';
 
@@ -4257,7 +5024,7 @@ Future<bool> confirmAction(
   return result ?? false;
 }
 
-===== Fichier: widgets\pass_device_gate.dart =====
+===== Fichier: widgets/pass_device_gate.dart =====
 
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
@@ -4349,7 +5116,7 @@ class _PassDeviceGateState extends State<PassDeviceGate> {
   }
 }
 
-===== Fichier: widgets\player_grid_selector.dart =====
+===== Fichier: widgets/player_grid_selector.dart =====
 
 import 'package:flutter/material.dart';
 import '../models/player.dart';
@@ -4431,48 +5198,145 @@ class PlayerGridSelector extends StatelessWidget {
   }
 }
 
-===== Fichier: widgets\role_image.dart =====
+===== Fichier: widgets/role_image.dart =====
 
 import 'package:flutter/material.dart';
 import '../models/role.dart';
 
-/// Affiche l'illustration d'un rôle si le fichier existe dans les assets,
-/// sinon retombe proprement sur une icône colorée. Ça permet de développer
-/// et faire tourner l'app avant même que les images finales soient prêtes
-/// (voir assets/IMAGES_A_CREER.md).
-class RoleImage extends StatelessWidget {
+/// Affiche l’illustration d’un rôle si le fichier existe dans les assets,
+/// sinon retombe proprement sur une icône colorée.
+///
+/// Si [animated] est activé, l'image/logo effectue un tour complet
+/// en une seconde puis s'arrête.
+class RoleImage extends StatefulWidget {
   final RoleId role;
   final double size;
   final bool circular;
+  final bool animated;
 
-  const RoleImage(
-      {super.key, required this.role, this.size = 96, this.circular = true});
+  const RoleImage({
+    super.key,
+    required this.role,
+    this.size = 96,
+    this.circular = true,
+    this.animated = false,
+  });
+
+  @override
+  State<RoleImage> createState() => _RoleImageState();
+}
+
+class _RoleImageState extends State<RoleImage>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
+    );
+
+    if (widget.animated) {
+      _controller.forward();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant RoleImage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (!oldWidget.animated && widget.animated) {
+      _controller.forward(from: 0);
+    }
+
+    if (oldWidget.animated && !widget.animated) {
+      _controller.reset();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final info = role.info;
+    final info = widget.role.info;
+
     final fallback = Container(
-      width: size,
-      height: size,
+      width: widget.size,
+      height: widget.size,
       decoration: BoxDecoration(
         color: info.accent.withValues(alpha: 0.18),
-        shape: circular ? BoxShape.circle : BoxShape.rectangle,
-        borderRadius: circular ? null : BorderRadius.circular(16),
-        border: Border.all(color: info.accent, width: 2),
+        shape: widget.circular ? BoxShape.circle : BoxShape.rectangle,
+        borderRadius:
+        widget.circular ? null : BorderRadius.circular(16),
+        border: Border.all(
+          color: info.accent,
+          width: 2,
+        ),
       ),
-      child: Icon(info.fallbackIcon, color: info.accent, size: size * 0.5),
+      child: Icon(
+        info.fallbackIcon,
+        color: info.accent,
+        size: widget.size * 0.5,
+      ),
     );
 
-    return ClipRRect(
-      borderRadius:
-          circular ? BorderRadius.circular(size) : BorderRadius.circular(16),
+    final image = ClipRRect(
+      borderRadius: widget.circular
+          ? BorderRadius.circular(widget.size)
+          : BorderRadius.circular(16),
       child: Image.asset(
         info.imageAsset,
-        width: size,
-        height: size,
+        width: widget.size,
+        height: widget.size,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) => fallback,
       ),
     );
+
+    if (!widget.animated) {
+      return image;
+    }
+
+    return AnimatedBuilder(
+      animation: _controller,
+      child: image,
+      builder: (context, child) {
+        final progress = Curves.easeOutExpo.transform(_controller.value);
+
+        // 8 tours complets en 1 seconde.
+        final rotation = progress * 8 * 2 * 3.141592653589793;
+
+        return Transform.rotate(
+          angle: rotation,
+          child: child,
+        );
+      },
+    );
+
   }
+}
+
+
+===== Fichier: widgets/role_image.preview.dart =====
+
+import 'package:flutter/material.dart';
+import 'package:flutter/widget_previews.dart';
+import '../models/role.dart';
+import 'role_image.dart';
+
+@Preview(name: 'role image')
+Widget main() {
+  return const RoleImage(
+    role: RoleId.loupGarou,
+    size: 96,
+    circular: true,
+    animated: true,
+  );
 }

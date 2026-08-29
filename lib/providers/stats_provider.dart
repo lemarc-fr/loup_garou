@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:thiercelieux/models/role.dart';
 import '../models/game_state.dart';
 import '../models/player_stats.dart';
 import '../services/storage_service.dart';
@@ -35,10 +36,10 @@ class StatsProvider extends ChangeNotifier {
     if (result == null) return;
 
     for (final player in finalState.players) {
-      final won = result.winner == WinnerType.amoureux
+      final won = result.winner == Camp.amoureux
           ? result.winningPlayerIds.contains(player.id)
           : player.camp.name ==
-              (result.winner == WinnerType.village ? 'village' : 'loups');
+              (result.winner == Camp.village ? 'village' : 'loups');
 
       final entry = GameHistoryEntry(
         date: finalState.startedAt,

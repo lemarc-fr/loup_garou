@@ -69,13 +69,13 @@ class DayRevealScreen extends StatelessWidget {
         return 'dévoré(e) par les Loups-Garous';
       case DeathCause.potionDeMort:
         return 'empoisonné(e) par la Sorcière';
-      case DeathCause.chagrinDAmour:
+      case DeathCause.chagrinDAmourCupidon:
         return 'mort(e) de chagrin d\'amour';
       case DeathCause.vengeanceDuChasseur:
         return 'abattu(e) par le Chasseur';
       case DeathCause.vote:
         return 'pendu(e) par le village';
-      case null:
+      default :
         return '';
     }
   }

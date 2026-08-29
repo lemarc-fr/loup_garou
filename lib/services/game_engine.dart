@@ -204,20 +204,6 @@ class GameEngine {
     advance(s);
   }
 
-  void _finishNight(GameState s) {
-    if (s.finalNightVictimId != null) {
-      _applyDeath(s, s.finalNightVictimId!, DeathCause.devoreParLesLoups);
-    }
-    if (s.sorciereKilledIdTonight != null) {
-      _applyDeath(s, s.sorciereKilledIdTonight!, DeathCause.potionDeMort);
-    }
-    if (s.pendingActions.isNotEmpty) {
-      s.phase = GamePhase.pendingAction;
-      return;
-    }
-    _goToDayReveal(s);
-  }
-
   void _goToDayReveal(GameState s) {
     s.day += 1;
     s.currentWave = 'day';
@@ -245,27 +231,37 @@ class GameEngine {
       return;
     }
     if (s.currentWave == 'night') {
-      _goToDayReveal(s);
+      _afterNightDeathsResolved(s);
     } else {
       s.phase = GamePhase.voteResult;
     }
   }
-
-  // ---------------------------------------------------------------------
-  // Phase de jour
-  // ---------------------------------------------------------------------
+  void _finishNight(GameState s) {
+    if (s.finalNightVictimId != null) {
+      _applyDeath(s, s.finalNightVictimId!, DeathCause.devoreParLesLoups);
+    }
+    if (s.sorciereKilledIdTonight != null) {
+      _applyDeath(s, s.sorciereKilledIdTonight!, DeathCause.potionDeMort);
+    }
+    _goToDayReveal(s); // always go to day reveal now, regardless of pending actions
+  }
 
   /// À appeler quand le groupe a fini de lire le récapitulatif des morts de la nuit.
   void confirmDayReveal(GameState s) {
+    if (s.pendingActions.isNotEmpty) {
+      s.phase = GamePhase.pendingAction;
+      return;
+    }
+    _afterNightDeathsResolved(s);
+  }
+
+  void _afterNightDeathsResolved(GameState s) {
     final result = checkWinCondition(s);
     if (result != null) {
       s.result = result;
       s.phase = GamePhase.endGame;
       return;
     }
-    // On repart d'une liste vierge pour la vague "jour" : les morts de la
-    // nuit viennent d'être révélées, on ne veut pas les revoir mélangées
-    // aux morts du vote qui va suivre (cf. VoteResultScreen).
     s.deathsThisWave = [];
     final rest = <GamePhase>[GamePhase.dayReveal];
     if (s.mayorId == null) {
@@ -324,8 +320,6 @@ class GameEngine {
     s.phase = GamePhase.voteResult;
   }
 
-  /// À appeler quand le groupe a fini de lire le résultat du vote.
-  /// À appeler quand le groupe a fini de lire le résultat du vote.
   void confirmVoteResult(GameState s) {
     final result = checkWinCondition(s);
     if (result != null) {
@@ -381,7 +375,7 @@ class GameEngine {
     // Chagrin d'amour : mort immédiate et inconditionnelle de l'autre Amoureux.
     final lover = s.tryById(p.loverId);
     if (lover != null && lover.alive) {
-      _applyDeath(s, lover.id, DeathCause.chagrinDAmour);
+      _applyDeath(s, lover.id, DeathCause.chagrinDAmourCupidon);
     }
 
     final hunterRevengeCauses = <DeathCause>{

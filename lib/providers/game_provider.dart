@@ -225,4 +225,25 @@ class GameProvider extends ChangeNotifier {
     engine.confirmMayorElectionExplain(state!);
     notifyListeners();
   }
+  void setHunterTarget(String targetId) {}
+
+  void setBoucEmissaireTarget(String id) {}
+
+  void setSalvateurTarget(String id) {}
+
+  void setCorbeauVictim(String id) {}
+
+  void setLoupBlancVictim(String id) {}
+
+  void setEnfantSauvageMentor(String id) {}
+
+  void setInfectPereDesLoups(bool bool) {}
+
+  void setJugeBegueTarget(String id) {}
+
+  int getwolfbeside(String id) {}
+
+  void setServanteDevoueeChoice(bool bool) {}
+
+  void setRenardTarget(String id) {}
 }

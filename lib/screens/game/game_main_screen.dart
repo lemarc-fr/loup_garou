@@ -8,7 +8,6 @@ import 'debate_screen.dart';
 import 'end_game_screen.dart';
 import 'mayor_election_screen.dart';
 import 'night_intro_screen.dart';
-import 'pending_action_screen.dart';
 import 'role_screens/cupidon_screen.dart';
 import 'role_screens/loups_screen.dart';
 import 'role_screens/petite_fille_screen.dart';
@@ -54,7 +53,6 @@ class GameMainScreen extends StatelessWidget {
       GamePhase.nightLoups => const LoupsScreen(),
       GamePhase.nightPetiteFille => const PetiteFilleScreen(),
       GamePhase.nightSorciere => const SorciereScreen(),
-      GamePhase.pendingAction => const PendingActionScreen(),
       GamePhase.dayReveal => const DayRevealScreen(),
       GamePhase.mayorElection => const MayorElectionScreen(),
       GamePhase.mayorReveal => const MayorRevealScreen(),

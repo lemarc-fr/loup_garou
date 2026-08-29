@@ -1,4 +1,4 @@
-﻿C:\Users\marcb\StudioProjects\loup_garou\lib
+/Users/marc/Desktop/loup_garou/lib
 ├── main.dart
 ├── models
 │   ├── game_config.dart
@@ -17,15 +17,27 @@
 │   │   ├── debate_screen.dart
 │   │   ├── end_game_screen.dart
 │   │   ├── game_main_screen.dart
+│   │   ├── mayor_election_explain.dart
+│   │   ├── mayor_election_explain.preview.dart
 │   │   ├── mayor_election_screen.dart
 │   │   ├── mayor_reveal_screen.dart
 │   │   ├── mayor_reveal_screen.preview.dart
 │   │   ├── night_intro_screen.dart
-│   │   ├── pending_action_screen.dart
 │   │   ├── role_screens
+│   │   │   ├── bouc_emissaire_screen.dart
+│   │   │   ├── chasseur_screen.dart
+│   │   │   ├── corbeau_screen.dart
 │   │   │   ├── cupidon_screen.dart
+│   │   │   ├── enfant_sauvage_screen.dart
+│   │   │   ├── grand_mechant_loup_screen.dart
+│   │   │   ├── infect_pere_des_loups_screen.dart
+│   │   │   ├── juge_begue_screen.dart
+│   │   │   ├── loup_blanc_screen.dart
 │   │   │   ├── loups_screen.dart
 │   │   │   ├── petite_fille_screen.dart
+│   │   │   ├── renard_screen.dart
+│   │   │   ├── salvateur_screen.dart
+│   │   │   ├── servante_devouee_screen.dart
 │   │   │   ├── sorciere_screen.dart
 │   │   │   ├── voleur_screen.dart
 │   │   │   └── voyante_screen.dart
@@ -54,5 +66,5 @@
     ├── confirm.dart
     ├── pass_device_gate.dart
     ├── player_grid_selector.dart
-    └── role_image.dart
-
+    ├── role_image.dart
+    └── role_image.preview.dart

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../models/game_state.dart';
 import '../../providers/game_provider.dart';
 import '../../providers/stats_provider.dart';
 import '../../theme/app_theme.dart';
@@ -33,14 +32,16 @@ class _EndGameScreenState extends State<EndGameScreen> {
     }
   }
 
-  String _winnerLabel(WinnerType w) {
+  String _winnerLabel(Camp w) {
     switch (w) {
-      case WinnerType.village:
+      case Camp.village:
         return 'Le Village l\'emporte !';
-      case WinnerType.loups:
+      case Camp.loups:
         return 'Les Loups-Garous l\'emportent !';
-      case WinnerType.amoureux:
+      case Camp.amoureux:
         return 'Les Amoureux l\'emportent !';
+      case Camp.seul:
+        return 'Il l\'emporte !';
     }
   }
 

@@ -7,6 +7,7 @@ class Player {
   bool alive;
   bool isMayor;
   String? loverId; // id de l'autre Amoureux, si Cupidon est passé
+  String? mentorOf; // id de l'Enfant Sauvage dont il est le mentor, si Enfant Sauvage est passé
   DeathCause? deathCause;
   int? deathAtNight; // numéro de nuit du décès (null si mort le jour ou vivant)
   int? deathAtDay; // numéro de jour du décès (null si mort la nuit ou vivant)
