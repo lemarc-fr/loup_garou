@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
 import '../../../widgets/player_grid_selector.dart';
 

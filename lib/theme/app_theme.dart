@@ -31,7 +31,7 @@ class AppTheme {
   AppTheme._();
 
   static TextTheme _textTheme(Color base) {
-    final display = GoogleFonts.cinzelTextTheme();
+    GoogleFonts.cinzelTextTheme();
     final body = GoogleFonts.workSansTextTheme();
     return body
         .copyWith(

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../models/game_config.dart';
 import '../models/game_settings.dart';
 import '../models/game_state.dart';
+import '../models/player.dart';
 import '../models/role.dart';
 import '../services/game_engine.dart';
 
@@ -21,6 +22,11 @@ class GameProvider extends ChangeNotifier {
 
   // --- Partie en cours ---
   GameState? state;
+
+  // --- Sélection en cours du Renard : il désigne trois joueurs d'un coup,
+  // mais l'UI (PlayerGridSelector) ne renvoie qu'un id à la fois. On
+  // accumule donc ici, un tap = ajoute/retire, jusqu'à en avoir trois.
+  final List<String> renardDraftSelection = [];
 
   bool get hasActiveGame => state != null;
 
@@ -79,9 +85,9 @@ class GameProvider extends ChangeNotifier {
 
   bool get namesValid =>
       draftNames.length == draftConfig!.cardsForPlayers &&
-      draftNames.every((n) => n.trim().isNotEmpty) &&
-      draftNames.map((n) => n.trim().toLowerCase()).toSet().length ==
-          draftNames.length;
+          draftNames.every((n) => n.trim().isNotEmpty) &&
+          draftNames.map((n) => n.trim().toLowerCase()).toSet().length ==
+              draftNames.length;
 
   void confirmNamesAndDeal(GameSettings settings) {
     state = engine.initGame(
@@ -123,6 +129,7 @@ class GameProvider extends ChangeNotifier {
     draftNames = [];
     revealIndex = 0;
     revealCardVisible = false;
+    renardDraftSelection.clear();
     notifyListeners();
   }
 
@@ -137,6 +144,16 @@ class GameProvider extends ChangeNotifier {
 
   void resolveCupidon(String id1, String id2) {
     engine.resolveCupidon(state!, id1, id2);
+    notifyListeners();
+  }
+
+  void setEnfantSauvageMentor(String modelId) {
+    engine.resolveEnfantSauvageMentor(state!, modelId);
+    notifyListeners();
+  }
+
+  void setSalvateurTarget(String protectedId) {
+    engine.resolveSalvateur(state!, protectedId);
     notifyListeners();
   }
 
@@ -155,11 +172,67 @@ class GameProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// [targetId] == null si le Loup Blanc renonce à utiliser son pouvoir
+  /// cette nuit-là.
+  void setLoupBlancVictim(String? targetId) {
+    engine.resolveLoupBlanc(state!, targetId);
+    notifyListeners();
+  }
+
+  /// [secondVictimId] == null si le Grand Méchant Loup renonce à sa
+  /// seconde victime cette nuit-là.
+  void resolveGrandMechantLoup(String? secondVictimId) {
+    engine.resolveGrandMechantLoup(state!, secondVictimId);
+    notifyListeners();
+  }
+
+  void setInfectPereDesLoups(bool infect) {
+    engine.resolveInfectPereDesLoups(state!, infect);
+    notifyListeners();
+  }
+
+  /// Le Renard désigne trois joueurs d'un coup. Chaque appel ajoute ou
+  /// retire [id] de la sélection en cours ; dès que trois joueurs sont
+  /// choisis, le pouvoir est résolu automatiquement et on avance de phase.
+  void setRenardTarget(String id) {
+    if (renardDraftSelection.contains(id)) {
+      renardDraftSelection.remove(id);
+    } else if (renardDraftSelection.length < 3) {
+      renardDraftSelection.add(id);
+    }
+    if (renardDraftSelection.length == 3) {
+      engine.resolveRenard(state!, List.of(renardDraftSelection));
+      renardDraftSelection.clear();
+    }
+    notifyListeners();
+  }
+
+  /// Nombre de Loups-Garous trouvés parmi les trois dernières cibles du
+  /// Renard, à afficher tant que la nuit n'est pas terminée.
+  int get wolvesFoundByRenard {
+    final s = state;
+    if (s == null) return 0;
+    return s.renardTargetIds.where((id) {
+      final p = s.tryById(id);
+      return p != null && p.camp == Camp.loups;
+    }).length;
+  }
+
+  void setCorbeauVictim(String targetId) {
+    engine.resolveCorbeau(state!, targetId);
+    notifyListeners();
+  }
+
   void resolveSorciere({bool useVie = false, String? poisonTargetId}) {
     engine.resolveSorciere(state!,
         useVie: useVie, poisonTargetId: poisonTargetId);
     notifyListeners();
   }
+
+  /// Le Montreur d'Ours n'a aucune action à jouer : son résultat se lit
+  /// directement sur l'état. Exposé ici pour éviter à l'UI de dépendre de
+  /// GameState directement.
+  bool get montreurDoursGrowls => state?.montreurDoursGrowls ?? false;
 
   void advanceGeneric() {
     engine.advance(state!);
@@ -167,16 +240,49 @@ class GameProvider extends ChangeNotifier {
   }
 
   // ---------------------------------------------------------------------
-  // Actions différées
+  // Suites déclenchées par une mort
   // ---------------------------------------------------------------------
+  // Il n'y a plus de file générique d'actions en attente côté moteur :
+  // chaque flag (chasseurRevengeTargetId, mayorSuccessionNeededFor, ...)
+  // a maintenant sa propre méthode de résolution dédiée dans GameEngine.
 
-  void resolvePendingAction(
-      {String? hunterTargetId, String? mayorSuccessorId}) {
-    engine.resolvePendingAction(
-      state!,
-      hunterTargetId: hunterTargetId,
-      mayorSuccessorId: mayorSuccessorId,
-    );
+  void setHunterTarget(String targetId) {
+    engine.resolveChasseurRevenge(state!, targetId);
+    notifyListeners();
+  }
+
+  void resolveMayorSuccession(String successorId) {
+    engine.resolveMayorSuccession(state!, successorId);
+    notifyListeners();
+  }
+
+  void confirmEnfantSauvageReveal() {
+    engine.confirmEnfantSauvageReveal(state!);
+    notifyListeners();
+  }
+
+  void confirmPowerLossReveal() {
+    engine.confirmPowerLossReveal(state!);
+    notifyListeners();
+  }
+
+  /// Joueur dont le rôle est proposé à la Servante Dévouée (celui qui
+  /// vient d'être éliminé par le vote), pour affichage côté écran.
+  Player? get servanteDevoueeOfferedPlayer =>
+      state?.tryById(state!.servanteDevoueeOfferId);
+
+  void setServanteDevoueeChoice(bool takeRole) {
+    engine.resolveServanteDevouee(state!, takeRole);
+    notifyListeners();
+  }
+
+  void setBoucEmissaireTarget(String skippedPlayerId) {
+    engine.resolveBoucEmissaireChoice(state!, skippedPlayerId);
+    notifyListeners();
+  }
+
+  void confirmIdiotDuVillageReveal() {
+    engine.confirmIdiotDuVillageReveal(state!);
     notifyListeners();
   }
 
@@ -194,8 +300,25 @@ class GameProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void confirmMayorElectionExplain() {
+    engine.confirmMayorElectionExplain(state!);
+    notifyListeners();
+  }
+
+  void confirmMayorReveal() {
+    engine.confirmMayorReveal(state!);
+    notifyListeners();
+  }
+
   void confirmDebate() {
     engine.confirmDebate(state!);
+    notifyListeners();
+  }
+
+  /// [usePower] : le Juge Bègue décide (ou non) que le vote du village
+  /// sera rejoué immédiatement. Ce n'est pas un choix de joueur.
+  void resolveJugeBegueDecision(bool usePower) {
+    engine.resolveJugeBegueDecision(state!, usePower);
     notifyListeners();
   }
 
@@ -211,39 +334,4 @@ class GameProvider extends ChangeNotifier {
     engine.confirmVoteResult(state!);
     notifyListeners();
   }
-
-  void confirmPowerLossReveal() {
-    engine.confirmPowerLossReveal(state!);
-    notifyListeners();
-  }
-
-  void confirmMayorReveal() {
-    engine.confirmMayorReveal(state!);
-    notifyListeners();
-  }
-  void confirmMayorElectionExplain() {
-    engine.confirmMayorElectionExplain(state!);
-    notifyListeners();
-  }
-  void setHunterTarget(String targetId) {}
-
-  void setBoucEmissaireTarget(String id) {}
-
-  void setSalvateurTarget(String id) {}
-
-  void setCorbeauVictim(String id) {}
-
-  void setLoupBlancVictim(String id) {}
-
-  void setEnfantSauvageMentor(String id) {}
-
-  void setInfectPereDesLoups(bool bool) {}
-
-  void setJugeBegueTarget(String id) {}
-
-  int getwolfbeside(String id) {}
-
-  void setServanteDevoueeChoice(bool bool) {}
-
-  void setRenardTarget(String id) {}
 }

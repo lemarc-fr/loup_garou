@@ -114,7 +114,7 @@ void main() {
       );
       state.players.firstWhere((p) => p.role == RoleId.loupGarou).alive = false;
       final result = engine.checkWinCondition(state);
-      expect(result?.winner, WinnerType.village);
+      expect(result?.winner, Camp.village);
     });
 
     test('les amoureux de camps différents gagnent seuls s\'ils restent 2', () {
@@ -127,23 +127,7 @@ void main() {
       loup.loverId = vil.id;
       vil.loverId = loup.id;
       final result = engine.checkWinCondition(state);
-      expect(result?.winner, WinnerType.amoureux);
+      expect(result?.winner, Camp.amoureux);
     });
   });
-}
-
-void playNightWithWolfVictim(GameEngine engine, GameState s, String victimId) {
-  s.currentWave = 'night';
-  s.phaseQueue = engine.buildNightQueue(s);
-  s.phaseIndex = 0;
-  s.phase = s.phaseQueue[0];
-  while (s.phase != GamePhase.dayReveal && s.phase != GamePhase.pendingAction) {
-    switch (s.phase) {
-      case GamePhase.nightLoups:
-        engine.setLoupsVictim(s, victimId);
-        break;
-      default:
-        engine.advance(s);
-    }
-  }
 }
