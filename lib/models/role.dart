@@ -43,7 +43,7 @@ enum DeathCause {
   potionDeMort,
   chagrinDAmourCupidon,
   vengeanceDuChasseur,
-  vote,
+  vote, tueParLoupBlanc,
 }
 
 class RoleInfo {

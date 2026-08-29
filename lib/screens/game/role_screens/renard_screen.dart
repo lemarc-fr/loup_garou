@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
 import '../../../widgets/player_grid_selector.dart';
 
@@ -10,7 +11,6 @@ class RenardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
-
     return Scaffold(
         body: Column(
           children: [
@@ -23,7 +23,7 @@ class RenardScreen extends StatelessWidget {
                 ),
               ),
             ),
-            Text('Il y a ${gp.getwolfbeside(gp.state!.renardTarget)} loups vivant dans ces trois joueurs'),
+            Text('Il y a {nb de loup dans gp.state.renardTargetIds } loups vivant dans ces trois joueurs'),
           ],
         )
     );

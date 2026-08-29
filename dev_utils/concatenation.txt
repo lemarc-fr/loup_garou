@@ -279,34 +279,37 @@ enum GamePhase {
 
   // Nuit
   nightIntro,
-
-  //premiere nuit
   nightVoleur,
   nightCupidon,
   nightEnfantSauvage,
-
   nightSalvateur,
   nightVoyante,
-  nightPetiteFille,
   nightLoups,
+  nightPetiteFille,
   nightLoupBlanc,
   nightGrandMechantLoup,
   nightInfectPereDesLoups,
-  nightSorciere,
   nightRenard,
+  nightCorbeau,
+  nightSorciere,
 
+  // Suites déclenchées par une mort. Il n'y a plus de file générique
+  // d'actions en attente : chaque mort pose un flag précis sur le
+  // GameState (chasseurRevengeTargetId, mayorSuccessionNeededFor,
+  // enfantSauvageTransformedId, ...) et GameEngine._resolveFollowUps
+  // regarde ces flags, dans un ordre fixe, pour savoir sur quelle phase
+  // basculer. Voir game_engine.dart pour le détail.
   chasseurRevange,
   successionMaire,
   enfantsauvageReveal,
 
   // Jour
   dayReveal,
-
   mayorElectionExplain,
   mayorElection,
   mayorReveal,
-
   debate,
+  jugeBegueDecision,
   villageVote,
   voteResult,
 
@@ -314,12 +317,15 @@ enum GamePhase {
   servanteDevouee,
   boucEmissaire,
   idiotduvillageCivicRightLoss,
-  // successionMaire si tué par le vote
 
   // Fin
   endGame,
 }
 
+/// D'où viennent les morts en cours de résolution (nuit ou vote) : permet
+/// à [GameEngine._resolveFollowUps] de savoir quoi faire une fois que
+/// tous les flags de suivi ont été traités.
+enum FollowUpOrigin { nightDeaths, voteDeaths }
 
 /// Un villageois qui vient de perdre son pouvoir suite à l'exécution
 /// erronée de l'Ancien. On garde son ancien rôle pour l'animation de
@@ -346,33 +352,68 @@ class GameState {
   int night = 1;
   int day = 0;
   GamePhase phase;
-  String currentWave =
-      'night'; // 'night' ou 'day' — pilote la suite après les actions différées
+  String currentWave = 'night'; // 'night' ou 'day'
 
   List<GamePhase> phaseQueue = [];
   int phaseIndex = 0;
 
   String? mayorId;
-  bool ancienExtraLifeUsed =
-      false; // vie supplémentaire de l'Ancien face aux Loups
+  bool ancienExtraLifeUsed = false;
   List<PowerLossEntry> powerLossThisWave = [];
 
-  // --- Données temporaires de la nuit en cours ---
-  String? loupsVictimId; // victime désignée par les loups, avant substitution
-  String? finalNightVictimId; // victime finale après passage de la petite fille
+  // --- Loups ---
+  String? loupsVictimId; // victime "officielle" désignée par les loups
+  String? grandMechantLoupSecondVictimId;
+  bool infectPereDesLoupsUsed = false;
+  String? infectedTonightId;
+  String? loupBlancVictimId;
 
+  // --- Protections / substitutions ---
+  String? salvateurProtectedId; // choix de cette nuit
+  String? salvateurLastProtectedId; // choix de la nuit précédente
+  bool petiteFilleTriedTonight = false;
+  bool petiteFilleCaughtTonight = false;
+  String? finalNightVictimId; // victime réelle, après protections/substitutions
+
+  // --- Sorcière ---
   bool sorciereVieUsed = false;
   bool sorciereMortUsed = false;
   String? sorciereSavedIdTonight;
   String? sorciereKilledIdTonight;
 
-  String? voleurSwapChoice; // roleId.name choisi, ou 'keep'
+  // --- Voleur / Cupidon ---
   List<RoleId> voleurTableCards = [];
-
   List<String> loversIds = []; // 0 ou 2 ids
 
-  // Morts survenues pendant la vague en cours (nuit ou vote), pas encore révélées.
+  // --- Renard / Corbeau / Juge Bègue ---
+  List<String> renardTargetIds = [];
+  bool? renardFoundWolfLastQuery;
+  bool renardPowerLost = false;
+  String? corbeauCursedId;
+  bool jugeBegueUsed = false;
+  bool voteReplayPending = false;
+
+  // --- Bouc Émissaire / Idiot du Village ---
+  String? skippedNextNightPlayerId;
+  Set<String> disenfranchisedPlayerIds = {};
+
+  // --- Morts de la vague en cours (nuit ou vote), pas encore révélées ---
   List<String> deathsThisWave = [];
+
+  // --- Flags de suivi post-mort ---
+  // C'est le cœur du remplacement de l'ancienne file "pendingActions" :
+  // _applyDeath() pose ces flags dès qu'une mort a une conséquence
+  // différée, et GameEngine._resolveFollowUps() les lit dans un ordre
+  // fixe pour décider de la prochaine phase — un simple enchaînement de
+  // "if", pas de queue générique.
+  FollowUpOrigin? followUpOrigin;
+  String? chasseurRevengeTargetId; // id du Chasseur qui doit tirer
+  String? mayorSuccessionNeededFor; // id de l'ancien maire, mort
+  String? enfantSauvageTransformedId; // id de l'Enfant Sauvage venant de muter
+  RoleId? enfantSauvagePreviousRole; // pour l'animation de révélation
+  String? servanteDevoueeOfferId; // id du joueur mort dont le rôle est disponible
+  String? boucEmissaireChoiceNeededId; // id du Bouc Émissaire qui vient d'être voté
+  String? idiotDuVillageRevealId; // id de l'Idiot qui vient d'être voté (survit)
 
   GameResult? result;
 
@@ -395,20 +436,40 @@ class GameState {
   bool hasAliveRole(RoleId role) => alivePlayersWithRole(role).isNotEmpty;
   bool gameHasRole(RoleId role) => players.any((p) => p.role == role);
 
+  /// Joueurs vivants pouvant participer aux votes. L'Idiot du Village,
+  /// une fois démasqué, en a perdu le droit — mais reste éligible en tant
+  /// que candidat.
+  List<Player> get eligibleVoters => alivePlayers
+      .where((p) => !disenfranchisedPlayerIds.contains(p.id))
+      .toList();
+
   List<Player> get aliveWolves =>
       alivePlayers.where((p) => p.camp == Camp.loups).toList();
   List<Player> get aliveVillagers =>
       alivePlayers.where((p) => p.camp == Camp.village).toList();
 
-  get deathbyvillagevote => null;
+  /// Vrai tant qu'aucun membre du camp des Loups n'est mort — condition
+  /// d'activation du pouvoir du Grand Méchant Loup.
+  bool get wolfPackIntact =>
+      players.where((p) => p.camp == Camp.loups).every((p) => p.alive);
 
-  String get renardTarget => null;
+  /// Vrai si un Loup-Garou se trouve parmi les voisins vivants (immédiats,
+  /// dans l'ordre de la liste des joueurs) du Montreur d'Ours.
+  bool get montreurDoursGrowls {
+    if (!hasAliveRole(RoleId.montreurDours)) return false;
+    final bear = alivePlayersWithRole(RoleId.montreurDours).first;
+    final ordered = alivePlayers;
+    final idx = ordered.indexOf(bear);
+    if (idx == -1 || ordered.length < 2) return false;
+    final left = ordered[(idx - 1 + ordered.length) % ordered.length];
+    final right = ordered[(idx + 1) % ordered.length];
+    return left.camp == Camp.loups || right.camp == Camp.loups;
+  }
 }
 
 extension _FirstOrNull<T> on Iterable<T> {
   T? get firstOrNull => isEmpty ? null : first;
 }
-
 ===== Fichier: models/player.dart =====
 
 import 'role.dart';
@@ -597,7 +658,7 @@ enum DeathCause {
   potionDeMort,
   chagrinDAmourCupidon,
   vengeanceDuChasseur,
-  vote,
+  vote, tueParLoupBlanc,
 }
 
 class RoleInfo {
@@ -2511,6 +2572,7 @@ class _PetiteFilleContent extends StatelessWidget {
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
 import '../../../widgets/player_grid_selector.dart';
 
@@ -2520,7 +2582,6 @@ class RenardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
-
     return Scaffold(
         body: Column(
           children: [
@@ -2533,7 +2594,7 @@ class RenardScreen extends StatelessWidget {
                 ),
               ),
             ),
-            Text('Il y a ${gp.getwolfbeside(gp.state!.renardTarget)} loups vivant dans ces trois joueurs'),
+            Text('Il y a {nb de loup dans gp.state.renardTargetIds } loups vivant dans ces trois joueurs'),
           ],
         )
     );
@@ -4338,6 +4399,14 @@ class VoteTally {
 /// Toute la logique de partie vit ici, séparée de l'UI et du provider.
 /// Chaque méthode mute le [GameState] passé en paramètre ; c'est au
 /// GameProvider d'appeler notifyListeners() ensuite.
+///
+/// Il n'y a plus de file générique d'actions en attente ("pending
+/// actions"). À la place : chaque mort, dans [_applyDeath], pose un flag
+/// précis sur le GameState (chasseurRevengeTargetId,
+/// mayorSuccessionNeededFor, enfantSauvageTransformedId, ...) et
+/// [_resolveFollowUps] regarde ces flags, dans un ordre fixe, pour
+/// décider de la prochaine phase — un simple enchaînement de "if", pas de
+/// queue générique à maintenir.
 class GameEngine {
   final Random _rng = Random();
   static const uuid = Uuid();
@@ -4384,61 +4453,102 @@ class GameEngine {
     s.night = 1;
     s.currentWave = 'night';
     _resetNightTempData(s);
+    s.salvateurLastProtectedId = null;
     s.phaseQueue = buildNightQueue(s);
     s.phaseIndex = 0;
     s.phase = s.phaseQueue[0];
   }
 
   // ---------------------------------------------------------------------
-  // Construction des files de phases
+  // Construction de la file de nuit
   // ---------------------------------------------------------------------
 
   List<GamePhase> buildNightQueue(GameState s) {
     final q = <GamePhase>[GamePhase.nightIntro];
-    if (s.night == 1 &&
-        s.gameHasRole(RoleId.voleur) &&
-        s.hasAliveRole(RoleId.voleur)) {
-      q.add(GamePhase.nightVoleur);
+
+    if (s.night == 1) {
+      if (s.hasAliveRole(RoleId.voleur)) q.add(GamePhase.nightVoleur);
+      if (s.hasAliveRole(RoleId.cupidon)) q.add(GamePhase.nightCupidon);
+      if (s.hasAliveRole(RoleId.enfantSauvage)) {
+        q.add(GamePhase.nightEnfantSauvage);
+      }
     }
-    if (s.night == 1 &&
-        s.gameHasRole(RoleId.cupidon) &&
-        s.hasAliveRole(RoleId.cupidon)) {
-      q.add(GamePhase.nightCupidon);
+
+    if (s.hasAliveRole(RoleId.salvateur) && !_isAsleep(s, RoleId.salvateur)) {
+      q.add(GamePhase.nightSalvateur);
     }
-    if (s.hasAliveRole(RoleId.voyante)) q.add(GamePhase.nightVoyante);
-    if (s.hasAliveRole(RoleId.petiteFille) && s.aliveWolves.isNotEmpty) {
-      q.add(GamePhase.nightPetiteFille);
+    if (s.hasAliveRole(RoleId.voyante) && !_isAsleep(s, RoleId.voyante)) {
+      q.add(GamePhase.nightVoyante);
     }
-    if (s.aliveWolves.isNotEmpty) q.add(GamePhase.nightLoups);
+
+    if (s.aliveWolves.isNotEmpty) {
+      q.add(GamePhase.nightLoups);
+      // La Petite Fille espionne PENDANT le tour des loups : sa phase se
+      // joue donc juste après, une fois la victime des loups connue.
+      if (s.hasAliveRole(RoleId.petiteFille)) q.add(GamePhase.nightPetiteFille);
+      if (s.hasAliveRole(RoleId.loupBlanc) && s.night > 1 && s.night.isEven) {
+        q.add(GamePhase.nightLoupBlanc);
+      }
+      if (s.hasAliveRole(RoleId.grandMechantLoup) && s.wolfPackIntact) {
+        q.add(GamePhase.nightGrandMechantLoup);
+      }
+      if (s.hasAliveRole(RoleId.infectPereDesLoups) &&
+          !s.infectPereDesLoupsUsed) {
+        q.add(GamePhase.nightInfectPereDesLoups);
+      }
+    }
+
+    if (s.hasAliveRole(RoleId.renard) && !s.renardPowerLost) {
+      q.add(GamePhase.nightRenard);
+    }
+    if (s.hasAliveRole(RoleId.corbeau)) q.add(GamePhase.nightCorbeau);
+
     final sorciereEncorePuissante = !s.sorciereVieUsed || !s.sorciereMortUsed;
     if (s.hasAliveRole(RoleId.sorciere) &&
         sorciereEncorePuissante &&
-        s.aliveWolves.isNotEmpty) {
+        s.aliveWolves.isNotEmpty &&
+        !_isAsleep(s, RoleId.sorciere)) {
       q.add(GamePhase.nightSorciere);
     }
+
     return q;
+  }
+
+  /// Le Bouc Émissaire peut désigner un joueur qui "saute" la nuit
+  /// suivante. Simplification assumée : seuls les rôles à pouvoir
+  /// individuel (Salvateur, Voyante, Sorcière) peuvent ainsi être
+  /// endormis pour une nuit — sauter le tour d'un seul Loup au sein du
+  /// tour collectif des Loups demanderait une UI dédiée (voir TODO).
+  bool _isAsleep(GameState s, RoleId role) {
+    final skippedId = s.skippedNextNightPlayerId;
+    if (skippedId == null) return false;
+    final p = s.tryById(skippedId);
+    return p != null && p.alive && p.role == role;
   }
 
   void _resetNightTempData(GameState s) {
     s.loupsVictimId = null;
-    s.finalNightVictimId = null;
+    s.grandMechantLoupSecondVictimId = null;
+    s.infectedTonightId = null;
+    s.loupBlancVictimId = null;
+    s.salvateurLastProtectedId = s.salvateurProtectedId;
+    s.salvateurProtectedId = null;
     s.petiteFilleTriedTonight = false;
     s.petiteFilleCaughtTonight = false;
+    s.finalNightVictimId = null;
     s.sorciereSavedIdTonight = null;
     s.sorciereKilledIdTonight = null;
-    s.voleurSwapChoice = null;
+    s.renardTargetIds = [];
+    s.renardFoundWolfLastQuery = null;
+    s.corbeauCursedId = null;
     s.deathsThisWave = [];
   }
 
   // ---------------------------------------------------------------------
-  // Progression générique dans la file de phases courante
+  // Progression générique dans la file de phases de la nuit
   // ---------------------------------------------------------------------
 
   void advance(GameState s) {
-    if (s.pendingActions.isNotEmpty) {
-      s.phase = GamePhase.pendingAction;
-      return;
-    }
     s.phaseIndex++;
     while (s.phaseIndex < s.phaseQueue.length &&
         _shouldSkipPhase(s, s.phaseQueue[s.phaseIndex])) {
@@ -4448,12 +4558,21 @@ class GameEngine {
       s.phase = s.phaseQueue[s.phaseIndex];
       return;
     }
-    // La file est épuisée : on vient de finir la nuit.
     if (s.currentWave == 'night') {
       _finishNight(s);
     }
   }
-  
+
+  /// Avance simple dans la file du jour (mayorElectionExplain, debate,
+  /// jugeBegueDecision, ...) — contrairement à [advance], ne déclenche
+  /// jamais la fin de nuit.
+  void advance2(GameState s) {
+    s.phaseIndex++;
+    if (s.phaseIndex < s.phaseQueue.length) {
+      s.phase = s.phaseQueue[s.phaseIndex];
+    }
+  }
+
   bool _shouldSkipPhase(GameState s, GamePhase phase) {
     if (phase == GamePhase.nightSorciere &&
         !s.settings.allowWitchToPlayIfWerewolfDeathCause &&
@@ -4487,16 +4606,36 @@ class GameEngine {
     advance(s);
   }
 
+  /// L'Enfant Sauvage choisit son modèle. On se contente d'écrire l'id de
+  /// l'Enfant Sauvage sur le champ [Player.mentorOf] du modèle choisi :
+  /// c'est la seule donnée dont [_applyDeath] a besoin pour déclencher la
+  /// mutation en Loup-Garou le jour où ce modèle meurt — pas besoin d'une
+  /// file d'actions en attente pour ça, juste ce champ et un "if".
+  void resolveEnfantSauvageMentor(GameState s, String modelId) {
+    final enfant = s.alivePlayersWithRole(RoleId.enfantSauvage).first;
+    s.byId(modelId).mentorOf = enfant.id;
+    advance(s);
+  }
+
+  void resolveSalvateur(GameState s, String protectedId) {
+    s.salvateurProtectedId = protectedId;
+    advance(s);
+  }
+
   /// La voyante n'altère aucun état — l'écran affiche juste le rôle en direct.
   void confirmVoyanteDone(GameState s) => advance(s);
 
   void setLoupsVictim(GameState s, String victimId) {
     s.loupsVictimId = victimId;
-    s.finalNightVictimId = victimId;
+    s.finalNightVictimId =
+    (victimId == s.salvateurProtectedId) ? null : victimId;
     advance(s);
   }
 
   /// [tried] = la petite fille a choisi d'entrouvrir les yeux cette nuit.
+  /// Se joue après les Loups : si elle se fait surprendre, elle prend la
+  /// place de la victime désignée, même si celle-ci avait été protégée
+  /// par le Salvateur.
   void resolvePetiteFille(GameState s, {required bool tried}) {
     s.petiteFilleTriedTonight = tried;
     s.petiteFilleCaughtTonight = false;
@@ -4505,15 +4644,65 @@ class GameEngine {
       s.petiteFilleCaughtTonight = caught;
       if (caught) {
         final pf = s.alivePlayersWithRole(RoleId.petiteFille).first;
-        s.finalNightVictimId =
-            pf.id; // elle prend la place de la victime prévue
+        s.finalNightVictimId = pf.id;
       }
     }
     advance(s);
   }
 
-  void resolveSorciere(GameState s,
-      {bool useVie = false, String? poisonTargetId}) {
+  /// [targetId] == null si le Loup Blanc choisit de ne pas utiliser son
+  /// pouvoir cette nuit-là.
+  void resolveLoupBlanc(GameState s, String? targetId) {
+    s.loupBlancVictimId = targetId;
+    advance(s);
+  }
+
+  void resolveGrandMechantLoup(GameState s, String? secondVictimId) {
+    s.grandMechantLoupSecondVictimId = secondVictimId;
+    advance(s);
+  }
+
+  /// Convertit la victime des Loups en Loup-Garou au lieu de la tuer, si
+  /// elle n'a pas déjà été sauvée ou remplacée entre-temps.
+  void resolveInfectPereDesLoups(GameState s, bool infect) {
+    if (infect && !s.infectPereDesLoupsUsed && s.loupsVictimId != null) {
+      final victim = s.tryById(s.loupsVictimId);
+      if (victim != null && victim.alive && victim.camp != Camp.loups) {
+        s.infectPereDesLoupsUsed = true;
+        s.infectedTonightId = victim.id;
+        if (s.finalNightVictimId == victim.id) {
+          s.finalNightVictimId = null;
+        }
+      }
+    }
+    advance(s);
+  }
+
+  void resolveRenard(GameState s, List<String> targetIds) {
+    s.renardTargetIds = targetIds;
+    final foundWolf = targetIds.any((id) {
+      final p = s.tryById(id);
+      return p != null && p.camp == Camp.loups;
+    });
+    s.renardFoundWolfLastQuery = foundWolf;
+    if (!foundWolf) {
+      // Variante classique : le flair se perd pour le reste de la partie
+      // si aucun Loup-Garou n'est trouvé parmi les trois joueurs choisis.
+      s.renardPowerLost = true;
+    }
+    advance(s);
+  }
+
+  void resolveCorbeau(GameState s, String targetId) {
+    s.corbeauCursedId = targetId;
+    advance(s);
+  }
+
+  void resolveSorciere(
+      GameState s, {
+        bool useVie = false,
+        String? poisonTargetId,
+      }) {
     if (useVie && !s.sorciereVieUsed) {
       s.sorciereVieUsed = true;
       s.sorciereSavedIdTonight = s.finalNightVictimId;
@@ -4526,94 +4715,197 @@ class GameEngine {
     advance(s);
   }
 
-  void _goToDayReveal(GameState s) {
-    s.day += 1;
+  // ---------------------------------------------------------------------
+  // Fin de nuit → jour
+  // ---------------------------------------------------------------------
+
+  void _finishNight(GameState s) {
+    if (s.finalNightVictimId != null) {
+      _applyDeath(s, s.finalNightVictimId!, DeathCause.devoreParLesLoups);
+    }
+    if (s.grandMechantLoupSecondVictimId != null) {
+      _applyDeath(
+          s, s.grandMechantLoupSecondVictimId!, DeathCause.devoreParLesLoups);
+    }
+    if (s.loupBlancVictimId != null) {
+      _applyDeath(s, s.loupBlancVictimId!, DeathCause.tueParLoupBlanc);
+    }
+    if (s.sorciereKilledIdTonight != null) {
+      _applyDeath(s, s.sorciereKilledIdTonight!, DeathCause.potionDeMort);
+    }
+    if (s.infectedTonightId != null) {
+      final infected = s.tryById(s.infectedTonightId);
+      if (infected != null && infected.alive) {
+        infected.role = RoleId.loupGarou;
+      }
+    }
+
     s.currentWave = 'day';
+    s.day += 1;
     s.phaseQueue = [GamePhase.dayReveal];
     s.phaseIndex = 0;
     s.phase = GamePhase.dayReveal;
   }
 
-  // ---------------------------------------------------------------------
-  // Actions différées (vengeance du chasseur / succession du maire)
-  // ---------------------------------------------------------------------
-
-  void resolvePendingAction(GameState s,
-      {String? hunterTargetId, String? mayorSuccessorId}) {
-    if (s.pendingActions.isEmpty) return;
-    final action = s.pendingActions.removeAt(0);
-    if (action.isHunterRevenge && hunterTargetId != null) {
-      _applyDeath(s, hunterTargetId, DeathCause.vengeanceDuChasseur);
-    }
-    if (action.isMayorSuccession) {
-      s.mayorId = mayorSuccessorId;
-    }
-    if (s.pendingActions.isNotEmpty) {
-      s.phase = GamePhase.pendingAction;
-      return;
-    }
-    if (s.currentWave == 'night') {
-      _afterNightDeathsResolved(s);
-    } else {
-      s.phase = GamePhase.voteResult;
-    }
-  }
-  void _finishNight(GameState s) {
-    if (s.finalNightVictimId != null) {
-      _applyDeath(s, s.finalNightVictimId!, DeathCause.devoreParLesLoups);
-    }
-    if (s.sorciereKilledIdTonight != null) {
-      _applyDeath(s, s.sorciereKilledIdTonight!, DeathCause.potionDeMort);
-    }
-    _goToDayReveal(s); // always go to day reveal now, regardless of pending actions
-  }
-
-  /// À appeler quand le groupe a fini de lire le récapitulatif des morts de la nuit.
+  /// À appeler quand le groupe a fini de lire le récapitulatif des morts
+  /// de la nuit.
   void confirmDayReveal(GameState s) {
-    if (s.pendingActions.isNotEmpty) {
-      s.phase = GamePhase.pendingAction;
-      return;
-    }
-    _afterNightDeathsResolved(s);
+    s.followUpOrigin = FollowUpOrigin.nightDeaths;
+    _resolveFollowUps(s);
   }
 
   void _afterNightDeathsResolved(GameState s) {
+    s.deathsThisWave = [];
+    final rest = <GamePhase>[GamePhase.dayReveal];
+    if (s.mayorId == null) {
+      rest.addAll([
+        GamePhase.mayorElectionExplain,
+        GamePhase.mayorElection,
+        GamePhase.mayorReveal,
+      ]);
+    }
+    rest.add(GamePhase.debate);
+    if (s.hasAliveRole(RoleId.jugeBegue) && !s.jugeBegueUsed) {
+      rest.add(GamePhase.jugeBegueDecision);
+    }
+    rest.add(GamePhase.villageVote);
+    s.phaseQueue = rest;
+    s.phaseIndex = 1; // index 0 (dayReveal) déjà affiché
+    s.phase = s.phaseQueue[1];
+  }
+
+  // ---------------------------------------------------------------------
+  // Suites déclenchées par une mort
+  // ---------------------------------------------------------------------
+
+  /// Regarde, dans un ordre fixe, si une conséquence d'une mort est
+  /// encore en attente (riposte du Chasseur, succession du maire,
+  /// mutation de l'Enfant Sauvage, perte de pouvoirs du village, Servante
+  /// Dévouée, Bouc Émissaire, Idiot du Village). S'il y en a une, bascule
+  /// sur la phase correspondante et s'arrête là : c'est la méthode de
+  /// résolution appelée ensuite par l'UI qui rappellera cette fonction
+  /// pour vérifier la suivante. Sinon, poursuit le déroulé normal selon
+  /// [GameState.followUpOrigin]. C'est l'unique remplaçant de l'ancienne
+  /// file [pendingActions] : pas de queue, juste des flags et des "if".
+  void _resolveFollowUps(GameState s) {
     final result = checkWinCondition(s);
     if (result != null) {
       s.result = result;
       s.phase = GamePhase.endGame;
       return;
     }
-    s.deathsThisWave = [];
-    final rest = <GamePhase>[GamePhase.dayReveal];
-    if (s.mayorId == null) {
-      rest.add(GamePhase.mayorElectionExplain);
-      rest.add(GamePhase.mayorElection);
-      rest.add(GamePhase.mayorReveal);
+    if (s.chasseurRevengeTargetId != null) {
+      s.phase = GamePhase.chasseurRevange;
+      return;
     }
-    rest.add(GamePhase.debate);
-    rest.add(GamePhase.villageVote);
-    s.phaseQueue = rest;
-    s.phaseIndex = 1;
-    s.phase = s.phaseQueue[1];
+    if (s.mayorSuccessionNeededFor != null) {
+      s.phase = GamePhase.successionMaire;
+      return;
+    }
+    if (s.enfantSauvageTransformedId != null) {
+      s.phase = GamePhase.enfantsauvageReveal;
+      return;
+    }
+    if (s.powerLossThisWave.isNotEmpty) {
+      s.phase = GamePhase.villagePowerLoss;
+      return;
+    }
+    if (s.servanteDevoueeOfferId != null) {
+      s.phase = GamePhase.servanteDevouee;
+      return;
+    }
+    if (s.boucEmissaireChoiceNeededId != null) {
+      s.phase = GamePhase.boucEmissaire;
+      return;
+    }
+    if (s.idiotDuVillageRevealId != null) {
+      s.phase = GamePhase.idiotduvillageCivicRightLoss;
+      return;
+    }
+
+    switch (s.followUpOrigin) {
+      case FollowUpOrigin.nightDeaths:
+        _afterNightDeathsResolved(s);
+        break;
+      case FollowUpOrigin.voteDeaths:
+        _afterVoteDeathsResolved(s);
+        break;
+      case null:
+        break;
+    }
   }
+
+  void resolveChasseurRevenge(GameState s, String targetId) {
+    s.chasseurRevengeTargetId = null;
+    _applyDeath(s, targetId, DeathCause.vengeanceDuChasseur);
+    _resolveFollowUps(s);
+  }
+
+  void resolveMayorSuccession(GameState s, String successorId) {
+    s.mayorSuccessionNeededFor = null;
+    s.mayorId = successorId;
+    _resolveFollowUps(s);
+  }
+
+  void confirmEnfantSauvageReveal(GameState s) {
+    s.enfantSauvageTransformedId = null;
+    s.enfantSauvagePreviousRole = null;
+    _resolveFollowUps(s);
+  }
+
+  void confirmPowerLossReveal(GameState s) {
+    s.powerLossThisWave = [];
+    _resolveFollowUps(s);
+  }
+
+  void resolveServanteDevouee(GameState s, bool takeRole) {
+    final offerId = s.servanteDevoueeOfferId;
+    s.servanteDevoueeOfferId = null;
+    if (takeRole && offerId != null) {
+      final dead = s.tryById(offerId);
+      final servante = s.hasAliveRole(RoleId.servanteDevouee)
+          ? s.alivePlayersWithRole(RoleId.servanteDevouee).first
+          : null;
+      if (dead != null && servante != null) {
+        servante.role = dead.role;
+      }
+    }
+    _resolveFollowUps(s);
+  }
+
+  void resolveBoucEmissaireChoice(GameState s, String skippedPlayerId) {
+    s.boucEmissaireChoiceNeededId = null;
+    s.skippedNextNightPlayerId = skippedPlayerId;
+    _resolveFollowUps(s);
+  }
+
+  void confirmIdiotDuVillageReveal(GameState s) {
+    final id = s.idiotDuVillageRevealId;
+    s.idiotDuVillageRevealId = null;
+    if (id != null) s.disenfranchisedPlayerIds.add(id);
+    _resolveFollowUps(s);
+  }
+
+  // ---------------------------------------------------------------------
+  // Jour
+  // ---------------------------------------------------------------------
 
   void resolveMayorElection(GameState s, String winnerId) {
     s.mayorId = winnerId;
     advance2(s);
   }
 
-  /// La file de jour ne passe pas par [advance] classique (qui gère la fin
-  /// de nuit) : on avance simplement l'index sans re-déclencher `_finishNight`.
-  void advance2(GameState s) {
-    s.phaseIndex++;
-    if (s.phaseIndex < s.phaseQueue.length) {
-      s.phase = s.phaseQueue[s.phaseIndex];
-    }
-  }
   void confirmMayorElectionExplain(GameState s) => advance2(s);
-  void confirmDebate(GameState s) => advance2(s);
   void confirmMayorReveal(GameState s) => advance2(s);
+  void confirmDebate(GameState s) => advance2(s);
+
+  void resolveJugeBegueDecision(GameState s, bool usePower) {
+    if (usePower) {
+      s.jugeBegueUsed = true;
+      s.voteReplayPending = true;
+    }
+    advance2(s);
+  }
 
   VoteTally tallyVotes(GameState s, Map<String, String> votes) {
     final counts = <String, int>{};
@@ -4621,6 +4913,9 @@ class GameEngine {
       final weight = (s.mayorId != null && voterId == s.mayorId) ? 2 : 1;
       counts[targetId] = (counts[targetId] ?? 0) + weight;
     });
+    if (s.corbeauCursedId != null) {
+      counts[s.corbeauCursedId!] = (counts[s.corbeauCursedId!] ?? 0) + 2;
+    }
     if (counts.isEmpty) return const VoteTally(tiedCandidates: []);
     final maxVotes = counts.values.reduce(max);
     final tied = counts.entries
@@ -4635,30 +4930,24 @@ class GameEngine {
 
   void resolveVillageVote(GameState s, String eliminatedId) {
     _applyDeath(s, eliminatedId, DeathCause.vote);
-    if (s.pendingActions.isNotEmpty) {
-      s.phase = GamePhase.pendingAction;
-      return;
-    }
+    s.corbeauCursedId = null; // la malédiction ne vaut que pour ce vote
     s.phase = GamePhase.voteResult;
   }
 
   void confirmVoteResult(GameState s) {
-    final result = checkWinCondition(s);
-    if (result != null) {
-      s.result = result;
-      s.phase = GamePhase.endGame;
-      return;
-    }
-    if (s.powerLossThisWave.isNotEmpty) {
-      s.phase = GamePhase.villagePowerLoss;
-      return;
-    }
-    _startNextNight(s);
+    s.followUpOrigin = FollowUpOrigin.voteDeaths;
+    _resolveFollowUps(s);
   }
 
-  /// À appeler quand le groupe a fini de lire la révélation de perte de pouvoirs.
-  void confirmPowerLossReveal(GameState s) {
-    s.powerLossThisWave = [];
+  void _afterVoteDeathsResolved(GameState s) {
+    if (s.voteReplayPending) {
+      // Pouvoir du Juge Bègue : on revote immédiatement, le même jour.
+      s.voteReplayPending = false;
+      s.phaseQueue = [GamePhase.villageVote];
+      s.phaseIndex = 0;
+      s.phase = GamePhase.villageVote;
+      return;
+    }
     _startNextNight(s);
   }
 
@@ -4667,6 +4956,7 @@ class GameEngine {
     s.currentWave = 'night';
     _resetNightTempData(s);
     s.phaseQueue = buildNightQueue(s);
+    s.skippedNextNightPlayerId = null;
     s.phaseIndex = 0;
     s.phase = s.phaseQueue[0];
   }
@@ -4679,12 +4969,20 @@ class GameEngine {
     final p = s.byId(playerId);
     if (!p.alive) return; // déjà mort (ex. sauvé puis reciblé ailleurs)
 
-    // L'Ancien résiste à une première attaque des Loups-Garous : il survit
-    // en silence, sans qu'aucun mort ne soit annoncé cette nuit-là.
+    // L'Ancien résiste à une première attaque des Loups-Garous : il
+    // survit en silence, sans qu'aucun mort ne soit annoncé cette nuit-là.
     if (p.role == RoleId.ancien &&
         cause == DeathCause.devoreParLesLoups &&
         !s.ancienExtraLifeUsed) {
       s.ancienExtraLifeUsed = true;
+      return;
+    }
+
+    // L'Idiot du Village survit à un vote : démasqué, il perd son droit
+    // de vote mais reste en vie. On s'arrête là pour ce joueur : ce n'est
+    // pas une mort.
+    if (p.role == RoleId.idiotDuVillage && cause == DeathCause.vote) {
+      s.idiotDuVillageRevealId = p.id;
       return;
     }
 
@@ -4694,40 +4992,65 @@ class GameEngine {
     p.deathAtDay = s.currentWave == 'day' ? s.day : null;
     s.deathsThisWave.add(playerId);
 
-    // Chagrin d'amour : mort immédiate et inconditionnelle de l'autre Amoureux.
+    // Chagrin d'amour : mort immédiate et inconditionnelle de l'autre
+    // Amoureux. Pas besoin d'attendre un tour ou une confirmation : c'est
+    // un "if" direct dans la cascade, comme demandé.
     final lover = s.tryById(p.loverId);
     if (lover != null && lover.alive) {
       _applyDeath(s, lover.id, DeathCause.chagrinDAmourCupidon);
     }
 
-    final hunterRevengeCauses = <DeathCause>{
-      DeathCause.devoreParLesLoups,
-      DeathCause.vote,
-      if (s.settings.allowHunterToShootAfterWitchDeathCause)
-        DeathCause.potionDeMort,
-    };
-    if (p.role == RoleId.chasseur && hunterRevengeCauses.contains(cause)) {
-      s.pendingActions
-          .add(PendingAction(playerId: p.id, isHunterRevenge: true));
+    // Enfant Sauvage : si le mort était son modèle (mentorOf pointe vers
+    // lui), il devient Loup-Garou. La mutation du rôle a lieu tout de
+    // suite — elle doit compter dès la prochaine phase des Loups — et un
+    // flag est posé pour que la table en soit informée au bon moment
+    // (voir GamePhase.enfantsauvageReveal dans _resolveFollowUps).
+    if (p.mentorOf != null) {
+      final enfant = s.tryById(p.mentorOf);
+      if (enfant != null &&
+          enfant.alive &&
+          enfant.role == RoleId.enfantSauvage) {
+        s.enfantSauvagePreviousRole = enfant.role;
+        s.enfantSauvageTransformedId = enfant.id;
+        enfant.role = RoleId.loupGarou;
+      }
+    }
+
+    // Le Chasseur réplique quelle que soit l'heure de sa mort, sauf si le
+    // réglage interdit la riposte après un empoisonnement par la
+    // Sorcière.
+    final blockedByWitchSetting = cause == DeathCause.potionDeMort &&
+        !s.settings.allowHunterToShootAfterWitchDeathCause;
+    if (p.role == RoleId.chasseur && !blockedByWitchSetting) {
+      s.chasseurRevengeTargetId = p.id;
     }
 
     // Succession du maire, quelle que soit la cause de sa mort.
     if (p.isMayor) {
       p.isMayor = false;
-      s.pendingActions
-          .add(PendingAction(playerId: p.id, isMayorSuccession: true));
+      s.mayorSuccessionNeededFor = p.id;
     }
 
-    // Le village a fait pendre l'Ancien par erreur : tous les villageois à
-    // pouvoir perdent leur don pour le reste de la partie.
+    // Bouc Émissaire éliminé par le vote : il désigne un joueur qui
+    // sautera la nuit suivante.
+    if (p.role == RoleId.boucEmissaire && cause == DeathCause.vote) {
+      s.boucEmissaireChoiceNeededId = p.id;
+    }
+
+    // Servante Dévouée : peut reprendre le rôle d'un joueur mort au vote.
+    if (cause == DeathCause.vote &&
+        p.role != RoleId.servanteDevouee &&
+        s.hasAliveRole(RoleId.servanteDevouee)) {
+      s.servanteDevoueeOfferId = p.id;
+    }
+
+    // Le village a fait pendre l'Ancien par erreur : tous les villageois
+    // à pouvoir perdent leur don pour le reste de la partie.
     if (p.role == RoleId.ancien && cause == DeathCause.vote) {
       _villageLosesPowers(s);
     }
   }
 
-  /// Rétrograde tous les villageois à pouvoir en simples villageois (les
-  /// Loups ne sont pas concernés). Déclenché quand le village exécute
-  /// l'Ancien par erreur.
   void _villageLosesPowers(GameState s) {
     for (final p in s.alivePlayers) {
       if (p.camp == Camp.village && p.role != RoleId.simpleVillageois) {
@@ -4747,24 +5070,36 @@ class GameEngine {
     if (alive.length == 2) {
       final a = alive[0], b = alive[1];
       if (a.loverId == b.id && b.loverId == a.id && a.camp != b.camp) {
-        return GameResult(WinnerType.amoureux, [a.id, b.id]);
+        return GameResult(Camp.amoureux, [a.id, b.id]);
       }
     }
 
-    final wolves = alive.where((p) => p.camp == Camp.loups).length;
-    final villagers = alive.length - wolves;
-
-    if (wolves == 0) {
-      return GameResult(WinnerType.village, alive.map((p) => p.id).toList());
+    // Le Loup-Garou Blanc gagne seul s'il est le dernier survivant.
+    if (alive.length == 1 && alive.first.role == RoleId.loupBlanc) {
+      return GameResult(Camp.seul, [alive.first.id]);
     }
-    if (wolves >= villagers) {
-      return GameResult(WinnerType.loups,
-          alive.where((p) => p.camp == Camp.loups).map((p) => p.id).toList());
+
+    final wolves = alive.where((p) => p.camp == Camp.loups).length;
+    final others = alive
+        .where((p) => p.camp != Camp.loups && p.role != RoleId.loupBlanc)
+        .length;
+
+    if (wolves == 0 && others == 0) {
+      // Ne devrait arriver qu'avec le Loup Blanc seul, déjà géré au-dessus.
+      return null;
+    }
+    if (wolves == 0) {
+      return GameResult(Camp.village, alive.map((p) => p.id).toList());
+    }
+    if (wolves >= others) {
+      return GameResult(
+        Camp.loups,
+        alive.where((p) => p.camp == Camp.loups).map((p) => p.id).toList(),
+      );
     }
     return null;
   }
 }
-
 ===== Fichier: services/storage_service.dart =====
 
 import 'dart:convert';
