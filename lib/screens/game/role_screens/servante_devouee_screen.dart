@@ -5,6 +5,7 @@ import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
 import '../../../widgets/pass_device_gate.dart';
 import '../../../widgets/role_image.dart';
+import 'role_screen_chrome.dart';
 
 class ServanteDevoueeScreen extends StatelessWidget {
   const ServanteDevoueeScreen({super.key});
@@ -32,11 +33,16 @@ class _ServanteDevoueeContent extends StatelessWidget {
     // Filet de sécurité : ne devrait pas arriver si la phase n'est
     // déclenchée que lorsque GameState.servanteDevoueeOfferId est posé.
     if (offered == null) {
-      return Scaffold(
-        body: Center(
-          child: ElevatedButton(
-            onPressed: () => gp.setServanteDevoueeChoice(false),
-            child: const Text('Continuer'),
+      return RoleScreenFrame(
+        title: 'La Servante Dévouée',
+        accent: RoleId.servanteDevouee.info.accent,
+        child: Center(
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => gp.setServanteDevoueeChoice(false),
+              child: const Text('Continuer'),
+            ),
           ),
         ),
       );
@@ -44,54 +50,49 @@ class _ServanteDevoueeContent extends StatelessWidget {
 
     final info = offered.role.info;
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('La Servante Dévouée')),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '${offered.name} vient d\'être éliminé(e) par le village.',
-                style: theme.textTheme.titleLarge,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              RoleImage(role: offered.role, size: 100),
-              const SizedBox(height: 16),
-              Text(
-                info.name,
-                style: theme.textTheme.displayMedium
-                    ?.copyWith(color: info.accent),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'Veux-tu révéler que tu es la Servante Dévouée et prendre '
-                    'ce rôle à sa place ?',
-                style: theme.textTheme.bodyLarge,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 40),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => gp.setServanteDevoueeChoice(true),
-                  child: const Text('Oui, prendre ce rôle'),
-                ),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () => gp.setServanteDevoueeChoice(false),
-                  child: const Text('Non, rester Servante Dévouée'),
-                ),
-              ),
-            ],
+    return RoleScreenFrame(
+      title: 'La Servante Dévouée',
+      accent: RoleId.servanteDevouee.info.accent,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          RoleInstructionCard(
+            text:
+                '${offered.name} vient d\'être éliminé(e). Veux-tu prendre son rôle ?',
+            accent: RoleId.servanteDevouee.info.accent,
           ),
-        ),
+          const SizedBox(height: 20),
+          RoleSectionCard(
+            child: Column(
+              children: [
+                RoleImage(role: offered.role, size: 100),
+                const SizedBox(height: 16),
+                Text(
+                  info.name,
+                  style: theme.textTheme.displayMedium
+                      ?.copyWith(color: info.accent),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 28),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => gp.setServanteDevoueeChoice(true),
+              child: const Text('Oui, prendre ce rôle'),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: () => gp.setServanteDevoueeChoice(false),
+              child: const Text('Non, rester Servante Dévouée'),
+            ),
+          ),
+        ],
       ),
     );
   }

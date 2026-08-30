@@ -4,6 +4,7 @@ import '../../../providers/game_provider.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/pass_device_gate.dart';
 import '../../../widgets/player_grid_selector.dart';
+import 'role_screen_chrome.dart';
 
 class CorbeauScreen extends StatelessWidget {
   const CorbeauScreen({super.key});
@@ -27,33 +28,29 @@ class _CorbeauContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
-    final theme = Theme.of(context);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Les Corbeau')),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Désigne ta victime.',
-                style: theme.textTheme.bodyLarge,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: PlayerGridSelector(
-                    players: gp.state!.alivePlayers,
-                    onSelect: (id) => gp.setCorbeauVictim(id),
-                  ),
+    return RoleScreenFrame(
+      title: 'Le Corbeau',
+      accent: AppColors.blood,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const RoleInstructionCard(
+            text: 'Désigne un joueur qui recevra deux voix contre lui au vote.',
+            accent: AppColors.blood,
+          ),
+          const SizedBox(height: 14),
+          Expanded(
+            child: RoleSectionCard(
+              child: SingleChildScrollView(
+                child: PlayerGridSelector(
+                  players: gp.state!.alivePlayers,
+                  onSelect: (id) => gp.setCorbeauVictim(id),
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

@@ -4,6 +4,7 @@ import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
 import '../../../widgets/pass_device_gate.dart';
 import '../../../widgets/player_grid_selector.dart';
+import 'role_screen_chrome.dart';
 
 class CupidonScreen extends StatelessWidget {
   const CupidonScreen({super.key});
@@ -43,42 +44,39 @@ class _CupidonContentState extends State<_CupidonContent> {
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
     final players = gp.state!.alivePlayers;
-    final theme = Theme.of(context);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Cupidon')),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
+    return RoleScreenFrame(
+      title: 'Cupidon',
+      accent: RoleId.cupidon.info.accent,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          RoleInstructionCard(
+            text:
                 'Désigne les deux Amoureux (${chosen.length}/2). Tu peux te choisir toi-même.',
-                style: theme.textTheme.bodyLarge,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: PlayerGridSelector(
-                    players: players,
-                    selectedId: null,
-                    highlightedIds: chosen.toSet(),
-                    onSelect: _toggle,
-                  ),
+            accent: RoleId.cupidon.info.accent,
+          ),
+          const SizedBox(height: 14),
+          Expanded(
+            child: RoleSectionCard(
+              child: SingleChildScrollView(
+                child: PlayerGridSelector(
+                  players: players,
+                  selectedId: null,
+                  highlightedIds: chosen.toSet(),
+                  onSelect: _toggle,
                 ),
               ),
-              const SizedBox(height: 12),
-              ElevatedButton(
-                onPressed: chosen.length == 2
-                    ? () => gp.resolveCupidon(chosen[0], chosen[1])
-                    : null,
-                child: const Text('Confirmer les Amoureux'),
-              ),
-            ],
+            ),
           ),
-        ),
+          const SizedBox(height: 12),
+          ElevatedButton(
+            onPressed: chosen.length == 2
+                ? () => gp.resolveCupidon(chosen[0], chosen[1])
+                : null,
+            child: const Text('Confirmer les Amoureux'),
+          ),
+        ],
       ),
     );
   }

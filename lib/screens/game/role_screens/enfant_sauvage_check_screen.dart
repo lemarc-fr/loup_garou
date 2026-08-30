@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
 import '../../../widgets/pass_device_gate.dart';
+import 'role_screen_chrome.dart';
 
 class EnfantSauvageCheckScreen extends StatelessWidget {
   const EnfantSauvageCheckScreen({super.key});
@@ -24,36 +25,32 @@ class _EnfantSauvageCheckContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
-    final theme = Theme.of(context);
     final info = RoleId.enfantSauvage.info;
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Enfant Sauvage')),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(info.fallbackIcon, size: 64, color: info.accent),
-              const SizedBox(height: 24),
-              Text(
-                'Ton modèle est toujours vivant : tu es toujours un simple '
-                    'villageois, sans pouvoir particulier.',
-                style: theme.textTheme.bodyLarge,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 40),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: gp.confirmEnfantSauvageCheck,
-                  child: const Text('Se rendormir'),
-                ),
-              ),
-            ],
+    return RoleScreenFrame(
+      title: 'L’Enfant Sauvage',
+      accent: info.accent,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          RoleInstructionCard(
+            text:
+                'Ton modèle est toujours vivant : tu restes un simple villageois sans pouvoir particulier.',
+            accent: info.accent,
           ),
-        ),
+          const SizedBox(height: 20),
+          RoleSectionCard(
+            child: Icon(info.fallbackIcon, size: 64, color: info.accent),
+          ),
+          const SizedBox(height: 28),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: gp.confirmEnfantSauvageCheck,
+              child: const Text('Se rendormir'),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -4,6 +4,7 @@ import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/pass_device_gate.dart';
+import 'role_screen_chrome.dart';
 
 class PetiteFilleScreen extends StatelessWidget {
   const PetiteFilleScreen({super.key});
@@ -26,47 +27,42 @@ class _PetiteFilleContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
-    final theme = Theme.of(context);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('La Petite Fille')),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                RoleId.petiteFille.info.nightInstruction,
-                style: theme.textTheme.bodyLarge,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Attention : si les Loups-Garous te surprennent, tu prendras la place de leur victime.',
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(color: AppColors.blood),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 40),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => gp.resolvePetiteFille(tried: true),
-                  child: const Text('Entrouvrir les yeux et espionner'),
-                ),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () => gp.resolvePetiteFille(tried: false),
-                  child: const Text('Rester sagement endormie'),
-                ),
-              ),
-            ],
+    return RoleScreenFrame(
+      title: 'La Petite Fille',
+      accent: RoleId.petiteFille.info.accent,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          RoleInstructionCard(
+            text: RoleId.petiteFille.info.nightInstruction,
+            accent: RoleId.petiteFille.info.accent,
           ),
-        ),
+          const SizedBox(height: 14),
+          const RoleSectionCard(
+            child: Text(
+              'Attention : si les Loups-Garous te surprennent, tu prendras la place de leur victime.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppColors.blood),
+            ),
+          ),
+          const SizedBox(height: 28),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => gp.resolvePetiteFille(tried: true),
+              child: const Text('Entrouvrir les yeux et espionner'),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: () => gp.resolvePetiteFille(tried: false),
+              child: const Text('Rester sagement endormie'),
+            ),
+          ),
+        ],
       ),
     );
   }

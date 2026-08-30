@@ -5,6 +5,7 @@ import '../../../providers/game_provider.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/pass_device_gate.dart';
 import '../../../widgets/role_image.dart';
+import 'role_screen_chrome.dart';
 
 class VoleurScreen extends StatelessWidget {
   const VoleurScreen({super.key});
@@ -34,67 +35,63 @@ class _VoleurContentState extends State<_VoleurContent> {
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
     final state = gp.state!;
-    final theme = Theme.of(context);
     final cards = state.voleurTableCards;
     final forced =
         cards.isNotEmpty && cards.every((c) => c == RoleId.loupGarou);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Le Voleur')),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              Text(
-                RoleId.voleur.info.nightInstruction,
-                style: theme.textTheme.bodyLarge,
-                textAlign: TextAlign.center,
-              ),
-              if (forced) ...[
-                const SizedBox(height: 8),
-                Text(
-                  'Les deux cartes sont des Loups-Garous : tu es obligé d\'en prendre une !',
-                  style: theme.textTheme.bodyMedium
-                      ?.copyWith(color: AppColors.blood),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-              const SizedBox(height: 28),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  for (final card in cards) ...[
-                    _CardChoice(
-                      role: card,
-                      selected: selected == card,
-                      onTap: () => setState(() => selected = card),
-                    ),
-                    const SizedBox(width: 20),
-                  ],
-                ],
-              ),
-              const Spacer(),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: selected == null
-                      ? null
-                      : () => gp.resolveVoleur(selected),
-                  child: const Text('Échanger mon rôle contre celle-ci'),
-                ),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: forced ? null : () => gp.resolveVoleur(null),
-                  child: const Text('Garder mon rôle actuel'),
-                ),
-              ),
-            ],
+    return RoleScreenFrame(
+      title: 'Le Voleur',
+      accent: RoleId.voleur.info.accent,
+      child: Column(
+        children: [
+          RoleInstructionCard(
+            text: RoleId.voleur.info.nightInstruction,
+            accent: RoleId.voleur.info.accent,
           ),
-        ),
+          if (forced) ...[
+            const SizedBox(height: 10),
+            const RoleSectionCard(
+              child: Text(
+                'Les deux cartes sont des Loups-Garous : tu es obligé d’en prendre une !',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppColors.blood),
+              ),
+            ),
+          ],
+          const SizedBox(height: 18),
+          RoleSectionCard(
+            child: Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 14,
+              runSpacing: 14,
+              children: [
+                for (final card in cards)
+                  _CardChoice(
+                    role: card,
+                    selected: selected == card,
+                    onTap: () => setState(() => selected = card),
+                  ),
+              ],
+            ),
+          ),
+          const Spacer(),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed:
+                  selected == null ? null : () => gp.resolveVoleur(selected),
+              child: const Text('Échanger mon rôle contre celle-ci'),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: forced ? null : () => gp.resolveVoleur(null),
+              child: const Text('Garder mon rôle actuel'),
+            ),
+          ),
+        ],
       ),
     );
   }

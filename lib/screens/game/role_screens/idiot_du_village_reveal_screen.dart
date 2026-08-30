@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
 import '../../../widgets/role_image.dart';
+import 'role_screen_chrome.dart';
 
 class IdiotDuVillageRevealScreen extends StatelessWidget {
   const IdiotDuVillageRevealScreen({super.key});
@@ -16,46 +17,47 @@ class IdiotDuVillageRevealScreen extends StatelessWidget {
     final idiot = state.byId(state.idiotDuVillageRevealId!);
     final info = idiot.role.info;
 
-    return Scaffold(
-      appBar: AppBar(title: const Text("L'Idiot du Village")),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Le village a voté contre ${idiot.name}...',
-                style: theme.textTheme.titleLarge,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              RoleImage(role: idiot.role, size: 120),
-              const SizedBox(height: 16),
-              Text(
-                info.name,
-                style: theme.textTheme.displayMedium
-                    ?.copyWith(color: info.accent),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                '${idiot.name} révèle son rôle et survit, mais perd '
-                    'définitivement son droit de vote.',
-                style: theme.textTheme.bodyLarge,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 40),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: gp.confirmIdiotDuVillageReveal,
-                  child: const Text('Continuer'),
-                ),
-              ),
-            ],
+    return RoleScreenFrame(
+      title: "L'Idiot du Village",
+      accent: info.accent,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          RoleInstructionCard(
+            text:
+                'Le village a voté contre ${idiot.name}, mais il révèle son rôle et survit.',
+            accent: info.accent,
           ),
-        ),
+          const SizedBox(height: 20),
+          RoleSectionCard(
+            child: Column(
+              children: [
+                RoleImage(role: idiot.role, size: 120),
+                const SizedBox(height: 16),
+                Text(
+                  info.name,
+                  style:
+                      theme.textTheme.displayMedium?.copyWith(color: info.accent),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '${idiot.name} perd définitivement son droit de vote.',
+                  style: theme.textTheme.bodyLarge,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 28),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: gp.confirmIdiotDuVillageReveal,
+              child: const Text('Continuer'),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -4,6 +4,7 @@ import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/role_image.dart';
+import 'role_screen_chrome.dart';
 
 class EnfantSauvageRevealScreen extends StatefulWidget {
   const EnfantSauvageRevealScreen({super.key});
@@ -40,43 +41,44 @@ class _EnfantSauvageRevealScreenState extends State<EnfantSauvageRevealScreen>
     final gp = context.read<GameProvider>();
     final theme = Theme.of(context);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Mutation')),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Son modèle est mort : L\'enfant sauvage n\'est plus un enfant, '
-                    'il/elle devient...',
-                style: theme.textTheme.titleLarge,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              ScaleTransition(
-                scale: _scale,
-                child: const RoleImage(role: RoleId.loupGarou, size: 120),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                RoleId.loupGarou.info.name,
-                style: theme.textTheme.displayMedium
-                    ?.copyWith(color: AppColors.blood),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 40),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: gp.confirmEnfantSauvageReveal,
-                  child: const Text('Continuer'),
-                ),
-              ),
-            ],
+    return RoleScreenFrame(
+      title: 'Mutation',
+      accent: AppColors.blood,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const RoleInstructionCard(
+            text:
+                'Son modèle est mort : l’Enfant Sauvage rejoint désormais la meute.',
+            accent: AppColors.blood,
           ),
-        ),
+          const SizedBox(height: 20),
+          RoleSectionCard(
+            child: Column(
+              children: [
+                ScaleTransition(
+                  scale: _scale,
+                  child: const RoleImage(role: RoleId.loupGarou, size: 120),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  RoleId.loupGarou.info.name,
+                  style: theme.textTheme.displayMedium
+                      ?.copyWith(color: AppColors.blood),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 28),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: gp.confirmEnfantSauvageReveal,
+              child: const Text('Continuer'),
+            ),
+          ),
+        ],
       ),
     );
   }

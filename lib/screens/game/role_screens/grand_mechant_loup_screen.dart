@@ -5,6 +5,7 @@ import '../../../providers/game_provider.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/pass_device_gate.dart';
 import '../../../widgets/player_grid_selector.dart';
+import 'role_screen_chrome.dart';
 
 class GrandMechantLoupScreen extends StatelessWidget {
   const GrandMechantLoupScreen({super.key});
@@ -27,7 +28,6 @@ class _GrandMechantLoupContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
     final state = gp.state!;
-    final theme = Theme.of(context);
     final firstVictim = state.tryById(state.loupsVictimId);
 
     final targets = state.alivePlayers
@@ -37,44 +37,38 @@ class _GrandMechantLoupContent extends StatelessWidget {
         p.camp != Camp.loups)
         .toList();
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Le Grand Méchant Loup')),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                firstVictim != null
-                    ? 'Les Loups ont désigné ${firstVictim.name}. Tant '
-                    'qu\'aucun Loup n\'est mort, tu peux dévorer une '
-                    'seconde victime.'
-                    : 'Tant qu\'aucun Loup n\'est mort, tu peux dévorer une '
-                    'seconde victime.',
-                style: theme.textTheme.bodyLarge,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: PlayerGridSelector(
-                    players: targets,
-                    onSelect: (id) => gp.resolveGrandMechantLoup(id),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () => gp.resolveGrandMechantLoup(null),
-                  child: const Text('Ne pas utiliser mon pouvoir cette nuit'),
-                ),
-              ),
-            ],
+    return RoleScreenFrame(
+      title: 'Le Grand Méchant Loup',
+      accent: AppColors.blood,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          RoleInstructionCard(
+            text: firstVictim != null
+                ? 'Les Loups ont déjà désigné ${firstVictim.name}. Tant qu’aucun Loup n’est mort, tu peux choisir une seconde victime.'
+                : 'Tant qu’aucun Loup n’est mort, tu peux choisir une seconde victime cette nuit.',
+            accent: AppColors.blood,
           ),
-        ),
+          const SizedBox(height: 14),
+          Expanded(
+            child: RoleSectionCard(
+              child: SingleChildScrollView(
+                child: PlayerGridSelector(
+                  players: targets,
+                  onSelect: (id) => gp.resolveGrandMechantLoup(id),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: () => gp.resolveGrandMechantLoup(null),
+              child: const Text('Ne pas utiliser mon pouvoir cette nuit'),
+            ),
+          ),
+        ],
       ),
     );
   }

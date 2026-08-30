@@ -4,6 +4,7 @@ import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
 import '../../../widgets/pass_device_gate.dart';
 import '../../../widgets/player_grid_selector.dart';
+import 'role_screen_chrome.dart';
 
 class RenardScreen extends StatelessWidget {
   const RenardScreen({super.key});
@@ -25,35 +26,31 @@ class _RenardContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gp = context.watch<GameProvider>();
-    final theme = Theme.of(context);
     final selection = gp.renardDraftSelection;
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Le Renard')),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Choisis trois joueurs voisins (${selection.length}/3).',
-                style: theme.textTheme.bodyLarge,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: PlayerGridSelector(
-                    players: gp.state!.alivePlayers,
-                    highlightedIds: selection.toSet(),
-                    onSelect: (id) => gp.setRenardTarget(id),
-                  ),
+    return RoleScreenFrame(
+      title: 'Le Renard',
+      accent: RoleId.renard.info.accent,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          RoleInstructionCard(
+            text: 'Choisis trois joueurs voisins (${selection.length}/3).',
+            accent: RoleId.renard.info.accent,
+          ),
+          const SizedBox(height: 14),
+          Expanded(
+            child: RoleSectionCard(
+              child: SingleChildScrollView(
+                child: PlayerGridSelector(
+                  players: gp.state!.alivePlayers,
+                  highlightedIds: selection.toSet(),
+                  onSelect: (id) => gp.setRenardTarget(id),
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
