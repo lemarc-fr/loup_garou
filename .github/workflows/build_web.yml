@@ -22,12 +22,8 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
 
-      - run: flutter doctor -v
-
       - run: flutter pub get
       - run: flutter build web --release --wasm
-      - run: tree
-      - run: ls build/web/
 
       # SSH + envoi des artifacts
       - name: Setup SSH
