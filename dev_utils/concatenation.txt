@@ -22,6 +22,7 @@
 │   │   ├── mayor_election_screen.dart
 │   │   ├── mayor_reveal_screen.dart
 │   │   ├── mayor_reveal_screen.preview.dart
+│   │   ├── mayor_succession_screen.dart
 │   │   ├── night_intro_screen.dart
 │   │   ├── role_screens
 │   │   │   ├── bouc_emissaire_screen.dart
@@ -1014,6 +1015,19 @@ const Map<RoleId, RoleInfo> kRoleCatalog = {
     accent: AppColors.forest,
     actsAtNight: true,
   ),
+  RoleId.corbeau: RoleInfo(
+    id: RoleId.corbeau,
+    name: 'Le Corbeau',
+    nameShort: 'Corbeau',
+    camp: Camp.village,
+    description: "la nuit il designe une personne qui aura deux votes de plus contre elle au prochain jour (vote des villageois)",
+    nightInstruction:
+    "personne que vous denoncez pour le prochain vote",
+    imageAsset: 'assets/images/roles/corbeau.png',
+    fallbackIcon: Icons.handshake,
+    accent: AppColors.forest,
+    actsAtNight: true,
+  ),
 };
 
 extension RoleInfoX on RoleId {
@@ -1026,6 +1040,7 @@ import 'package:flutter/foundation.dart';
 import '../models/game_config.dart';
 import '../models/game_settings.dart';
 import '../models/game_state.dart';
+import '../models/player.dart';
 import '../models/role.dart';
 import '../services/game_engine.dart';
 
@@ -1045,6 +1060,11 @@ class GameProvider extends ChangeNotifier {
 
   // --- Partie en cours ---
   GameState? state;
+
+  // --- Sélection en cours du Renard : il désigne trois joueurs d'un coup,
+  // mais l'UI (PlayerGridSelector) ne renvoie qu'un id à la fois. On
+  // accumule donc ici, un tap = ajoute/retire, jusqu'à en avoir trois.
+  final List<String> renardDraftSelection = [];
 
   bool get hasActiveGame => state != null;
 
@@ -1103,9 +1123,9 @@ class GameProvider extends ChangeNotifier {
 
   bool get namesValid =>
       draftNames.length == draftConfig!.cardsForPlayers &&
-      draftNames.every((n) => n.trim().isNotEmpty) &&
-      draftNames.map((n) => n.trim().toLowerCase()).toSet().length ==
-          draftNames.length;
+          draftNames.every((n) => n.trim().isNotEmpty) &&
+          draftNames.map((n) => n.trim().toLowerCase()).toSet().length ==
+              draftNames.length;
 
   void confirmNamesAndDeal(GameSettings settings) {
     state = engine.initGame(
@@ -1147,6 +1167,7 @@ class GameProvider extends ChangeNotifier {
     draftNames = [];
     revealIndex = 0;
     revealCardVisible = false;
+    renardDraftSelection.clear();
     notifyListeners();
   }
 
@@ -1161,6 +1182,16 @@ class GameProvider extends ChangeNotifier {
 
   void resolveCupidon(String id1, String id2) {
     engine.resolveCupidon(state!, id1, id2);
+    notifyListeners();
+  }
+
+  void setEnfantSauvageMentor(String modelId) {
+    engine.resolveEnfantSauvageMentor(state!, modelId);
+    notifyListeners();
+  }
+
+  void setSalvateurTarget(String protectedId) {
+    engine.resolveSalvateur(state!, protectedId);
     notifyListeners();
   }
 
@@ -1179,11 +1210,67 @@ class GameProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// [targetId] == null si le Loup Blanc renonce à utiliser son pouvoir
+  /// cette nuit-là.
+  void setLoupBlancVictim(String? targetId) {
+    engine.resolveLoupBlanc(state!, targetId);
+    notifyListeners();
+  }
+
+  /// [secondVictimId] == null si le Grand Méchant Loup renonce à sa
+  /// seconde victime cette nuit-là.
+  void resolveGrandMechantLoup(String? secondVictimId) {
+    engine.resolveGrandMechantLoup(state!, secondVictimId);
+    notifyListeners();
+  }
+
+  void setInfectPereDesLoups(bool infect) {
+    engine.resolveInfectPereDesLoups(state!, infect);
+    notifyListeners();
+  }
+
+  /// Le Renard désigne trois joueurs d'un coup. Chaque appel ajoute ou
+  /// retire [id] de la sélection en cours ; dès que trois joueurs sont
+  /// choisis, le pouvoir est résolu automatiquement et on avance de phase.
+  void setRenardTarget(String id) {
+    if (renardDraftSelection.contains(id)) {
+      renardDraftSelection.remove(id);
+    } else if (renardDraftSelection.length < 3) {
+      renardDraftSelection.add(id);
+    }
+    if (renardDraftSelection.length == 3) {
+      engine.resolveRenard(state!, List.of(renardDraftSelection));
+      renardDraftSelection.clear();
+    }
+    notifyListeners();
+  }
+
+  /// Nombre de Loups-Garous trouvés parmi les trois dernières cibles du
+  /// Renard, à afficher tant que la nuit n'est pas terminée.
+  int get wolvesFoundByRenard {
+    final s = state;
+    if (s == null) return 0;
+    return s.renardTargetIds.where((id) {
+      final p = s.tryById(id);
+      return p != null && p.camp == Camp.loups;
+    }).length;
+  }
+
+  void setCorbeauVictim(String targetId) {
+    engine.resolveCorbeau(state!, targetId);
+    notifyListeners();
+  }
+
   void resolveSorciere({bool useVie = false, String? poisonTargetId}) {
     engine.resolveSorciere(state!,
         useVie: useVie, poisonTargetId: poisonTargetId);
     notifyListeners();
   }
+
+  /// Le Montreur d'Ours n'a aucune action à jouer : son résultat se lit
+  /// directement sur l'état. Exposé ici pour éviter à l'UI de dépendre de
+  /// GameState directement.
+  bool get montreurDoursGrowls => state?.montreurDoursGrowls ?? false;
 
   void advanceGeneric() {
     engine.advance(state!);
@@ -1191,16 +1278,49 @@ class GameProvider extends ChangeNotifier {
   }
 
   // ---------------------------------------------------------------------
-  // Actions différées
+  // Suites déclenchées par une mort
   // ---------------------------------------------------------------------
+  // Il n'y a plus de file générique d'actions en attente côté moteur :
+  // chaque flag (chasseurRevengeTargetId, mayorSuccessionNeededFor, ...)
+  // a maintenant sa propre méthode de résolution dédiée dans GameEngine.
 
-  void resolvePendingAction(
-      {String? hunterTargetId, String? mayorSuccessorId}) {
-    engine.resolvePendingAction(
-      state!,
-      hunterTargetId: hunterTargetId,
-      mayorSuccessorId: mayorSuccessorId,
-    );
+  void setHunterTarget(String targetId) {
+    engine.resolveChasseurRevenge(state!, targetId);
+    notifyListeners();
+  }
+
+  void resolveMayorSuccession(String successorId) {
+    engine.resolveMayorSuccession(state!, successorId);
+    notifyListeners();
+  }
+
+  void confirmEnfantSauvageReveal() {
+    engine.confirmEnfantSauvageReveal(state!);
+    notifyListeners();
+  }
+
+  void confirmPowerLossReveal() {
+    engine.confirmPowerLossReveal(state!);
+    notifyListeners();
+  }
+
+  /// Joueur dont le rôle est proposé à la Servante Dévouée (celui qui
+  /// vient d'être éliminé par le vote), pour affichage côté écran.
+  Player? get servanteDevoueeOfferedPlayer =>
+      state?.tryById(state!.servanteDevoueeOfferId);
+
+  void setServanteDevoueeChoice(bool takeRole) {
+    engine.resolveServanteDevouee(state!, takeRole);
+    notifyListeners();
+  }
+
+  void setBoucEmissaireTarget(String skippedPlayerId) {
+    engine.resolveBoucEmissaireChoice(state!, skippedPlayerId);
+    notifyListeners();
+  }
+
+  void confirmIdiotDuVillageReveal() {
+    engine.confirmIdiotDuVillageReveal(state!);
     notifyListeners();
   }
 
@@ -1218,8 +1338,25 @@ class GameProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void confirmMayorElectionExplain() {
+    engine.confirmMayorElectionExplain(state!);
+    notifyListeners();
+  }
+
+  void confirmMayorReveal() {
+    engine.confirmMayorReveal(state!);
+    notifyListeners();
+  }
+
   void confirmDebate() {
     engine.confirmDebate(state!);
+    notifyListeners();
+  }
+
+  /// [usePower] : le Juge Bègue décide (ou non) que le vote du village
+  /// sera rejoué immédiatement. Ce n'est pas un choix de joueur.
+  void resolveJugeBegueDecision(bool usePower) {
+    engine.resolveJugeBegueDecision(state!, usePower);
     notifyListeners();
   }
 
@@ -1235,43 +1372,7 @@ class GameProvider extends ChangeNotifier {
     engine.confirmVoteResult(state!);
     notifyListeners();
   }
-
-  void confirmPowerLossReveal() {
-    engine.confirmPowerLossReveal(state!);
-    notifyListeners();
-  }
-
-  void confirmMayorReveal() {
-    engine.confirmMayorReveal(state!);
-    notifyListeners();
-  }
-  void confirmMayorElectionExplain() {
-    engine.confirmMayorElectionExplain(state!);
-    notifyListeners();
-  }
-  void setHunterTarget(String targetId) {}
-
-  void setBoucEmissaireTarget(String id) {}
-
-  void setSalvateurTarget(String id) {}
-
-  void setCorbeauVictim(String id) {}
-
-  void setLoupBlancVictim(String id) {}
-
-  void setEnfantSauvageMentor(String id) {}
-
-  void setInfectPereDesLoups(bool bool) {}
-
-  void setJugeBegueTarget(String id) {}
-
-  int getwolfbeside(String id) {}
-
-  void setServanteDevoueeChoice(bool bool) {}
-
-  void setRenardTarget(String id) {}
 }
-
 ===== Fichier: providers/settings_provider.dart =====
 
 import 'package:flutter/foundation.dart';
@@ -1648,74 +1749,92 @@ import '../../theme/app_theme.dart';
 import 'day_reveal_screen.dart';
 import 'debate_screen.dart';
 import 'end_game_screen.dart';
+import 'mayor_election_explain.dart';
 import 'mayor_election_screen.dart';
+import 'mayor_reveal_screen.dart';
+import 'mayor_succession_screen.dart';
 import 'night_intro_screen.dart';
+import 'role_screens/bouc_emissaire_screen.dart';
+import 'role_screens/chasseur_screen.dart';
+import 'role_screens/corbeau_screen.dart';
 import 'role_screens/cupidon_screen.dart';
+import 'role_screens/enfant_sauvage_screen.dart';
+import 'role_screens/infect_pere_des_loups_screen.dart';
+import 'role_screens/juge_begue_screen.dart';
+import 'role_screens/loup_blanc_screen.dart';
 import 'role_screens/loups_screen.dart';
 import 'role_screens/petite_fille_screen.dart';
+import 'role_screens/renard_screen.dart';
+import 'role_screens/salvateur_screen.dart';
+import 'role_screens/servante_devouee_screen.dart';
 import 'role_screens/sorciere_screen.dart';
 import 'role_screens/voleur_screen.dart';
 import 'role_screens/voyante_screen.dart';
+import 'village_power_loss_screen.dart';
 import 'village_vote_screen.dart';
 import 'vote_result_screen.dart';
-import 'village_power_loss_screen.dart';
-import 'mayor_reveal_screen.dart';
-import 'mayor_election_explain.dart';
 
 /// Point d'entrée de la partie une fois la distribution des rôles terminée.
-/// Regarde `GameState.phase` et affiche l'écran correspondant — c'est la
-/// pièce manquante que [GameFlowScreen] attend déjà (`GameMainScreen`).
+/// Regarde `GameState.phase` et affiche l'écran correspondant.
 ///
-/// Les phases de jour basculent sur le thème "parchemin" défini dans
-/// [AppTheme.day] ; les phases de nuit gardent le thème sombre appliqué
-/// globalement dans main.dart.
+/// Le thème (nuit sombre vs jour parchemin) suit désormais directement
+/// `GameState.currentWave` plutôt qu'une liste figée de phases : les suites
+/// déclenchées par une mort (succession du maire, riposte du Chasseur,
+/// Servante Dévouée, Bouc Émissaire...) peuvent survenir aussi bien de nuit
+/// que de jour, une liste statique de phases "de jour" ne suffit plus à les
+/// classer correctement.
 class GameMainScreen extends StatelessWidget {
   const GameMainScreen({super.key});
-
-  static const _dayPhases = {
-    GamePhase.dayReveal,
-    GamePhase.mayorElection,
-    GamePhase.mayorReveal,
-    GamePhase.debate,
-    GamePhase.villageVote,
-    GamePhase.voteResult,
-    GamePhase.villagePowerLoss,
-  };
 
   @override
   Widget build(BuildContext context) {
     final gp = context.watch<GameProvider>();
-    final phase = gp.state!.phase;
+    final state = gp.state!;
+    final phase = state.phase;
 
     final screen = switch (phase) {
       GamePhase.nightIntro => const NightIntroScreen(),
       GamePhase.nightVoleur => const VoleurScreen(),
       GamePhase.nightCupidon => const CupidonScreen(),
+      GamePhase.nightEnfantSauvage => const EnfantSauvageScreen(),
+      GamePhase.nightSalvateur => const SalvateurScreen(),
       GamePhase.nightVoyante => const VoyanteScreen(),
       GamePhase.nightLoups => const LoupsScreen(),
       GamePhase.nightPetiteFille => const PetiteFilleScreen(),
+      GamePhase.nightLoupBlanc => const LoupBlancScreen(),
+      GamePhase.nightInfectPereDesLoups => const InfectPereDesLoupsScreen(),
+      GamePhase.nightRenard => const RenardScreen(),
+      GamePhase.nightCorbeau => const CorbeauScreen(),
       GamePhase.nightSorciere => const SorciereScreen(),
+      GamePhase.chasseurRevange => const ChasseurScreen(),
+      GamePhase.successionMaire => const MayorSuccessionScreen(),
+      GamePhase.servanteDevouee => const ServanteDevoueeScreen(),
+      GamePhase.boucEmissaire => const BoucEmissaireScreen(),
       GamePhase.dayReveal => const DayRevealScreen(),
+      GamePhase.mayorElectionExplain => const MayorElectionExplainScreen(),
       GamePhase.mayorElection => const MayorElectionScreen(),
       GamePhase.mayorReveal => const MayorRevealScreen(),
       GamePhase.debate => const DebateScreen(),
+      GamePhase.jugeBegueDecision => const JugeBegueScreen(),
       GamePhase.villageVote => const VillageVoteScreen(),
       GamePhase.voteResult => const VoteResultScreen(),
-      GamePhase.endGame => const EndGameScreen(),
       GamePhase.villagePowerLoss => const VillagePowerLossScreen(),
-      GamePhase.mayorElectionExplain => const MayorElectionExplainScreen(),
-      // Les phases de setup (avant distribution) ne passent jamais par ici :
-      // GameFlowScreen les intercepte plus haut. Filet de sécurité :
+      GamePhase.endGame => const EndGameScreen(),
+    // GamePhase.nightGrandMechantLoup, GamePhase.enfantsauvageReveal et
+    // GamePhase.idiotduvillageCivicRightLoss n'ont pas encore d'écran :
+    // les rôles correspondants restent désactivés dans
+    // RoleSelectionScreen tant que ces écrans ne sont pas écrits.
+    // Les phases de setup (avant distribution) ne passent jamais par ici :
+    // GameFlowScreen les intercepte plus haut. Filet de sécurité :
       _ => const SizedBox.shrink(),
     };
 
-    if (_dayPhases.contains(phase)) {
+    if (state.currentWave == 'day') {
       return Theme(data: AppTheme.day, child: screen);
     }
     return screen;
   }
 }
-
 ===== Fichier: screens/game/mayor_election_explain.dart =====
 
 import 'package:flutter/material.dart';
@@ -1992,6 +2111,62 @@ Widget mayorRevealPreview() {
   );
 }
 
+===== Fichier: screens/game/mayor_succession_screen.dart =====
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../providers/game_provider.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/player_grid_selector.dart';
+
+/// Le maire vient de mourir, quelle qu'en soit la cause (nuit ou vote).
+/// Avant de rendre son dernier souffle, il désigne son successeur — pas de
+/// vote ici, c'est un choix unique.
+///
+/// Voir GameState.mayorSuccessionNeededFor et
+/// GameEngine.resolveMayorSuccession.
+class MayorSuccessionScreen extends StatelessWidget {
+  const MayorSuccessionScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final gp = context.read<GameProvider>();
+    final state = gp.state!;
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Succession du maire')),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Icon(Icons.emoji_events_outlined,
+                  size: 56, color: AppColors.lantern),
+              const SizedBox(height: 16),
+              Text(
+                'Le maire est mort. Avant de rendre son dernier souffle, '
+                    'il désigne son successeur.',
+                style: theme.textTheme.bodyLarge,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: PlayerGridSelector(
+                    players: state.alivePlayers,
+                    onSelect: (id) => gp.resolveMayorSuccession(id),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 ===== Fichier: screens/game/night_intro_screen.dart =====
 
 import 'package:flutter/material.dart';
@@ -2050,27 +2225,28 @@ import 'package:provider/provider.dart';
 import '../../../providers/game_provider.dart';
 import '../../../widgets/player_grid_selector.dart';
 
-class MyWidget extends StatelessWidget {
-  const MyWidget({super.key});
+class BoucEmissaireScreen extends StatelessWidget {
+  const BoucEmissaireScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
 
     return Scaffold(
-        body: Column(
-          children: [
-            const Text('Ecran Mort Bouc Emissaire : choisir celui qui ne va pas jouer la prochaine fois'),
-            Expanded(
-              child: SingleChildScrollView(
-                child: PlayerGridSelector(
-                  players: gp.state!.alivePlayers,
-                  onSelect: (id) => gp.setBoucEmissaireTarget(id),
-                ),
+      body: Column(
+        children: [
+          const Text(
+              'Ecran Mort Bouc Emissaire : choisir celui qui ne va pas jouer la prochaine fois'),
+          Expanded(
+            child: SingleChildScrollView(
+              child: PlayerGridSelector(
+                players: gp.state!.alivePlayers,
+                onSelect: (id) => gp.setBoucEmissaireTarget(id),
               ),
             ),
-          ],
-        )
+          ),
+        ],
+      ),
     );
   }
 }
@@ -2082,8 +2258,8 @@ import 'package:provider/provider.dart';
 import '../../../providers/game_provider.dart';
 import '../../../widgets/player_grid_selector.dart';
 
-class MyWidget extends StatelessWidget {
-  const MyWidget({super.key});
+class ChasseurScreen extends StatelessWidget {
+  const ChasseurScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -2102,7 +2278,7 @@ class MyWidget extends StatelessWidget {
             ),
           ),
         ],
-      )
+      ),
     );
   }
 }
@@ -2335,30 +2511,81 @@ class InfectPereDesLoupsScreen extends StatelessWidget {
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
-import '../../../widgets/player_grid_selector.dart';
+import '../../../widgets/pass_device_gate.dart';
 
+/// Le Juge Bègue ne désigne jamais un joueur : une fois par partie, il
+/// décide en secret que le vote du village qui va suivre sera rejoué
+/// immédiatement une fois terminé (voir GameEngine.resolveJugeBegueDecision
+/// et le flag GameState.voteReplayPending).
 class JugeBegueScreen extends StatelessWidget {
   const JugeBegueScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    return PassDeviceGate(
+      toName: 'Le Juge Bègue',
+      subtitle:
+      'C\'est le tour du Juge Bègue. Personne d\'autre ne doit savoir qui il est.',
+      accent: RoleId.jugeBegue.info.accent,
+      contentBuilder: (_) => const _JugeBegueContent(),
+    );
+  }
+}
+
+class _JugeBegueContent extends StatelessWidget {
+  const _JugeBegueContent();
+
+  @override
+  Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
+    final theme = Theme.of(context);
+    final info = RoleId.jugeBegue.info;
 
     return Scaffold(
-        body: Column(
-          children: [
-            const Text('Choisir celui pour qui tu votes pendant la journée'),
-            Expanded(
-              child: SingleChildScrollView(
-                child: PlayerGridSelector(
-                  players: gp.state!.alivePlayers,
-                  onSelect: (id) => gp.setJugeBegueTarget(id),
+      appBar: AppBar(title: const Text('Le Juge Bègue')),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(info.fallbackIcon, size: 64, color: info.accent),
+              const SizedBox(height: 24),
+              Text(
+                'Une fois par partie, tu peux décider en secret que le vote '
+                    'du village qui va suivre sera immédiatement rejoué une fois '
+                    'terminé.',
+                style: theme.textTheme.bodyLarge,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Veux-tu utiliser ce pouvoir maintenant ?',
+                style: theme.textTheme.titleMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 40),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => gp.resolveJugeBegueDecision(true),
+                  child: const Text('Utiliser mon pouvoir'),
                 ),
               ),
-            ),
-          ],
-        )
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () => gp.resolveJugeBegueDecision(false),
+                  child: const Text('Ne pas utiliser mon pouvoir'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -2572,7 +2799,6 @@ class _PetiteFilleContent extends StatelessWidget {
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
 import '../../../widgets/player_grid_selector.dart';
 
@@ -2666,42 +2892,98 @@ class _SalvateurContent extends StatelessWidget {
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
+import '../../../widgets/pass_device_gate.dart';
+import '../../../widgets/role_image.dart';
 
 class ServanteDevoueeScreen extends StatelessWidget {
   const ServanteDevoueeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    return PassDeviceGate(
+      toName: 'La Servante Dévouée',
+      subtitle: 'C\'est le rôle de la Servante Dévouée. Réveille-toi.',
+      accent: RoleId.servanteDevouee.info.accent,
+      contentBuilder: (_) => const _ServanteDevoueeContent(),
+    );
+  }
+}
+
+class _ServanteDevoueeContent extends StatelessWidget {
+  const _ServanteDevoueeContent();
+
+  @override
+  Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
+    final theme = Theme.of(context);
+    final offered = gp.servanteDevoueeOfferedPlayer;
+
+    // Filet de sécurité : ne devrait pas arriver si la phase n'est
+    // déclenchée que lorsque GameState.servanteDevoueeOfferId est posé.
+    if (offered == null) {
+      return Scaffold(
+        body: Center(
+          child: ElevatedButton(
+            onPressed: () => gp.setServanteDevoueeChoice(false),
+            child: const Text('Continuer'),
+          ),
+        ),
+      );
+    }
+
+    final info = offered.role.info;
 
     return Scaffold(
-        body: Column(
-          children: [
-            Text('Ecrant Servante Devou veux tu le role de ${gp.state!.deathbyvillagevote.name} qui etait ${gp.state!.deathbyvillagevote.role} ?'),
-            Expanded(
-              child: SingleChildScrollView(
-                child:
-                Column(
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        gp.setServanteDevoueeChoice(true);
-                      },
-                      child: const Text('Oui'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        gp.setServanteDevoueeChoice(false);
-                      },
-                      child: const Text('Non'),
-                    ),
-                  ],
+      appBar: AppBar(title: const Text('La Servante Dévouée')),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '${offered.name} vient d\'être éliminé(e) par le village.',
+                style: theme.textTheme.titleLarge,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              RoleImage(role: offered.role, size: 100),
+              const SizedBox(height: 16),
+              Text(
+                info.name,
+                style: theme.textTheme.displayMedium
+                    ?.copyWith(color: info.accent),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Veux-tu révéler que tu es la Servante Dévouée et prendre '
+                    'ce rôle à sa place ?',
+                style: theme.textTheme.bodyLarge,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 40),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => gp.setServanteDevoueeChoice(true),
+                  child: const Text('Oui, prendre ce rôle'),
                 ),
               ),
-            ),
-          ],
-        )
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () => gp.setServanteDevoueeChoice(false),
+                  child: const Text('Non, rester Servante Dévouée'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -4116,12 +4398,35 @@ class RoleSelectionScreen extends StatelessWidget {
     final gp = context.watch<GameProvider>();
     final theme = Theme.of(context);
     final config = gp.draftConfig!;
-
+//TODO
+    // Rôles proposables au setup : uniquement ceux ayant à la fois une
+    // logique moteur (game_engine.dart) ET un écran de nuit/suivi câblé
+    // dans GameMainScreen. Ne PAS ajouter ici :
+    //  - grandMechantLoup : role_screens/grand_mechant_loup_screen.dart
+    //    est encore un fichier vide, aucun écran n'existe.
+    //  - enfantSauvage : l'écran de nuit existe, mais sa suite
+    //    (GamePhase.enfantsauvageReveal, déclenchée quand son modèle
+    //    meurt) n'a pas encore d'écran.
+    //  - idiotDuVillage : GamePhase.idiotduvillageCivicRightLoss n'a pas
+    //    encore d'écran.
+    //  - montreurDours : son pouvoir (GameState.montreurDoursGrowls)
+    //    n'est encore affiché nulle part dans l'UI, ce serait une carte
+    //    "morte" pour les joueurs.
     final adjustableOrder = [
+      // Camp des Loups
       RoleId.loupGarou,
+      RoleId.loupBlanc,
+      RoleId.infectPereDesLoups,
+      // Camp du Village
       RoleId.voyante,
       RoleId.sorciere,
       RoleId.chasseur,
+      RoleId.salvateur,
+      RoleId.corbeau,
+      RoleId.renard,
+      RoleId.jugeBegue,
+      RoleId.servanteDevouee,
+      RoleId.boucEmissaire,
       RoleId.ancien,
       RoleId.cupidon,
       RoleId.petiteFille,
@@ -4155,7 +4460,7 @@ class RoleSelectionScreen extends StatelessWidget {
                 children: [
                   Text(
                     '${config.playerCount} joueurs'
-                    '${config.hasVoleur ? ' · +2 cartes pour le Voleur' : ''}',
+                        '${config.hasVoleur ? ' · +2 cartes pour le Voleur' : ''}',
                     style: theme.textTheme.bodyMedium?.copyWith(
                         color: AppColors.moonlight.withValues(alpha: 0.7)),
                   ),
@@ -4210,9 +4515,9 @@ class RoleSelectionScreen extends StatelessWidget {
                           IconButton.filledTonal(
                             onPressed: count > 0
                                 ? () {
-                                    gp.incrementRole(role, by: -1);
-                                    _recomputeVillagers(gp);
-                                  }
+                              gp.incrementRole(role, by: -1);
+                              _recomputeVillagers(gp);
+                            }
                                 : null,
                             icon: const Icon(Icons.remove),
                           ),
@@ -4226,9 +4531,9 @@ class RoleSelectionScreen extends StatelessWidget {
                             onPressed: (info.unique && count >= 1)
                                 ? null
                                 : () {
-                                    gp.incrementRole(role, by: 1);
-                                    _recomputeVillagers(gp);
-                                  },
+                              gp.incrementRole(role, by: 1);
+                              _recomputeVillagers(gp);
+                            },
                             icon: const Icon(Icons.add),
                           ),
                         ],
@@ -4254,7 +4559,6 @@ class RoleSelectionScreen extends StatelessWidget {
     );
   }
 }
-
 ===== Fichier: screens/stats/stats_screen.dart =====
 
 import 'package:flutter/material.dart';
@@ -5193,7 +5497,7 @@ class AppTheme {
   AppTheme._();
 
   static TextTheme _textTheme(Color base) {
-    final display = GoogleFonts.cinzelTextTheme();
+    GoogleFonts.cinzelTextTheme();
     final body = GoogleFonts.workSansTextTheme();
     return body
         .copyWith(

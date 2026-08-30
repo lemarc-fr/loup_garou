@@ -22,6 +22,7 @@
 │   │   ├── mayor_election_screen.dart
 │   │   ├── mayor_reveal_screen.dart
 │   │   ├── mayor_reveal_screen.preview.dart
+│   │   ├── mayor_succession_screen.dart
 │   │   ├── night_intro_screen.dart
 │   │   ├── role_screens
 │   │   │   ├── bouc_emissaire_screen.dart

@@ -10,4 +10,3 @@ l'ecran de fin des pouvoirs revele les roles des joueurs.
 vote collectif vs vote secret
  -> lib/screens/game/mayor_election_screen.dart
 
-role Selection screen avec plus de role
