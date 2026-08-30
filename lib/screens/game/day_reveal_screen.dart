@@ -49,6 +49,25 @@ class DayRevealScreen extends StatelessWidget {
                   ],
                 ),
               ),
+              if (state.hasAliveRole(RoleId.montreurDours)) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.forest.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    gp.montreurDoursGrowls
+                        ? "L'ours du Montreur d'Ours grogne : un Loup-Garou "
+                        "se cache parmi ses voisins."
+                        : "L'ours du Montreur d'Ours reste calme cette nuit.",
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

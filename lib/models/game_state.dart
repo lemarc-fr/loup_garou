@@ -22,6 +22,7 @@ enum GamePhase {
   nightPetiteFille,
   nightLoupBlanc,
   nightGrandMechantLoup,
+  nightEnfantSauvageCheck,
   nightInfectPereDesLoups,
   nightRenard,
   nightCorbeau,

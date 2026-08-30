@@ -399,6 +399,19 @@ const Map<RoleId, RoleInfo> kRoleCatalog = {
     accent: AppColors.forest,
     actsAtNight: true,
   ),
+  RoleId.corbeau: RoleInfo(
+    id: RoleId.corbeau,
+    name: 'Le Corbeau',
+    nameShort: 'Corbeau',
+    camp: Camp.village,
+    description: "la nuit il designe une personne qui aura deux votes de plus contre elle au prochain jour (vote des villageois)",
+    nightInstruction:
+    "personne que vous denoncez pour le prochain vote",
+    imageAsset: 'assets/images/roles/corbeau.png',
+    fallbackIcon: Icons.handshake,
+    accent: AppColors.forest,
+    actsAtNight: true,
+  ),
 };
 
 extension RoleInfoX on RoleId {

@@ -89,6 +89,13 @@ class GameEngine {
       if (s.hasAliveRole(RoleId.enfantSauvage)) {
         q.add(GamePhase.nightEnfantSauvage);
       }
+    } else if (s.hasAliveRole(RoleId.enfantSauvage)) {
+      // Les nuits suivantes, l'Enfant Sauvage se réveille brièvement pour
+      // confirmer qu'il est toujours humain. Si son modèle était mort, sa
+      // mutation aurait déjà eu lieu instantanément (voir _applyDeath) et
+      // son rôle ne serait plus enfantSauvage — donc hasAliveRole serait
+      // déjà faux et cette phase ne serait pas ajoutée.
+      q.add(GamePhase.nightEnfantSauvageCheck);
     }
 
     if (s.hasAliveRole(RoleId.salvateur) && !_isAsleep(s, RoleId.salvateur)) {
@@ -241,6 +248,8 @@ class GameEngine {
 
   /// La voyante n'altère aucun état — l'écran affiche juste le rôle en direct.
   void confirmVoyanteDone(GameState s) => advance(s);
+
+  void confirmEnfantSauvageCheck(GameState s) => advance(s);
 
   void setLoupsVictim(GameState s, String victimId) {
     s.loupsVictimId = victimId;
@@ -708,7 +717,13 @@ class GameEngine {
     if (wolves == 0) {
       return GameResult(Camp.village, alive.map((p) => p.id).toList());
     }
-    if (wolves >= others) {
+    if (wolves >= others && s.currentWave=='night') {
+      return GameResult(
+        Camp.loups,
+        alive.where((p) => p.camp == Camp.loups).map((p) => p.id).toList(),
+      );
+    }
+    if (wolves >= others+1 && s.currentWave=='day') {
       return GameResult(
         Camp.loups,
         alive.where((p) => p.camp == Camp.loups).map((p) => p.id).toList(),

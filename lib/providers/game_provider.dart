@@ -286,6 +286,11 @@ class GameProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void confirmEnfantSauvageCheck() {
+    engine.confirmEnfantSauvageCheck(state!);
+    notifyListeners();
+  }
+
   // ---------------------------------------------------------------------
   // Jour
   // ---------------------------------------------------------------------

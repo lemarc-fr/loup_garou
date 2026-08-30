@@ -4,8 +4,8 @@ import 'package:provider/provider.dart';
 import '../../../providers/game_provider.dart';
 import '../../../widgets/player_grid_selector.dart';
 
-class MyWidget extends StatelessWidget {
-  const MyWidget({super.key});
+class ChasseurScreen extends StatelessWidget {
+  const ChasseurScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +24,7 @@ class MyWidget extends StatelessWidget {
             ),
           ),
         ],
-      )
+      ),
     );
   }
 }

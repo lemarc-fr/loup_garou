@@ -25,13 +25,27 @@ class RoleSelectionScreen extends StatelessWidget {
     final config = gp.draftConfig!;
 
     final adjustableOrder = [
+      // Camp des Loups
       RoleId.loupGarou,
+      RoleId.loupBlanc,
+      RoleId.infectPereDesLoups,
+      RoleId.grandMechantLoup,
+      // Camp du Village
       RoleId.voyante,
       RoleId.sorciere,
       RoleId.chasseur,
+      RoleId.salvateur,
+      RoleId.corbeau,
+      RoleId.renard,
+      RoleId.jugeBegue,
+      RoleId.servanteDevouee,
+      RoleId.boucEmissaire,
       RoleId.ancien,
+      RoleId.idiotDuVillage,
+      RoleId.montreurDours,
       RoleId.cupidon,
       RoleId.petiteFille,
+      RoleId.enfantSauvage,
       RoleId.voleur,
     ];
 
@@ -62,7 +76,7 @@ class RoleSelectionScreen extends StatelessWidget {
                 children: [
                   Text(
                     '${config.playerCount} joueurs'
-                    '${config.hasVoleur ? ' · +2 cartes pour le Voleur' : ''}',
+                        '${config.hasVoleur ? ' · +2 cartes pour le Voleur' : ''}',
                     style: theme.textTheme.bodyMedium?.copyWith(
                         color: AppColors.moonlight.withValues(alpha: 0.7)),
                   ),
@@ -117,9 +131,9 @@ class RoleSelectionScreen extends StatelessWidget {
                           IconButton.filledTonal(
                             onPressed: count > 0
                                 ? () {
-                                    gp.incrementRole(role, by: -1);
-                                    _recomputeVillagers(gp);
-                                  }
+                              gp.incrementRole(role, by: -1);
+                              _recomputeVillagers(gp);
+                            }
                                 : null,
                             icon: const Icon(Icons.remove),
                           ),
@@ -133,9 +147,9 @@ class RoleSelectionScreen extends StatelessWidget {
                             onPressed: (info.unique && count >= 1)
                                 ? null
                                 : () {
-                                    gp.incrementRole(role, by: 1);
-                                    _recomputeVillagers(gp);
-                                  },
+                              gp.incrementRole(role, by: 1);
+                              _recomputeVillagers(gp);
+                            },
                             icon: const Icon(Icons.add),
                           ),
                         ],
