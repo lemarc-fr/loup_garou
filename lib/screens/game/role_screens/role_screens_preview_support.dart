@@ -90,10 +90,11 @@ Widget buildRoleScreenPreview({
       theme: AppTheme.night,
       home: Scaffold(
         body: SafeArea(
-          child: SingleChildScrollView(
+          child: 
+		  SizedBox(height : 300, child : SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: child,
-          ),
+          ),),
         ),
       ),
     ),
