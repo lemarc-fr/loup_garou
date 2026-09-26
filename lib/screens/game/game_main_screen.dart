@@ -87,12 +87,6 @@ class GameMainScreen extends StatelessWidget {
       GamePhase.nightEnfantSauvageCheck => const EnfantSauvageCheckScreen(),
       GamePhase.enfantsauvageReveal => const EnfantSauvageRevealScreen(),
       GamePhase.idiotduvillageCivicRightLoss => const IdiotDuVillageRevealScreen(),
-    // GamePhase.nightGrandMechantLoup, GamePhase.enfantsauvageReveal et
-    // GamePhase.idiotduvillageCivicRightLoss n'ont pas encore d'écran :
-    // les rôles correspondants restent désactivés dans
-    // RoleSelectionScreen tant que ces écrans ne sont pas écrits.
-    // Les phases de setup (avant distribution) ne passent jamais par ici :
-    // GameFlowScreen les intercepte plus haut. Filet de sécurité :
       _ => const SizedBox.shrink(),
     };
 
