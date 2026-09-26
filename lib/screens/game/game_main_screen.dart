@@ -14,6 +14,7 @@ import 'mayor_election_explain.dart';
 import 'mayor_election_screen.dart';
 import 'mayor_reveal_screen.dart';
 import 'mayor_succession_screen.dart';
+import 'night_go_back_to_sleep_screen.dart';
 import 'night_intro_screen.dart';
 import 'role_screens/bouc_emissaire_screen.dart';
 import 'role_screens/chasseur_screen.dart';
@@ -55,6 +56,7 @@ class GameMainScreen extends StatelessWidget {
 
     final screen = switch (phase) {
       GamePhase.nightIntro => const NightIntroScreen(),
+      GamePhase.nightGoBackToSleep => const NightGoBackToSleepScreen(),
       GamePhase.nightVoleur => const VoleurScreen(),
       GamePhase.nightCupidon => const CupidonScreen(),
       GamePhase.nightEnfantSauvage => const EnfantSauvageScreen(),

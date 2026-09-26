@@ -13,6 +13,11 @@ enum GamePhase {
 
   // Nuit
   nightIntro,
+  // Transition générique affichée après qu'un rôle a fini son action de
+  // nuit, avant de passer au rôle suivant : "tu peux te rendormir". Ne
+  // porte aucune information sur le rôle qui vient d'agir (voir
+  // GameEngine.buildNightQueue) — elle est volontairement neutre.
+  nightGoBackToSleep,
   nightVoleur,
   nightCupidon,
   nightEnfantSauvage,

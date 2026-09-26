@@ -3,35 +3,104 @@ import 'package:provider/provider.dart';
 import '../../models/role.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/pass_device_gate.dart';
 import '../../widgets/role_image.dart';
 
-/// Révélation animée : le village a pendu l'Ancien par erreur, tous les
-/// villageois à pouvoir perdent leur don. Chaque carte se dévoile avec un
-/// léger décalage puis bascule visuellement vers "Simple Villageois".
+/// Le village a fait pendre l'Ancien par erreur : tous les villageois à
+/// pouvoir perdent leur don pour le reste de la partie.
+///
+/// Cette information doit rester SECRÈTE : dans la partie physique,
+/// personne d'autre que le joueur concerné n'apprend qu'il a perdu son
+/// pouvoir, ni lequel c'était.
+///
+/// Un premier correctif avait fait défiler le téléphone en privé
+/// uniquement vers les joueurs réellement touchés (`powerLossThisWave`).
+/// Mais ça fuit quand même : le simple fait que le téléphone ne passe
+/// QUE chez certains joueurs — en sautant les autres — suffit à toute la
+/// table pour deviner qui a un pouvoir et qui n'en a jamais eu, sans même
+/// avoir besoin de regarder l'écran. Pour que la procédure ne révèle
+/// rien, TOUS les joueurs vivants doivent passer par le même rituel
+/// (même écran, même bouton, même déroulé) : ceux qui perdent vraiment un
+/// pouvoir voient leur ancien rôle, les autres reçoivent un don fictif et
+/// totalement inutile — mais personne à l'extérieur ne peut faire la
+/// différence entre les deux passages.
 class VillagePowerLossScreen extends StatefulWidget {
   const VillagePowerLossScreen({super.key});
 
   @override
-  State<VillagePowerLossScreen> createState() => _VillagePowerLossScreenState();
+  State<VillagePowerLossScreen> createState() =>
+      _VillagePowerLossScreenState();
 }
 
 class _VillagePowerLossScreenState extends State<VillagePowerLossScreen> {
-  bool _introDone = false;
-
-  @override
-  void initState() {
-    super.initState();
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (mounted) setState(() => _introDone = true);
-    });
-  }
+  // Index dans la liste de TOUS les joueurs vivants (pas seulement ceux
+  // qui ont réellement perdu un pouvoir) du prochain joueur à faire
+  // passer en privé.
+  int _index = 0;
 
   @override
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
     final state = gp.state!;
+    final players = state.alivePlayers;
+
+    // Rôle perdu pour ce joueur, si (et seulement si) il fait
+    // effectivement partie des victimes de la perte de pouvoirs.
+    final lostRoleByPlayerId = <String, RoleId>{
+      for (final e in state.powerLossThisWave) e.playerId: e.previousRole,
+    };
+
+    if (_index < players.length) {
+      final player = players[_index];
+      final lostRole = lostRoleByPlayerId[player.id];
+
+      return PassDeviceGate(
+        // Une clé différente à chaque joueur : force une nouvelle
+        // confirmation "c'est moi qui ai le téléphone" à chaque tour.
+        key: ValueKey('power-loss-${player.id}'),
+        toName: player.name,
+        subtitle:
+        'Une information privée va s\'afficher. Assure-toi que personne d\'autre ne regarde l\'écran.',
+        accent: AppColors.blood,
+        contentBuilder: (_) => _PowerLossPrivateScreen(
+          index: _index,
+          total: players.length,
+          lostRole: lostRole,
+          onContinue: () => setState(() => _index++),
+        ),
+      );
+    }
+
+    // Tout le monde est passé par le même rituel : on peut informer la
+    // table, sans citer aucun nom ni aucun rôle.
+    return _PublicPowerLossAnnouncement(
+      onContinue: gp.confirmPowerLossReveal,
+    );
+  }
+}
+
+/// Écran privé montré à UN SEUL joueur à la fois. [lostRole] non-null
+/// signifie que ce joueur a réellement perdu ce pouvoir ; null signifie
+/// qu'il ne se passe rien pour lui, mais on lui montre quand même un
+/// "don" — fictif et inutile — pour que la structure de l'écran (titre,
+/// image, texte, bouton) soit rigoureusement identique dans les deux cas.
+class _PowerLossPrivateScreen extends StatelessWidget {
+  final int index;
+  final int total;
+  final RoleId? lostRole;
+  final VoidCallback onContinue;
+
+  const _PowerLossPrivateScreen({
+    required this.index,
+    required this.total,
+    required this.lostRole,
+    required this.onContinue,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final entries = state.powerLossThisWave;
+    final reallyLost = lostRole != null;
 
     return Scaffold(
       appBar: AppBar(title: const Text("La sagesse s'éteint")),
@@ -40,46 +109,88 @@ class _VillagePowerLossScreenState extends State<VillagePowerLossScreen> {
           padding: const EdgeInsets.all(24),
           child: Column(
             children: [
-              AnimatedOpacity(
-                opacity: _introDone ? 1 : 0,
-                duration: const Duration(milliseconds: 500),
-                child: Column(
-                  children: [
-                    const Icon(Icons.auto_awesome_outlined,
-                        size: 56, color: AppColors.blood),
-                    const SizedBox(height: 12),
-                    Text(
-                      "Le village a fait pendre l'Ancien par erreur.",
-                      style: theme.textTheme.headlineMedium,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Privé de sa sagesse, le village voit ses pouvoirs se tarir...',
-                      style: theme.textTheme.bodyLarge,
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+              LinearProgressIndicator(
+                value: (index + 1) / total,
+                backgroundColor: AppColors.nightAlt,
+              ),
+              const SizedBox(height: 8),
+              Text('Joueur ${index + 1} / $total',
+                  style: theme.textTheme.bodyMedium),
+              const Spacer(),
+              const Icon(Icons.auto_awesome_outlined,
+                  size: 56, color: AppColors.blood),
+              const SizedBox(height: 16),
+              Text(
+                "Le village a fait pendre l'Ancien par erreur.",
+                style: theme.textTheme.headlineMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              if (reallyLost) ...[
+                Text(
+                  'Privé(e) de sa sagesse, tu perds ton don :',
+                  style: theme.textTheme.bodyLarge,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                RoleImage(role: lostRole!, size: 96),
+                const SizedBox(height: 12),
+                Text(
+                  lostRole!.info.name,
+                  style: theme.textTheme.displayMedium
+                      ?.copyWith(color: lostRole!.info.accent),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Tu es désormais un Simple Villageois.',
+                  style: theme.textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
+              ] else ...[
+                Text(
+                  'La sagesse de l\'Ancien t\'accorde un don :',
+                  style: theme.textTheme.bodyLarge,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                Icon(Icons.bedtime,
+                    size: 96, color: AppColors.moonlight.withValues(alpha: 0.6)),
+                const SizedBox(height: 12),
+                Text(
+                  'Don du Sommeil Profond',
+                  style: theme.textTheme.displayMedium
+                      ?.copyWith(color: AppColors.moonlight),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '...totalement inutile. Rien ne change pour toi.',
+                  style: theme.textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+              const SizedBox(height: 20),
+              Container(
+                width: double.infinity,
+                padding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.blood.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  'Garde-le pour toi : personne d\'autre à la table ne doit savoir ce qui s\'est affiché sur cet écran.',
+                  style: theme.textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
                 ),
               ),
-              const SizedBox(height: 24),
-              Expanded(
-                child: ListView.separated(
-                  itemCount: entries.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) => _PowerLossCard(
-                    playerName: state.byId(entries[index].playerId).name,
-                    previousRole: entries[index].previousRole,
-                    delay: Duration(milliseconds: 500 + index * 350),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
+              const Spacer(),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: gp.confirmPowerLossReveal,
-                  child: const Text('La nuit tombe à nouveau'),
+                  onPressed: onContinue,
+                  child: const Text("J'ai compris, masquer"),
                 ),
               ),
             ],
@@ -90,101 +201,48 @@ class _VillagePowerLossScreenState extends State<VillagePowerLossScreen> {
   }
 }
 
-class _PowerLossCard extends StatefulWidget {
-  final String playerName;
-  final RoleId previousRole;
-  final Duration delay;
-
-  const _PowerLossCard({
-    required this.playerName,
-    required this.previousRole,
-    required this.delay,
-  });
-
-  @override
-  State<_PowerLossCard> createState() => _PowerLossCardState();
-}
-
-class _PowerLossCardState extends State<_PowerLossCard> {
-  bool _visible = false;
-  bool _switched = false;
-
-  @override
-  void initState() {
-    super.initState();
-    Future.delayed(widget.delay, () {
-      if (mounted) setState(() => _visible = true);
-    });
-    Future.delayed(widget.delay + const Duration(milliseconds: 550), () {
-      if (mounted) setState(() => _switched = true);
-    });
-  }
+/// Vu par toute la table : volontairement neutre, aucun nom ni rôle n'y
+/// figure.
+class _PublicPowerLossAnnouncement extends StatelessWidget {
+  final VoidCallback onContinue;
+  const _PublicPowerLossAnnouncement({required this.onContinue});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final info = widget.previousRole.info;
-    final mutedColor =
-        theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.6);
 
-    return AnimatedSlide(
-      offset: _visible ? Offset.zero : const Offset(0, 0.15),
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeOut,
-      child: AnimatedOpacity(
-        opacity: _visible ? 1 : 0,
-        duration: const Duration(milliseconds: 400),
-        child: Card(
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 500),
-                  transitionBuilder: (child, anim) => ScaleTransition(
-                    scale: anim,
-                    child: FadeTransition(opacity: anim, child: child),
-                  ),
-                  child: _switched
-                      ? const RoleImage(
-                          key: ValueKey('villageois'),
-                          role: RoleId.simpleVillageois,
-                          size: 48,
-                        )
-                      : RoleImage(
-                          key: const ValueKey('previous'),
-                          role: widget.previousRole,
-                          size: 48,
-                        ),
+    return Scaffold(
+      appBar: AppBar(title: const Text("La sagesse s'éteint")),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.auto_awesome_outlined,
+                  size: 64, color: AppColors.blood),
+              const SizedBox(height: 20),
+              Text(
+                "Le village a fait pendre l'Ancien par erreur.",
+                style: theme.textTheme.headlineMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Privés de sa sagesse, certains villageois ont senti leur don '
+                    's\'éteindre... mais eux seuls savent lesquels.',
+                style: theme.textTheme.bodyLarge,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 40),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: onContinue,
+                  child: const Text('La nuit tombe à nouveau'),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(widget.playerName,
-                          style: theme.textTheme.titleLarge),
-                      const SizedBox(height: 2),
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 400),
-                        child: Text(
-                          _switched ? 'Devient Simple Villageois' : info.name,
-                          key: ValueKey(_switched),
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: _switched ? mutedColor : info.accent,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                AnimatedOpacity(
-                  opacity: _switched ? 1 : 0,
-                  duration: const Duration(milliseconds: 400),
-                  child: const Icon(Icons.power_off, color: AppColors.blood),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

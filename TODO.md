@@ -1,12 +1,7 @@
-
 révélation des amoureux
 
-add a "go back to sleep" screen
-
-on peut voter pour les morts de la nuit 
-
-l'ecran de fin des pouvoirs revele les roles des joueurs. 
+on peut voter pour les morts de la nuit
 
 vote collectif vs vote secret
- -> lib/screens/game/mayor_election_screen.dart
 
+ -> lib/screens/game/mayor_election_screen.dart

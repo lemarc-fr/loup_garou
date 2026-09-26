@@ -80,14 +80,31 @@ class GameEngine {
   // Construction de la file de nuit
   // ---------------------------------------------------------------------
 
+  /// Construit la file des phases d'une nuit. Après chaque bloc "un rôle
+  /// (ou un petit groupe de rôles liés) se réveille et agit", on insère
+  /// une transition [GamePhase.nightGoBackToSleep] : un écran neutre,
+  /// sans nom ni rôle, qui donne un point de fermeture clair avant que le
+  /// téléphone ne parte vers le rôle suivant (lequel reste de toute façon
+  /// protégé par son propre PassDeviceGate). Elle n'est PAS ajoutée après
+  /// nightIntro (qui est déjà l'écran d'ouverture de la nuit) ni après le
+  /// tout dernier bloc si la nuit ne comporte aucun rôle actif.
   List<GamePhase> buildNightQueue(GameState s) {
     final q = <GamePhase>[GamePhase.nightIntro];
 
+    void addSleep() => q.add(GamePhase.nightGoBackToSleep);
+
     if (s.night == 1) {
-      if (s.hasAliveRole(RoleId.voleur)) q.add(GamePhase.nightVoleur);
-      if (s.hasAliveRole(RoleId.cupidon)) q.add(GamePhase.nightCupidon);
+      if (s.hasAliveRole(RoleId.voleur)) {
+        q.add(GamePhase.nightVoleur);
+        addSleep();
+      }
+      if (s.hasAliveRole(RoleId.cupidon)) {
+        q.add(GamePhase.nightCupidon);
+        addSleep();
+      }
       if (s.hasAliveRole(RoleId.enfantSauvage)) {
         q.add(GamePhase.nightEnfantSauvage);
+        addSleep();
       }
     } else if (s.hasAliveRole(RoleId.enfantSauvage)) {
       // Les nuits suivantes, l'Enfant Sauvage se réveille brièvement pour
@@ -96,13 +113,16 @@ class GameEngine {
       // son rôle ne serait plus enfantSauvage — donc hasAliveRole serait
       // déjà faux et cette phase ne serait pas ajoutée.
       q.add(GamePhase.nightEnfantSauvageCheck);
+      addSleep();
     }
 
     if (s.hasAliveRole(RoleId.salvateur) && !_isAsleep(s, RoleId.salvateur)) {
       q.add(GamePhase.nightSalvateur);
+      addSleep();
     }
     if (s.hasAliveRole(RoleId.voyante) && !_isAsleep(s, RoleId.voyante)) {
       q.add(GamePhase.nightVoyante);
+      addSleep();
     }
 
     if (s.aliveWolves.isNotEmpty) {
@@ -120,12 +140,21 @@ class GameEngine {
           !s.infectPereDesLoupsUsed) {
         q.add(GamePhase.nightInfectPereDesLoups);
       }
+      // Un seul "tu peux te rendormir" pour tout le bloc des loups (et
+      // des rôles qui se réveillent juste après eux) : ces sous-phases
+      // s'enchaînent sans qu'on remette tout le monde à dormir entre
+      // chacune.
+      addSleep();
     }
 
     if (s.hasAliveRole(RoleId.renard) && !s.renardPowerLost) {
       q.add(GamePhase.nightRenard);
+      addSleep();
     }
-    if (s.hasAliveRole(RoleId.corbeau)) q.add(GamePhase.nightCorbeau);
+    if (s.hasAliveRole(RoleId.corbeau)) {
+      q.add(GamePhase.nightCorbeau);
+      addSleep();
+    }
 
     final sorciereEncorePuissante = !s.sorciereVieUsed || !s.sorciereMortUsed;
     if (s.hasAliveRole(RoleId.sorciere) &&
@@ -133,6 +162,7 @@ class GameEngine {
         s.aliveWolves.isNotEmpty &&
         !_isAsleep(s, RoleId.sorciere)) {
       q.add(GamePhase.nightSorciere);
+      addSleep();
     }
 
     return q;

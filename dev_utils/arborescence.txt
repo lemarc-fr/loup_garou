@@ -1,4 +1,4 @@
-/Users/marc/Desktop/loup_garou/lib
+﻿C:\Users\marcb\StudioProjects\loup_garou\lib
 ├── main.dart
 ├── models
 │   ├── game_config.dart
@@ -26,22 +26,47 @@
 │   │   ├── night_intro_screen.dart
 │   │   ├── role_screens
 │   │   │   ├── bouc_emissaire_screen.dart
+│   │   │   ├── bouc_emissaire_screen.preview.dart
 │   │   │   ├── chasseur_screen.dart
+│   │   │   ├── chasseur_screen.preview.dart
 │   │   │   ├── corbeau_screen.dart
+│   │   │   ├── corbeau_screen.preview.dart
 │   │   │   ├── cupidon_screen.dart
+│   │   │   ├── cupidon_screen.preview.dart
+│   │   │   ├── enfant_sauvage_check_screen.dart
+│   │   │   ├── enfant_sauvage_check_screen.preview.dart
+│   │   │   ├── enfant_sauvage_reveal_screen.dart
+│   │   │   ├── enfant_sauvage_reveal_screen.preview.dart
 │   │   │   ├── enfant_sauvage_screen.dart
+│   │   │   ├── enfant_sauvage_screen.preview.dart
 │   │   │   ├── grand_mechant_loup_screen.dart
+│   │   │   ├── grand_mechant_loup_screen.preview.dart
+│   │   │   ├── idiot_du_village_reveal_screen.dart
+│   │   │   ├── idiot_du_village_reveal_screen.preview.dart
 │   │   │   ├── infect_pere_des_loups_screen.dart
+│   │   │   ├── infect_pere_des_loups_screen.preview.dart
 │   │   │   ├── juge_begue_screen.dart
+│   │   │   ├── juge_begue_screen.preview.dart
 │   │   │   ├── loup_blanc_screen.dart
+│   │   │   ├── loup_blanc_screen.preview.dart
 │   │   │   ├── loups_screen.dart
+│   │   │   ├── loups_screen.preview.dart
 │   │   │   ├── petite_fille_screen.dart
+│   │   │   ├── petite_fille_screen.preview.dart
 │   │   │   ├── renard_screen.dart
+│   │   │   ├── renard_screen.preview.dart
+│   │   │   ├── role_screen_chrome.dart
+│   │   │   ├── role_screens_preview_support.dart
 │   │   │   ├── salvateur_screen.dart
+│   │   │   ├── salvateur_screen.preview.dart
 │   │   │   ├── servante_devouee_screen.dart
+│   │   │   ├── servante_devouee_screen.preview.dart
 │   │   │   ├── sorciere_screen.dart
+│   │   │   ├── sorciere_screen.preview.dart
 │   │   │   ├── voleur_screen.dart
-│   │   │   └── voyante_screen.dart
+│   │   │   ├── voleur_screen.preview.dart
+│   │   │   ├── voyante_screen.dart
+│   │   │   └── voyante_screen.preview.dart
 │   │   ├── sequential_vote_flow.dart
 │   │   ├── village_power_loss_screen.dart
 │   │   ├── village_vote_screen.dart
@@ -69,3 +94,4 @@
     ├── player_grid_selector.dart
     ├── role_image.dart
     └── role_image.preview.dart
+
