@@ -568,4 +568,250 @@ class GameEngine {
 
   void resolveServanteDevouee(GameState s, bool takeRole) {
     final offerId = s.servanteDevoueeOfferId;
- 
+    s.servanteDevoueeOfferId = null;
+    if (takeRole && offerId != null) {
+      final dead = s.tryById(offerId);
+      final servante = s.hasAliveRole(RoleId.servanteDevouee)
+          ? s.alivePlayersWithRole(RoleId.servanteDevouee).first
+          : null;
+      if (dead != null && servante != null) {
+        servante.role = dead.role;
+      }
+    }
+    _resolveFollowUps(s);
+  }
+
+  void resolveBoucEmissaireChoice(GameState s, String skippedPlayerId) {
+    s.boucEmissaireChoiceNeededId = null;
+    s.skippedNextNightPlayerId = skippedPlayerId;
+    _resolveFollowUps(s);
+  }
+
+  void confirmIdiotDuVillageReveal(GameState s) {
+    final id = s.idiotDuVillageRevealId;
+    s.idiotDuVillageRevealId = null;
+    if (id != null) s.disenfranchisedPlayerIds.add(id);
+    _resolveFollowUps(s);
+  }
+
+  // ---------------------------------------------------------------------
+  // Jour
+  // ---------------------------------------------------------------------
+
+  void resolveMayorElection(GameState s, String winnerId) {
+    s.mayorId = winnerId;
+    advance2(s);
+  }
+
+  void confirmMayorElectionExplain(GameState s) => advance2(s);
+  void confirmMayorReveal(GameState s) => advance2(s);
+  void confirmDebate(GameState s) => advance2(s);
+
+  void resolveJugeBegueDecision(GameState s, bool usePower) {
+    if (usePower) {
+      s.jugeBegueUsed = true;
+      s.voteReplayPending = true;
+    }
+    advance2(s);
+  }
+
+  VoteTally tallyVotes(GameState s, Map<String, String> votes) {
+    final counts = <String, int>{};
+    votes.forEach((voterId, targetId) {
+      final weight = (s.mayorId != null && voterId == s.mayorId) ? 2 : 1;
+      counts[targetId] = (counts[targetId] ?? 0) + weight;
+    });
+    if (s.corbeauCursedId != null) {
+      counts[s.corbeauCursedId!] = (counts[s.corbeauCursedId!] ?? 0) + 2;
+    }
+    if (counts.isEmpty) return const VoteTally(tiedCandidates: []);
+    final maxVotes = counts.values.reduce(max);
+    final tied = counts.entries
+        .where((e) => e.value == maxVotes)
+        .map((e) => e.key)
+        .toList();
+    if (tied.length == 1) {
+      return VoteTally(winner: tied.first, tiedCandidates: const []);
+    }
+    return VoteTally(tiedCandidates: tied);
+  }
+
+  void resolveVillageVote(GameState s, String eliminatedId) {
+    _applyDeath(s, eliminatedId, DeathCause.vote);
+    s.corbeauCursedId = null; // la malédiction ne vaut que pour ce vote
+    _goToPhase(s, GamePhase.voteResult);
+  }
+
+  void confirmVoteResult(GameState s) {
+    s.followUpOrigin = FollowUpOrigin.voteDeaths;
+    _resolveFollowUps(s);
+  }
+
+  void _afterVoteDeathsResolved(GameState s) {
+    if (s.voteReplayPending) {
+      // Pouvoir du Juge Bègue : on revote immédiatement, le même jour.
+      s.voteReplayPending = false;
+      s.phaseQueue = [GamePhase.villageVote];
+      s.phaseIndex = 0;
+      _goToPhase(s, GamePhase.villageVote);
+      return;
+    }
+    _startNextNight(s);
+  }
+
+  void _startNextNight(GameState s) {
+    s.night += 1;
+    s.currentWave = 'night';
+    _resetNightTempData(s);
+    _startRound(s, 'night', s.night);
+    s.phaseQueue = buildNightQueue(s);
+    s.skippedNextNightPlayerId = null;
+    s.phaseIndex = 0;
+    _goToPhase(s, s.phaseQueue[0]);
+  }
+
+  // ---------------------------------------------------------------------
+  // Morts en cascade
+  // ---------------------------------------------------------------------
+
+  void _applyDeath(GameState s, String playerId, DeathCause cause) {
+    final p = s.byId(playerId);
+    if (!p.alive) return; // déjà mort (ex. sauvé puis reciblé ailleurs)
+
+    // L'Ancien résiste à une première attaque des Loups-Garous : il
+    // survit en silence, sans qu'aucun mort ne soit annoncé cette nuit-là.
+    if (p.role == RoleId.ancien &&
+        cause == DeathCause.devoreParLesLoups &&
+        !s.ancienExtraLifeUsed) {
+      s.ancienExtraLifeUsed = true;
+      return;
+    }
+
+    // L'Idiot du Village survit à un vote : démasqué, il perd son droit
+    // de vote mais reste en vie. On s'arrête là pour ce joueur : ce n'est
+    // pas une mort.
+    if (p.role == RoleId.idiotDuVillage && cause == DeathCause.vote) {
+      s.idiotDuVillageRevealId = p.id;
+      return;
+    }
+
+    p.alive = false;
+    p.deathCause = cause;
+    p.deathAtNight = s.currentWave == 'night' ? s.night : null;
+    p.deathAtDay = s.currentWave == 'day' ? s.day : null;
+    s.deathsThisWave.add(playerId);
+
+    // Chagrin d'amour : mort immédiate et inconditionnelle de l'autre
+    // Amoureux. Pas besoin d'attendre un tour ou une confirmation : c'est
+    // un "if" direct dans la cascade, comme demandé.
+    final lover = s.tryById(p.loverId);
+    if (lover != null && lover.alive) {
+      _applyDeath(s, lover.id, DeathCause.chagrinDAmourCupidon);
+    }
+
+    // Enfant Sauvage : si le mort était son modèle (mentorOf pointe vers
+    // lui), il devient Loup-Garou. La mutation du rôle a lieu tout de
+    // suite — elle doit compter dès la prochaine phase des Loups — et un
+    // flag est posé pour que la table en soit informée au bon moment
+    // (voir GamePhase.enfantsauvageReveal dans _resolveFollowUps).
+    if (p.mentorOf != null) {
+      final enfant = s.tryById(p.mentorOf);
+      if (enfant != null &&
+          enfant.alive &&
+          enfant.role == RoleId.enfantSauvage) {
+        s.enfantSauvagePreviousRole = enfant.role;
+        s.enfantSauvageTransformedId = enfant.id;
+        enfant.role = RoleId.loupGarou;
+      }
+    }
+
+    // Le Chasseur réplique quelle que soit l'heure de sa mort, sauf si le
+    // réglage interdit la riposte après un empoisonnement par la
+    // Sorcière.
+    final blockedByWitchSetting = cause == DeathCause.potionDeMort &&
+        !s.settings.allowHunterToShootAfterWitchDeathCause;
+    if (p.role == RoleId.chasseur && !blockedByWitchSetting) {
+      s.chasseurRevengeTargetId = p.id;
+    }
+
+    // Succession du maire, quelle que soit la cause de sa mort.
+    if (p.isMayor) {
+      p.isMayor = false;
+      s.mayorSuccessionNeededFor = p.id;
+    }
+
+    // Bouc Émissaire éliminé par le vote : il désigne un joueur qui
+    // sautera la nuit suivante.
+    if (p.role == RoleId.boucEmissaire && cause == DeathCause.vote) {
+      s.boucEmissaireChoiceNeededId = p.id;
+    }
+
+    // Servante Dévouée : peut reprendre le rôle d'un joueur mort au vote.
+    if (cause == DeathCause.vote &&
+        p.role != RoleId.servanteDevouee &&
+        s.hasAliveRole(RoleId.servanteDevouee)) {
+      s.servanteDevoueeOfferId = p.id;
+    }
+
+    // Le village a fait pendre l'Ancien par erreur : tous les villageois
+    // à pouvoir perdent leur don pour le reste de la partie.
+    if (p.role == RoleId.ancien && cause == DeathCause.vote) {
+      _villageLosesPowers(s);
+    }
+  }
+
+  void _villageLosesPowers(GameState s) {
+    for (final p in s.alivePlayers) {
+      if (p.camp == Camp.village && p.role != RoleId.simpleVillageois) {
+        s.powerLossThisWave.add(PowerLossEntry(p.id, p.role));
+        p.role = RoleId.simpleVillageois;
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // Condition de victoire
+  // ---------------------------------------------------------------------
+
+  GameResult? checkWinCondition(GameState s) {
+    final alive = s.alivePlayers;
+
+    if (alive.length == 2) {
+      final a = alive[0], b = alive[1];
+      if (a.loverId == b.id && b.loverId == a.id && a.camp != b.camp) {
+        return GameResult(Camp.amoureux, [a.id, b.id]);
+      }
+    }
+
+    // Le Loup-Garou Blanc gagne seul s'il est le dernier survivant.
+    if (alive.length == 1 && alive.first.role == RoleId.loupBlanc) {
+      return GameResult(Camp.seul, [alive.first.id]);
+    }
+
+    final wolves = alive.where((p) => p.camp == Camp.loups).length;
+    final others = alive
+        .where((p) => p.camp != Camp.loups && p.role != RoleId.loupBlanc)
+        .length;
+
+    if (wolves == 0 && others == 0) {
+      // Ne devrait arriver qu'avec le Loup Blanc seul, déjà géré au-dessus.
+      return null;
+    }
+    if (wolves == 0) {
+      return GameResult(Camp.village, alive.map((p) => p.id).toList());
+    }
+    if (wolves >= others && s.currentWave=='night') {
+      return GameResult(
+        Camp.loups,
+        alive.where((p) => p.camp == Camp.loups).map((p) => p.id).toList(),
+      );
+    }
+    if (wolves >= others+1 && s.currentWave=='day') {
+      return GameResult(
+        Camp.loups,
+        alive.where((p) => p.camp == Camp.loups).map((p) => p.id).toList(),
+      );
+    }
+    return null;
+  }
+}
