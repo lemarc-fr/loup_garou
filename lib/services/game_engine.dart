@@ -339,14 +339,25 @@ class GameEngine {
     }
   }
 
-  /// Avance simple dans la file du jour (mayorElectionExplain, debate,
-  /// jugeBegueDecision, ...) — contrairement à [advance], ne déclenche
-  /// jamais la fin de nuit.
-  void advance2(GameState s) {
-    s.phaseIndex++;
+ /// Avance dans la file du jour à partir de l'index courant, en sautant
+  /// les étapes devenues invalides entre-temps (voir _shouldSkipDayPhase) —
+  /// contrairement à [advance], ne déclenche jamais la fin de nuit : le
+  /// vote du village (dernier de la file) est toujours résolu directement
+  /// par resolveVillageVote, pas via cette méthode.
+  void _advanceDay(GameState s) {
+    while (s.phaseIndex < s.phaseQueue.length &&
+        _shouldSkipDayPhase(s, s.phaseQueue[s.phaseIndex])) {
+      _logSkippedPhase(s, s.phaseQueue[s.phaseIndex]);
+      s.phaseIndex++;
+    }
     if (s.phaseIndex < s.phaseQueue.length) {
       _goToPhase(s, s.phaseQueue[s.phaseIndex]);
     }
+  }
+
+  void advance2(GameState s) {
+    s.phaseIndex++;
+    _advanceDay(s);
   }
 
   bool _shouldSkipPhase(GameState s, GamePhase phase) {
@@ -355,6 +366,17 @@ class GameEngine {
         s.hasAliveRole(RoleId.sorciere)) {
       final sorciere = s.alivePlayersWithRole(RoleId.sorciere).first;
       return s.finalNightVictimId == sorciere.id;
+    }
+    return false;
+  }
+
+/// Comme [_shouldSkipPhase] mais pour la file du jour : une étape ajoutée
+  /// à buildDayQueue() peut devenir invalide entre-temps si un événement
+  /// (riposte du Chasseur, ...) change l'état avant qu'on l'atteigne — par
+  /// exemple le Juge Bègue meurt avant son tour.
+  bool _shouldSkipDayPhase(GameState s, GamePhase phase) {
+    if (phase == GamePhase.jugeBegueDecision) {
+      return !s.hasAliveRole(RoleId.jugeBegue) || s.jugeBegueUsed;
     }
     return false;
   }
@@ -538,7 +560,7 @@ class GameEngine {
     s.deathsThisWave = [];
     s.phaseIndex = 1; // index 0 (dayReveal) déjà affiché ; la file du jour
     // a déjà été entièrement construite dans _finishNight.
-    _goToPhase(s, s.phaseQueue[1]);
+    _advanceDay(s);
   }
 
   // ---------------------------------------------------------------------
