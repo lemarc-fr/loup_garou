@@ -35,6 +35,7 @@ import 'role_screens/voyante_screen.dart';
 import 'village_power_loss_screen.dart';
 import 'village_vote_screen.dart';
 import 'vote_result_screen.dart';
+import '../../widgets/game_progress_sheet.dart';
 
 /// Point d'entrée de la partie une fois la distribution des rôles terminée.
 /// Regarde `GameState.phase` et affiche l'écran correspondant.
@@ -96,9 +97,19 @@ class GameMainScreen extends StatelessWidget {
       _ => const SizedBox.shrink(),
     };
 
+    final content = Stack(
+      children: [
+        screen,
+        const Align(
+          alignment: Alignment.topRight,
+          child: SafeArea(child: GameProgressButton()),
+        ),
+      ],
+    );
+
     if (state.currentWave == 'day') {
-      return Theme(data: AppTheme.day, child: screen);
+      return Theme(data: AppTheme.day, child: content);
     }
-    return screen;
+    return content;
   }
 }
