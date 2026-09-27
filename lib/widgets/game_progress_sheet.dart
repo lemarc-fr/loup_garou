@@ -213,10 +213,17 @@ class _StepTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final dimmed = step.status == StepStatus.pending;
     return ListTile(
       dense: true,
       leading: _StatusIcon(status: step.status),
-      title: Text(gamePhaseLabel(step.phase)),
+      title: Text(
+        gamePhaseLabel(step.phase),
+        style: theme.textTheme.bodyMedium?.copyWith(
+          color: dimmed ? AppColors.moonlight.withValues(alpha: 0.45) : null,
+        ),
+      ),
     );
   }
 }
@@ -227,13 +234,30 @@ class _StatusIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 350),
+      transitionBuilder: (child, anim) => ScaleTransition(
+        scale: anim,
+        child: FadeTransition(opacity: anim, child: child),
+      ),
+      child: _iconFor(status),
+    );
+  }
+
+  Widget _iconFor(StepStatus status) {
     switch (status) {
+      case StepStatus.pending:
+        return const Icon(Icons.radio_button_unchecked,
+            key: ValueKey('pending'), color: AppColors.nightLine, size: 22);
       case StepStatus.done:
-        return const Icon(Icons.check_circle, color: AppColors.forest);
+        return const Icon(Icons.check_circle,
+            key: ValueKey('done'), color: AppColors.forest, size: 22);
       case StepStatus.skipped:
-        return const Icon(Icons.cancel, color: AppColors.blood);
+        return const Icon(Icons.cancel,
+            key: ValueKey('skipped'), color: AppColors.blood, size: 22);
       case StepStatus.current:
         return const SizedBox(
+          key: ValueKey('current'),
           width: 22,
           height: 22,
           child: Padding(
