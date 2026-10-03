@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
@@ -19,6 +20,7 @@ class NightGoBackToSleepScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: SafeArea(
@@ -30,13 +32,13 @@ class NightGoBackToSleepScreen extends StatelessWidget {
               const Icon(Icons.bedtime, size: 72, color: AppColors.lantern),
               const SizedBox(height: 28),
               Text(
-                'Tu peux te rendormir',
+                loc.nightGoBackToSleepTitle,
                 style: theme.textTheme.displayMedium,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
               Text(
-                'Referme les yeux. Le village continue de dormir...',
+                loc.nightGoBackToSleepInstruction,
                 style: theme.textTheme.bodyLarge,
                 textAlign: TextAlign.center,
               ),
@@ -45,7 +47,7 @@ class NightGoBackToSleepScreen extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: gp.advanceGeneric,
-                  child: const Text('Continuer'),
+                  child: Text(loc.continueButtonLabel),
                 ),
               ),
             ],

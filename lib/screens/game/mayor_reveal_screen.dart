@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
@@ -40,6 +41,7 @@ class _MayorRevealScreenState extends State<MayorRevealScreen>
     final state = gp.state!;
     final mayor = state.byId(state.mayorId!);
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: SafeArea(
@@ -62,7 +64,7 @@ class _MayorRevealScreenState extends State<MayorRevealScreen>
               ),
               const SizedBox(height: 28),
               Text(
-                'The village has chosen its mayor',
+                loc.mayorRevealTitle,
                 style: theme.textTheme.titleLarge,
                 textAlign: TextAlign.center,
               ),
@@ -75,7 +77,7 @@ class _MayorRevealScreenState extends State<MayorRevealScreen>
               ),
               const SizedBox(height: 16),
               Text(
-                'Their vote will count double during ties.',
+                loc.mayorRevealSubtitle,
                 style: theme.textTheme.bodyLarge,
                 textAlign: TextAlign.center,
               ),
@@ -84,7 +86,7 @@ class _MayorRevealScreenState extends State<MayorRevealScreen>
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: gp.confirmMayorReveal,
-                  child: const Text('Continue to the debate'),
+                  child: Text(loc.mayorRevealContinueButton),
                 ),
               ),
             ],

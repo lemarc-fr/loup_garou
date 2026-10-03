@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
@@ -18,9 +19,10 @@ class MayorSuccessionScreen extends StatelessWidget {
     final gp = context.read<GameProvider>();
     final state = gp.state!;
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Succession du maire')),
+      appBar: AppBar(title: Text(loc.mayorSuccessionTitle)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -31,8 +33,7 @@ class MayorSuccessionScreen extends StatelessWidget {
                   size: 56, color: AppColors.lantern),
               const SizedBox(height: 16),
               Text(
-                'Le maire est mort. Avant de rendre son dernier souffle, '
-                    'il désigne son successeur.',
+                loc.mayorSuccessionInstruction,
                 style: theme.textTheme.bodyLarge,
                 textAlign: TextAlign.center,
               ),

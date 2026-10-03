@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../models/role.dart';
 import '../../providers/game_provider.dart';
@@ -13,10 +14,11 @@ class DayRevealScreen extends StatelessWidget {
     final gp = context.watch<GameProvider>();
     final state = gp.state!;
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
     final deaths = state.deathsThisWave.map(state.byId).toList();
 
     return Scaffold(
-      appBar: AppBar(title: Text('Le jour ${state.day} se lève')),
+      appBar: AppBar(title: Text(loc.dayRevealDayRises(state.day))),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -26,10 +28,10 @@ class DayRevealScreen extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 deaths.isEmpty
-                    ? 'Miracle ! Personne n\'est mort cette nuit.'
+                    ? loc.dayRevealNoDeaths
                     : deaths.length > 1
-                        ? 'Le village pleure ses morts...'
-                        : 'Le village pleure son mort...',
+                        ? loc.dayRevealMultipleDeaths
+                        : loc.dayRevealSingleDeath,
                 style: theme.textTheme.headlineMedium,
                 textAlign: TextAlign.center,
               ),
@@ -43,7 +45,7 @@ class DayRevealScreen extends StatelessWidget {
                           leading: RoleImage(role: p.role, size: 48),
                           title: Text(p.name),
                           subtitle: Text(
-                              '${p.role.info.name} — ${_causeLabel(p.deathCause)}'),
+                              '${p.role.info.name} — ${_causeLabel(loc, p.deathCause)}'),
                         ),
                       ),
                   ],
@@ -59,9 +61,8 @@ class DayRevealScreen extends StatelessWidget {
                   ),
                   child: Text(
                     gp.montreurDoursGrowls
-                        ? "L'ours du Montreur d'Ours grogne : un Loup-Garou "
-                        "se cache parmi ses voisins."
-                        : "L'ours du Montreur d'Ours reste calme cette nuit.",
+                        ? loc.montreurDoursGrowlsText
+                        : loc.montreurDoursCalmText,
                     style: Theme.of(context).textTheme.bodyMedium,
                     textAlign: TextAlign.center,
                   ),
@@ -72,7 +73,7 @@ class DayRevealScreen extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: gp.confirmDayReveal,
-                  child: const Text('Le village se réveille'),
+                  child: Text(loc.villageWakesUpButton),
                 ),
               ),
             ],
@@ -82,18 +83,20 @@ class DayRevealScreen extends StatelessWidget {
     );
   }
 
-  String _causeLabel(DeathCause? c) {
+  String _causeLabel(AppLocalizations loc, DeathCause? c) {
     switch (c) {
       case DeathCause.devoreParLesLoups:
-        return 'dévoré(e) par les Loups-Garous';
+        return loc.deathCauseDevoreParLesLoups;
       case DeathCause.potionDeMort:
-        return 'empoisonné(e) par la Sorcière';
+        return loc.deathCausePotionDeMort;
       case DeathCause.chagrinDAmourCupidon:
-        return 'mort(e) de chagrin d\'amour';
+        return loc.deathCauseChagrinDAmourCupidon;
       case DeathCause.vengeanceDuChasseur:
-        return 'abattu(e) par le Chasseur';
+        return loc.deathCauseVengeanceDuChasseur;
       case DeathCause.vote:
-        return 'pendu(e) par le village';
+        return loc.deathCauseVote;
+      case DeathCause.tueParLoupBlanc:
+        return loc.deathCauseTueParLoupBlanc;
       default :
         return '';
     }

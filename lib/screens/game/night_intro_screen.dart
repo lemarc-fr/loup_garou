@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/game_provider.dart';
 import '../../../theme/app_theme.dart';
@@ -11,6 +12,7 @@ class NightIntroScreen extends StatelessWidget {
     final gp = context.read<GameProvider>();
     final night = gp.state!.night;
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: SafeArea(
@@ -23,21 +25,21 @@ class NightIntroScreen extends StatelessWidget {
               const SizedBox(height: 28),
               Text(
                 night == 1
-                    ? 'La nuit tombe sur Thiercelieux'
-                    : 'La nuit $night tombe à nouveau',
+                    ? loc.nightIntroFirstNight
+                    : loc.nightIntroOtherNights(night),
                 style: theme.textTheme.displayMedium,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
               Text(
-                'Tout le village ferme les yeux et s\'endort.\nPose le téléphone au centre de la table.',
+                loc.nightIntroSleepInstruction,
                 style: theme.textTheme.bodyLarge,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 40),
               ElevatedButton(
                   onPressed: gp.advanceGeneric,
-                  child: const Text('Tout le monde dort')),
+                  child: Text(loc.nightIntroEveryoneAsleepButton)),
             ],
           ),
         ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
@@ -13,10 +14,11 @@ class VoteResultScreen extends StatelessWidget {
     final gp = context.watch<GameProvider>();
     final state = gp.state!;
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
     final deaths = state.deathsThisWave.map(state.byId).toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Résultat du vote')),
+      appBar: AppBar(title: Text(loc.voteResultTitle)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -26,8 +28,8 @@ class VoteResultScreen extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 deaths.isEmpty
-                    ? 'Le village n\'a éliminé personne.'
-                    : 'Le village a voté...',
+                    ? loc.voteResultNoDeaths
+                    : loc.voteResultVillageHasVoted,
                 style: theme.textTheme.headlineMedium,
                 textAlign: TextAlign.center,
               ),
@@ -50,7 +52,7 @@ class VoteResultScreen extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: gp.confirmVoteResult,
-                  child: const Text('La nuit tombe à nouveau'),
+                  child: Text(loc.nightFallsAgainButton),
                 ),
               ),
             ],

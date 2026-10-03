@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/player.dart';
 import '../../../providers/game_provider.dart';
@@ -78,12 +79,13 @@ class _SequentialVoteFlowState extends State<SequentialVoteFlow> {
   Widget build(BuildContext context) {
     final voter = widget.voters[voterIndex];
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
     final selectable = widget.allowSelfVote ? [...candidates] : candidates.where((c) => c.id != voter.id).toList();
 
     return PassDeviceGate(
       key: ValueKey('vote-${voter.id}-$isRunoff-${candidates.length}'),
       toName: voter.name,
-      subtitle: 'Vote secret : les autres joueurs ne doivent pas regarder.',
+      subtitle: loc.voteSecretSubtitle,
       accent: widget.accent,
       contentBuilder: (_) => Scaffold(
         appBar: AppBar(title: Text(widget.title)),
@@ -102,7 +104,7 @@ class _SequentialVoteFlowState extends State<SequentialVoteFlow> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      'Égalité au tour précédent — on revote entre les candidats à égalité.',
+                      loc.voteRunoffTieNotice,
                       style: theme.textTheme.bodyMedium,
                       textAlign: TextAlign.center,
                     ),

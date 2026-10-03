@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../models/role.dart';
 import '../../providers/game_provider.dart';
@@ -43,6 +44,7 @@ class _VillagePowerLossScreenState extends State<VillagePowerLossScreen> {
     final gp = context.read<GameProvider>();
     final state = gp.state!;
     final players = state.alivePlayers;
+    final loc = AppLocalizations.of(context)!;
 
     // Rôle perdu pour ce joueur, si (et seulement si) il fait
     // effectivement partie des victimes de la perte de pouvoirs.
@@ -59,8 +61,7 @@ class _VillagePowerLossScreenState extends State<VillagePowerLossScreen> {
         // confirmation "c'est moi qui ai le téléphone" à chaque tour.
         key: ValueKey('power-loss-${player.id}'),
         toName: player.name,
-        subtitle:
-        'Une information privée va s\'afficher. Assure-toi que personne d\'autre ne regarde l\'écran.',
+        subtitle: loc.powerLossPrivatePassSubtitle,
         accent: AppColors.blood,
         contentBuilder: (_) => _PowerLossPrivateScreen(
           index: _index,
@@ -101,9 +102,10 @@ class _PowerLossPrivateScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final reallyLost = lostRole != null;
+    final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("La sagesse s'éteint")),
+      appBar: AppBar(title: Text(loc.powerLossTitle)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -114,21 +116,21 @@ class _PowerLossPrivateScreen extends StatelessWidget {
                 backgroundColor: AppColors.nightAlt,
               ),
               const SizedBox(height: 8),
-              Text('Joueur ${index + 1} / $total',
+              Text(loc.powerLossPlayerCount(index + 1, total),
                   style: theme.textTheme.bodyMedium),
               const Spacer(),
               const Icon(Icons.auto_awesome_outlined,
                   size: 56, color: AppColors.blood),
               const SizedBox(height: 16),
               Text(
-                "Le village a fait pendre l'Ancien par erreur.",
+                loc.powerLossAncienHangedHeadline,
                 style: theme.textTheme.headlineMedium,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),
               if (reallyLost) ...[
                 Text(
-                  'Privé(e) de sa sagesse, tu perds ton don :',
+                  loc.powerLossReallyLostNotice,
                   style: theme.textTheme.bodyLarge,
                   textAlign: TextAlign.center,
                 ),
@@ -143,13 +145,13 @@ class _PowerLossPrivateScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Tu es désormais un Simple Villageois.',
+                  loc.powerLossNowSimpleVillageois,
                   style: theme.textTheme.bodyMedium,
                   textAlign: TextAlign.center,
                 ),
               ] else ...[
                 Text(
-                  'La sagesse de l\'Ancien t\'accorde un don :',
+                  loc.powerLossFakeGiftNotice,
                   style: theme.textTheme.bodyLarge,
                   textAlign: TextAlign.center,
                 ),
@@ -158,14 +160,14 @@ class _PowerLossPrivateScreen extends StatelessWidget {
                     size: 96, color: AppColors.moonlight.withValues(alpha: 0.6)),
                 const SizedBox(height: 12),
                 Text(
-                  'Don du Sommeil Profond',
+                  loc.powerLossFakeGiftName,
                   style: theme.textTheme.displayMedium
                       ?.copyWith(color: AppColors.moonlight),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '...totalement inutile. Rien ne change pour toi.',
+                  loc.powerLossFakeGiftUseless,
                   style: theme.textTheme.bodyMedium,
                   textAlign: TextAlign.center,
                 ),
@@ -180,7 +182,7 @@ class _PowerLossPrivateScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  'Garde-le pour toi : personne d\'autre à la table ne doit savoir ce qui s\'est affiché sur cet écran.',
+                  loc.powerLossKeepSecretWarning,
                   style: theme.textTheme.bodyMedium,
                   textAlign: TextAlign.center,
                 ),
@@ -190,7 +192,7 @@ class _PowerLossPrivateScreen extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: onContinue,
-                  child: const Text("J'ai compris, masquer"),
+                  child: Text(loc.powerLossUnderstoodButton),
                 ),
               ),
             ],
@@ -210,9 +212,10 @@ class _PublicPowerLossAnnouncement extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("La sagesse s'éteint")),
+      appBar: AppBar(title: Text(loc.powerLossTitle)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -223,14 +226,13 @@ class _PublicPowerLossAnnouncement extends StatelessWidget {
                   size: 64, color: AppColors.blood),
               const SizedBox(height: 20),
               Text(
-                "Le village a fait pendre l'Ancien par erreur.",
+                loc.powerLossAncienHangedHeadline,
                 style: theme.textTheme.headlineMedium,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
               Text(
-                'Privés de sa sagesse, certains villageois ont senti leur don '
-                    's\'éteindre... mais eux seuls savent lesquels.',
+                loc.powerLossPublicExplanation,
                 style: theme.textTheme.bodyLarge,
                 textAlign: TextAlign.center,
               ),
@@ -239,7 +241,7 @@ class _PublicPowerLossAnnouncement extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: onContinue,
-                  child: const Text('La nuit tombe à nouveau'),
+                  child: Text(loc.powerLossNightFallsAgainButton),
                 ),
               ),
             ],

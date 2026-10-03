@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
-
 
 class MayorElectionExplainScreen extends StatefulWidget {
   const MayorElectionExplainScreen({super.key});
@@ -36,6 +36,7 @@ class _MayorElectionExplainScreenState extends State<MayorElectionExplainScreen>
   @override
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -55,13 +56,13 @@ class _MayorElectionExplainScreenState extends State<MayorElectionExplainScreen>
                 ),
               ),
               const SizedBox(height: 28),
-              const Text("you're going to elect the mayor"),
+              Text(loc.mayorElectionExplainText),
               const SizedBox(height: 40),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: gp.confirmMayorElectionExplain,
-                  child: const Text('Continue to the vote'),
+                  child: Text(loc.mayorElectionExplainContinueButton),
                 ),
               ),
             ],

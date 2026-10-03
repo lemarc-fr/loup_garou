@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
 import '../../providers/stats_provider.dart';
@@ -32,16 +33,16 @@ class _EndGameScreenState extends State<EndGameScreen> {
     }
   }
 
-  String _winnerLabel(Camp w) {
+  String _winnerLabel(AppLocalizations loc, Camp w) {
     switch (w) {
       case Camp.village:
-        return 'Le Village l\'emporte !';
+        return loc.endGameWinnerVillage;
       case Camp.loups:
-        return 'Les Loups-Garous l\'emportent !';
+        return loc.endGameWinnerWolves;
       case Camp.amoureux:
-        return 'Les Amoureux l\'emportent !';
+        return loc.endGameWinnerLovers;
       case Camp.seul:
-        return 'Il l\'emporte !';
+        return loc.endGameWinnerSolo;
     }
   }
 
@@ -51,10 +52,11 @@ class _EndGameScreenState extends State<EndGameScreen> {
     final state = gp.state!;
     final result = state.result!;
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
     final winners = result.winningPlayerIds.map(state.byId).toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Fin de la partie')),
+      appBar: AppBar(title: Text(loc.endGameTitle)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -65,7 +67,7 @@ class _EndGameScreenState extends State<EndGameScreen> {
                   size: 72, color: AppColors.lantern),
               const SizedBox(height: 20),
               Text(
-                _winnerLabel(result.winner),
+                _winnerLabel(loc, result.winner),
                 style: theme.textTheme.displayMedium,
                 textAlign: TextAlign.center,
               ),
@@ -99,7 +101,7 @@ class _EndGameScreenState extends State<EndGameScreen> {
                         MaterialPageRoute(builder: (_) => const StatsScreen()));
                   },
                   icon: const Icon(Icons.bar_chart),
-                  label: const Text('Voir les statistiques'),
+                  label: Text(loc.endGameViewStatsButton),
                 ),
               ),
               const SizedBox(height: 12),
@@ -111,7 +113,7 @@ class _EndGameScreenState extends State<EndGameScreen> {
                     Navigator.of(context).popUntil((route) => route.isFirst);
                   },
                   icon: const Icon(Icons.home),
-                  label: const Text('Retour à l\'accueil'),
+                  label: Text(loc.endGameReturnHomeButton),
                 ),
               ),
             ],

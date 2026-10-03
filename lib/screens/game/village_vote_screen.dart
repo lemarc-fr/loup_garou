@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
@@ -11,10 +12,11 @@ class VillageVoteScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
     final state = gp.state!;
+    final loc = AppLocalizations.of(context)!;
 
     return SequentialVoteFlow(
-      title: 'Vote du village',
-      instruction: 'Chaque joueur désigne le suspect à éliminer.',
+      title: loc.villageVoteTitle,
+      instruction: loc.villageVoteInstruction,
       accent: AppColors.blood,
       voters: state.alivePlayers,
       initialCandidates: state.alivePlayers,
