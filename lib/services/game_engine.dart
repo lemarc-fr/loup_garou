@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:uuid/uuid.dart';
 import '../models/game_config.dart';
+import '../models/game_progress.dart';
 import '../models/game_settings.dart';
 import '../models/game_state.dart';
 import '../models/player.dart';
@@ -71,9 +72,104 @@ class GameEngine {
     s.currentWave = 'night';
     _resetNightTempData(s);
     s.salvateurLastProtectedId = null;
+    _startRound(s, 'night', 1);
     s.phaseQueue = buildNightQueue(s);
+    _seedRoundSteps(s, s.phaseQueue);
     s.phaseIndex = 0;
-    s.phase = s.phaseQueue[0];
+    _goToPhase(s, s.phaseQueue[0]);
+  }
+
+  // ---------------------------------------------------------------------
+  // Résumé "live" de la partie (nuits/jours + étapes) — voir game_progress.dart
+  // ---------------------------------------------------------------------
+
+  /// Phases purement transitoires, qui ne représentent aucune information
+  /// utile pour le résumé (déjà représentées par le titre "Nuit X" / "Jour X",
+  /// ou juste un écran neutre "tu peux te rendormir").
+  static const _untrackedPhases = {
+    GamePhase.nightIntro,
+    GamePhase.nightGoBackToSleep,
+  };
+
+  void _startRound(GameState s, String wave, int number) {
+    // Referme l'étape "current" laissée en suspens par le round précédent
+    // (le dernier rôle de la nuit, le résultat du vote, ...) avant d'en
+    // commencer un nouveau.
+    if (s.rounds.isNotEmpty) {
+      for (final step in s.rounds.last.steps) {
+        if (step.status == StepStatus.current) step.status = StepStatus.done;
+      }
+    }
+    s.rounds.add(RoundRecord(wave: wave, number: number));
+  }
+
+  /// Pré-remplit le round en cours avec toutes les étapes "à venir" de
+  /// [phases] (celle d'une nuit via buildNightQueue, ou d'un jour via
+  /// buildDayQueue) — déjà filtrées selon la présence/vivacité des rôles
+  /// au moment où le round démarre. Permet d'afficher un résumé "avec les
+  /// étapes à venir" plutôt qu'un simple journal du passé.
+  void _seedRoundSteps(GameState s, List<GamePhase> phases) {
+    if (s.rounds.isEmpty) return;
+    final round = s.rounds.last;
+    for (final phase in phases) {
+      if (_untrackedPhases.contains(phase)) continue;
+      round.steps.add(StepRecord(phase, StepStatus.pending));
+    }
+  }
+
+  /// Change la phase courante ET journalise l'étape dans le round en cours.
+  /// - Si [phase] existe déjà comme étape "à venir" (pré-remplie), elle
+  ///   passe simplement à "current" à sa place.
+  /// - Sinon (suite dynamique déclenchée par une mort : riposte du
+  ///   Chasseur, succession du maire, ...), elle est insérée juste après
+  ///   l'étape qui vient de se terminer, pas à la fin de la liste.
+  /// - endGame referme le round : les étapes encore "pending" ne se
+  ///   produiront jamais, elles sont retirées plutôt que laissées en
+  ///   attente indéfiniment.
+  void _goToPhase(GameState s, GamePhase phase) {
+    s.phase = phase;
+    if (_untrackedPhases.contains(phase) || s.rounds.isEmpty) return;
+    final round = s.rounds.last;
+
+    var insertAt = round.steps.length;
+    for (var i = 0; i < round.steps.length; i++) {
+      if (round.steps[i].status == StepStatus.current) {
+        round.steps[i].status = StepStatus.done;
+        insertAt = i + 1;
+        break;
+      }
+    }
+
+    if (phase == GamePhase.endGame) {
+      round.steps.removeWhere((st) => st.status == StepStatus.pending);
+      round.steps.add(StepRecord(phase, StepStatus.done));
+      return;
+    }
+
+    final existingIndex = round.steps.indexWhere(
+        (st) => st.phase == phase && st.status == StepStatus.pending);
+    if (existingIndex != -1) {
+      round.steps[existingIndex].status = StepStatus.current;
+      return;
+    }
+
+    round.steps.insert(insertAt, StepRecord(phase, StepStatus.current));
+  }
+
+  /// Journalise une étape de la file de nuit que [advance] saute sans
+  /// jamais l'afficher (voir _shouldSkipPhase) — typiquement la Sorcière
+  /// quand l'option correspondante l'empêche de jouer. L'étape était déjà
+  /// pré-remplie en "pending" : on la fait passer directement à "skipped".
+  void _logSkippedPhase(GameState s, GamePhase phase) {
+    if (_untrackedPhases.contains(phase) || s.rounds.isEmpty) return;
+    final round = s.rounds.last;
+    final idx = round.steps.indexWhere(
+        (st) => st.phase == phase && st.status == StepStatus.pending);
+    if (idx != -1) {
+      round.steps[idx].status = StepStatus.skipped;
+    } else {
+      round.steps.add(StepRecord(phase, StepStatus.skipped));
+    }
   }
 
   // ---------------------------------------------------------------------
@@ -168,6 +264,31 @@ class GameEngine {
     return q;
   }
 
+  /// Construit la file "à venir" d'un jour, dès qu'il commence : le
+  /// réveil, éventuellement l'élection du maire (si aucun maire n'est
+  /// encore en poste), le débat, éventuellement le Juge Bègue (s'il est
+  /// vivant et n'a pas encore utilisé son pouvoir), puis le vote.
+  /// Les suites déclenchées par une mort (riposte du Chasseur, succession
+  /// du maire, ...) n'en font PAS partie : elles dépendent de qui meurt et
+  /// sont insérées dynamiquement par [_goToPhase] au moment où elles
+  /// surviennent réellement.
+  List<GamePhase> buildDayQueue(GameState s) {
+    final q = <GamePhase>[GamePhase.dayReveal];
+    if (s.mayorId == null) {
+      q.addAll([
+        GamePhase.mayorElectionExplain,
+        GamePhase.mayorElection,
+        GamePhase.mayorReveal,
+      ]);
+    }
+    q.add(GamePhase.debate);
+    if (s.hasAliveRole(RoleId.jugeBegue) && !s.jugeBegueUsed) {
+      q.add(GamePhase.jugeBegueDecision);
+    }
+    q.add(GamePhase.villageVote);
+    return q;
+  }
+
   /// Le Bouc Émissaire peut désigner un joueur qui "saute" la nuit
   /// suivante. Simplification assumée : seuls les rôles à pouvoir
   /// individuel (Salvateur, Voyante, Sorcière) peuvent ainsi être
@@ -206,10 +327,11 @@ class GameEngine {
     s.phaseIndex++;
     while (s.phaseIndex < s.phaseQueue.length &&
         _shouldSkipPhase(s, s.phaseQueue[s.phaseIndex])) {
+      _logSkippedPhase(s, s.phaseQueue[s.phaseIndex]);
       s.phaseIndex++;
     }
     if (s.phaseIndex < s.phaseQueue.length) {
-      s.phase = s.phaseQueue[s.phaseIndex];
+      _goToPhase(s, s.phaseQueue[s.phaseIndex]);
       return;
     }
     if (s.currentWave == 'night') {
@@ -217,14 +339,25 @@ class GameEngine {
     }
   }
 
-  /// Avance simple dans la file du jour (mayorElectionExplain, debate,
-  /// jugeBegueDecision, ...) — contrairement à [advance], ne déclenche
-  /// jamais la fin de nuit.
+ /// Avance dans la file du jour à partir de l'index courant, en sautant
+  /// les étapes devenues invalides entre-temps (voir _shouldSkipDayPhase) —
+  /// contrairement à [advance], ne déclenche jamais la fin de nuit : le
+  /// vote du village (dernier de la file) est toujours résolu directement
+  /// par resolveVillageVote, pas via cette méthode.
+  void _advanceDay(GameState s) {
+    while (s.phaseIndex < s.phaseQueue.length &&
+        _shouldSkipDayPhase(s, s.phaseQueue[s.phaseIndex])) {
+      _logSkippedPhase(s, s.phaseQueue[s.phaseIndex]);
+      s.phaseIndex++;
+    }
+    if (s.phaseIndex < s.phaseQueue.length) {
+      _goToPhase(s, s.phaseQueue[s.phaseIndex]);
+    }
+  }
+
   void advance2(GameState s) {
     s.phaseIndex++;
-    if (s.phaseIndex < s.phaseQueue.length) {
-      s.phase = s.phaseQueue[s.phaseIndex];
-    }
+    _advanceDay(s);
   }
 
   bool _shouldSkipPhase(GameState s, GamePhase phase) {
@@ -233,6 +366,17 @@ class GameEngine {
         s.hasAliveRole(RoleId.sorciere)) {
       final sorciere = s.alivePlayersWithRole(RoleId.sorciere).first;
       return s.finalNightVictimId == sorciere.id;
+    }
+    return false;
+  }
+
+/// Comme [_shouldSkipPhase] mais pour la file du jour : une étape ajoutée
+  /// à buildDayQueue() peut devenir invalide entre-temps si un événement
+  /// (riposte du Chasseur, ...) change l'état avant qu'on l'atteigne — par
+  /// exemple le Juge Bègue meurt avant son tour.
+  bool _shouldSkipDayPhase(GameState s, GamePhase phase) {
+    if (phase == GamePhase.jugeBegueDecision) {
+      return !s.hasAliveRole(RoleId.jugeBegue) || s.jugeBegueUsed;
     }
     return false;
   }
@@ -398,9 +542,11 @@ class GameEngine {
 
     s.currentWave = 'day';
     s.day += 1;
-    s.phaseQueue = [GamePhase.dayReveal];
+    _startRound(s, 'day', s.day);
+    s.phaseQueue = buildDayQueue(s);
+    _seedRoundSteps(s, s.phaseQueue);
     s.phaseIndex = 0;
-    s.phase = GamePhase.dayReveal;
+    _goToPhase(s, GamePhase.dayReveal);
   }
 
   /// À appeler quand le groupe a fini de lire le récapitulatif des morts
@@ -412,22 +558,9 @@ class GameEngine {
 
   void _afterNightDeathsResolved(GameState s) {
     s.deathsThisWave = [];
-    final rest = <GamePhase>[GamePhase.dayReveal];
-    if (s.mayorId == null) {
-      rest.addAll([
-        GamePhase.mayorElectionExplain,
-        GamePhase.mayorElection,
-        GamePhase.mayorReveal,
-      ]);
-    }
-    rest.add(GamePhase.debate);
-    if (s.hasAliveRole(RoleId.jugeBegue) && !s.jugeBegueUsed) {
-      rest.add(GamePhase.jugeBegueDecision);
-    }
-    rest.add(GamePhase.villageVote);
-    s.phaseQueue = rest;
-    s.phaseIndex = 1; // index 0 (dayReveal) déjà affiché
-    s.phase = s.phaseQueue[1];
+    s.phaseIndex = 1; // index 0 (dayReveal) déjà affiché ; la file du jour
+    // a déjà été entièrement construite dans _finishNight.
+    _advanceDay(s);
   }
 
   // ---------------------------------------------------------------------
@@ -447,35 +580,35 @@ class GameEngine {
     final result = checkWinCondition(s);
     if (result != null) {
       s.result = result;
-      s.phase = GamePhase.endGame;
+      _goToPhase(s, GamePhase.endGame);
       return;
     }
     if (s.chasseurRevengeTargetId != null) {
-      s.phase = GamePhase.chasseurRevange;
+      _goToPhase(s, GamePhase.chasseurRevange);
       return;
     }
     if (s.mayorSuccessionNeededFor != null) {
-      s.phase = GamePhase.successionMaire;
+      _goToPhase(s, GamePhase.successionMaire);
       return;
     }
     if (s.enfantSauvageTransformedId != null) {
-      s.phase = GamePhase.enfantsauvageReveal;
+      _goToPhase(s, GamePhase.enfantsauvageReveal);
       return;
     }
     if (s.powerLossThisWave.isNotEmpty) {
-      s.phase = GamePhase.villagePowerLoss;
+      _goToPhase(s, GamePhase.villagePowerLoss);
       return;
     }
     if (s.servanteDevoueeOfferId != null) {
-      s.phase = GamePhase.servanteDevouee;
+      _goToPhase(s, GamePhase.servanteDevouee);
       return;
     }
     if (s.boucEmissaireChoiceNeededId != null) {
-      s.phase = GamePhase.boucEmissaire;
+      _goToPhase(s, GamePhase.boucEmissaire);
       return;
     }
     if (s.idiotDuVillageRevealId != null) {
-      s.phase = GamePhase.idiotduvillageCivicRightLoss;
+      _goToPhase(s, GamePhase.idiotduvillageCivicRightLoss);
       return;
     }
 
@@ -587,7 +720,7 @@ class GameEngine {
   void resolveVillageVote(GameState s, String eliminatedId) {
     _applyDeath(s, eliminatedId, DeathCause.vote);
     s.corbeauCursedId = null; // la malédiction ne vaut que pour ce vote
-    s.phase = GamePhase.voteResult;
+    _goToPhase(s, GamePhase.voteResult);
   }
 
   void confirmVoteResult(GameState s) {
@@ -601,7 +734,7 @@ class GameEngine {
       s.voteReplayPending = false;
       s.phaseQueue = [GamePhase.villageVote];
       s.phaseIndex = 0;
-      s.phase = GamePhase.villageVote;
+      _goToPhase(s, GamePhase.villageVote);
       return;
     }
     _startNextNight(s);
@@ -611,10 +744,12 @@ class GameEngine {
     s.night += 1;
     s.currentWave = 'night';
     _resetNightTempData(s);
+    _startRound(s, 'night', s.night);
     s.phaseQueue = buildNightQueue(s);
+    _seedRoundSteps(s, s.phaseQueue);
     s.skippedNextNightPlayerId = null;
     s.phaseIndex = 0;
-    s.phase = s.phaseQueue[0];
+    _goToPhase(s, s.phaseQueue[0]);
   }
 
   // ---------------------------------------------------------------------

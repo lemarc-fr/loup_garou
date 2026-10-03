@@ -2,6 +2,7 @@ import 'game_config.dart';
 import 'game_settings.dart';
 import 'player.dart';
 import 'role.dart';
+import 'game_progress.dart';
 
 /// Toutes les phases possibles de la machine à états du jeu.
 enum GamePhase {
@@ -96,6 +97,9 @@ class GameState {
 
   List<GamePhase> phaseQueue = [];
   int phaseIndex = 0;
+  /// Historique complet de la partie (une entrée par nuit/jour), pour le
+  /// résumé "live" affiché depuis l'écran de jeu (voir GameProgressSheet).
+  List<RoundRecord> rounds = [];
 
   String? mayorId;
   bool ancienExtraLifeUsed = false;
