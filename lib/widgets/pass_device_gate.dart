@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 
 /// Écran tampon affiché entre deux actions de joueurs différents :
@@ -41,6 +42,8 @@ class _PassDeviceGateState extends State<PassDeviceGate> {
     if (_confirmed) return widget.contentBuilder(context);
 
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -50,7 +53,7 @@ class _PassDeviceGateState extends State<PassDeviceGate> {
             children: [
               Icon(Icons.phonelink_ring, size: 72, color: widget.accent),
               const SizedBox(height: 28),
-              Text(widget.pluralToName ? 'Passe le téléphone aux' : 'Passe le téléphone à',
+              Text(widget.pluralToName ? loc.passDeviceToPlural : loc.passDeviceToSingular,
                   style: theme.textTheme.titleLarge,
                   textAlign: TextAlign.center),
               const SizedBox(height: 8),
@@ -70,7 +73,7 @@ class _PassDeviceGateState extends State<PassDeviceGate> {
               FilledButton.icon(
                 onPressed: () => setState(() => _confirmed = true),
                 icon: const Icon(Icons.check),
-                label: const Text("C'est moi, j'ai le téléphone"),
+                label: Text(loc.passDeviceConfirmButton),
                 style: FilledButton.styleFrom(
                   backgroundColor: widget.accent,
                   foregroundColor: Colors.black,
