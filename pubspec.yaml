@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   cupertino_icons: ^1.0.8
 
   # State management — simple et robuste pour une machine à états de partie
@@ -24,7 +26,7 @@ dependencies:
   uuid: ^4.4.2
 
   # Formatage de dates pour l'historique des stats
-  intl: ^0.19.0
+  intl: ^0.20.2
 
   # Micro-animations sobres pour les transitions de nuit/jour
   flutter_animate: ^4.5.0
@@ -39,6 +41,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true
 
   # NB : les fichiers listés ici doivent exister physiquement dans assets/
   # avant de lancer `flutter run` / `flutter build`, sinon Flutter échoue

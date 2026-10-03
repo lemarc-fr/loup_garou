@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
@@ -40,16 +41,16 @@ class _EnfantSauvageRevealScreenState extends State<EnfantSauvageRevealScreen>
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
 
     return RoleScreenFrame(
-      title: 'Mutation',
+      title: loc.enfantSauvageMutationTitle,
       accent: AppColors.blood,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const RoleInstructionCard(
-            text:
-                'Son modèle est mort : l’Enfant Sauvage rejoint désormais la meute.',
+          RoleInstructionCard(
+            text: loc.enfantSauvageMutationInstruction,
             accent: AppColors.blood,
           ),
           const SizedBox(height: 20),
@@ -75,7 +76,7 @@ class _EnfantSauvageRevealScreenState extends State<EnfantSauvageRevealScreen>
             width: double.infinity,
             child: ElevatedButton(
               onPressed: gp.confirmEnfantSauvageReveal,
-              child: const Text('Continuer'),
+              child: Text(loc.continueButtonLabel),
             ),
           ),
         ],

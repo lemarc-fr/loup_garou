@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
@@ -11,10 +12,10 @@ class CupidonScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
+    final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: "Cupidon",
-      subtitle: 'C\'est le rôle de Cupidon. Réveille-toi.',
+      toName: RoleId.cupidon.info.name,
+      subtitle: loc.cupidonSubtitle,
       accent: RoleId.cupidon.info.accent,
       contentBuilder: (_) => const _CupidonContent(),
     );
@@ -44,16 +45,16 @@ class _CupidonContentState extends State<_CupidonContent> {
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
     final players = gp.state!.alivePlayers;
+    final loc = AppLocalizations.of(context)!;
 
     return RoleScreenFrame(
-      title: 'Cupidon',
+      title: loc.cupidonTitle,
       accent: RoleId.cupidon.info.accent,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           RoleInstructionCard(
-            text:
-                'Désigne les deux Amoureux (${chosen.length}/2). Tu peux te choisir toi-même.',
+            text: loc.cupidonInstruction(chosen.length, 2),
             accent: RoleId.cupidon.info.accent,
           ),
           const SizedBox(height: 14),
@@ -74,7 +75,7 @@ class _CupidonContentState extends State<_CupidonContent> {
             onPressed: chosen.length == 2
                 ? () => gp.resolveCupidon(chosen[0], chosen[1])
                 : null,
-            child: const Text('Confirmer les Amoureux'),
+            child: Text(loc.cupidonConfirmButton),
           ),
         ],
       ),

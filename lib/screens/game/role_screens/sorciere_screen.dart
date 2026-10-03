@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
@@ -11,10 +12,10 @@ class SorciereScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
+    final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: "La Sorcière",
-      subtitle: 'C\'est le tour de la Sorcière. Réveille-toi.',
+      toName: RoleId.sorciere.info.name,
+      subtitle: loc.sorciereSubtitle,
       accent: RoleId.sorciere.info.accent,
       contentBuilder: (_) => const _SorciereContent(),
     );
@@ -37,6 +38,7 @@ class _SorciereContentState extends State<_SorciereContent> {
     final gp = context.read<GameProvider>();
     final state = gp.state!;
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
 
     final sorciereId = state.alivePlayersWithRole(RoleId.sorciere).first.id;
     final victim = state.tryById(state.finalNightVictimId);
@@ -49,7 +51,7 @@ class _SorciereContentState extends State<_SorciereContent> {
         state.alivePlayers.where((p) => p.id != sorciereId).toList();
 
     return RoleScreenFrame(
-      title: 'La Sorcière',
+      title: loc.sorciereTitle,
       accent: RoleId.sorciere.info.accent,
       child: SingleChildScrollView(
         child: Column(
@@ -57,8 +59,8 @@ class _SorciereContentState extends State<_SorciereContent> {
           children: [
             RoleInstructionCard(
               text: victim != null
-                  ? 'Cette nuit, les Loups-Garous ont désigné ${victim.name}.'
-                  : 'Cette nuit, les Loups-Garous n’ont désigné personne.',
+                  ? loc.sorciereInstructionWithVictim(victim.name)
+                  : loc.sorciereInstructionNoVictim,
               accent: RoleId.sorciere.info.accent,
             ),
             const SizedBox(height: 14),
@@ -71,7 +73,7 @@ class _SorciereContentState extends State<_SorciereContent> {
                       value: saveVictim,
                       onChanged: (v) => setState(() => saveVictim = v),
                       title: Text(
-                        'Utiliser la potion de vie pour sauver ${victim.name}',
+                        loc.sorciereUseLifePotion(victim.name),
                       ),
                     )
                   else
@@ -79,10 +81,10 @@ class _SorciereContentState extends State<_SorciereContent> {
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Text(
                         state.sorciereVieUsed
-                            ? 'Potion de vie déjà utilisée.'
+                            ? loc.sorciereLifePotionAlreadyUsed
                             : selfSaveBlocked
-                                ? 'Vous êtes vous-même la victime désignée, mais vous ne pouvez pas vous sauver vous-même.'
-                                : 'Aucune victime à sauver cette nuit.',
+                                ? loc.sorciereSelfSaveBlocked
+                                : loc.sorciereNoVictimToSave,
                         style: theme.textTheme.bodyMedium,
                         textAlign: TextAlign.center,
                       ),
@@ -95,12 +97,12 @@ class _SorciereContentState extends State<_SorciereContent> {
                         poisoning = v;
                         if (!v) poisonTargetId = null;
                       }),
-                      title: const Text('Utiliser la potion de mort'),
+                      title: Text(loc.sorciereUseDeathPotion),
                     ),
                     if (poisoning) ...[
                       const SizedBox(height: 8),
                       Text(
-                        'Choisissez la victime de la potion :',
+                        loc.sorciereChooseDeathPotionTarget,
                         style: theme.textTheme.bodyMedium,
                         textAlign: TextAlign.center,
                       ),
@@ -115,7 +117,7 @@ class _SorciereContentState extends State<_SorciereContent> {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Text(
-                        'Potion de mort déjà utilisée.',
+                        loc.sorciereDeathPotionAlreadyUsed,
                         style: theme.textTheme.bodyMedium,
                         textAlign: TextAlign.center,
                       ),
@@ -129,7 +131,7 @@ class _SorciereContentState extends State<_SorciereContent> {
                 useVie: saveVictim,
                 poisonTargetId: poisoning ? poisonTargetId : null,
               ),
-              child: const Text('Confirmer et se rendormir'),
+              child: Text(loc.confirmAndGoBackToSleepButton),
             ),
           ],
         ),

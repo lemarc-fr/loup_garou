@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/game_config.dart';
@@ -88,6 +89,8 @@ Widget buildRoleScreenPreview({
     value: gp,
     child: MaterialApp(
       theme: AppTheme.night,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: SafeArea(
           child: 

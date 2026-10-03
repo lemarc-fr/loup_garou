@@ -1,0 +1,1108 @@
+{
+  "@@locale": "fr",
+  "appTitle": "Thiercelieux",
+  "@appTitle": {
+    "description": "Titre principal de l'application"
+  },
+  "continueButtonLabel": "Continuer",
+  "@continueButtonLabel": {
+    "description": "Libellé générique du bouton Continuer"
+  },
+  "confirmButtonLabel": "Confirmer",
+  "@confirmButtonLabel": {
+    "description": "Libellé générique du bouton Confirmer"
+  },
+  "cancelButtonLabel": "Annuler",
+  "@cancelButtonLabel": {
+    "description": "Libellé générique du bouton Annuler"
+  },
+  "goBackToSleepButton": "Se rendormir",
+  "@goBackToSleepButton": {
+    "description": "Bouton pour se rendormir après vérification de rôle"
+  },
+  "nightFallsAgainButton": "La nuit tombe à nouveau",
+  "@nightFallsAgainButton": {
+    "description": "Bouton pour faire retomber la nuit"
+  },
+  "usePowerButton": "Utiliser mon pouvoir",
+  "@usePowerButton": {
+    "description": "Bouton pour utiliser un pouvoir de rôle"
+  },
+  "doNotUsePowerButton": "Ne pas utiliser mon pouvoir",
+  "@doNotUsePowerButton": {
+    "description": "Bouton pour refuser d'utiliser un pouvoir"
+  },
+  "campWolves": "Camp des Loups-Garous",
+  "@campWolves": {
+    "description": "Libellé du camp des loups-garous"
+  },
+  "campVillagers": "Camp des Villageois",
+  "@campVillagers": {
+    "description": "Libellé du camp des villageois"
+  },
+
+  "passDeviceToPlural": "Passe le téléphone aux",
+  "@passDeviceToPlural": {
+    "description": "Texte d'invite pour passer le téléphone à plusieurs personnes"
+  },
+  "passDeviceToSingular": "Passe le téléphone à",
+  "@passDeviceToSingular": {
+    "description": "Texte d'invite pour passer le téléphone à une personne"
+  },
+  "passDeviceConfirmButton": "C'est moi, j'ai le téléphone",
+  "@passDeviceConfirmButton": {
+    "description": "Bouton de confirmation de prise en main du téléphone"
+  },
+
+  "homeSubtitle": "Les Loups-Garous — partie en local",
+  "@homeSubtitle": {
+    "description": "Sous-titre sur l'écran d'accueil"
+  },
+  "resumeGameButton": "Reprendre la partie",
+  "@resumeGameButton": {
+    "description": "Bouton pour reprendre la partie active"
+  },
+  "newGameButton": "Nouvelle partie",
+  "@newGameButton": {
+    "description": "Bouton pour lancer une nouvelle partie"
+  },
+  "abandonGameDialogTitle": "Abandonner la partie ?",
+  "@abandonGameDialogTitle": {
+    "description": "Titre du dialogue d'abandon de partie"
+  },
+  "abandonGameDialogMessage": "La partie en cours sera perdue et non comptabilisée dans les statistiques.",
+  "@abandonGameDialogMessage": {
+    "description": "Message du dialogue d'abandon de partie"
+  },
+  "abandonGameConfirmLabel": "Abandonner",
+  "@abandonGameConfirmLabel": {
+    "description": "Bouton de confirmation d'abandon de partie"
+  },
+  "statsButton": "Statistiques",
+  "@statsButton": {
+    "description": "Bouton d'accès à l'écran de statistiques"
+  },
+  "gameSettingsButton": "Options de jeu",
+  "@gameSettingsButton": {
+    "description": "Bouton d'accès aux options de jeu"
+  },
+  "gameRulesButton": "Règles du jeu",
+  "@gameRulesButton": {
+    "description": "Bouton d'accès aux règles du jeu"
+  },
+  "gameRulesRolesTitle": "Les rôles",
+  "@gameRulesRolesTitle": {
+    "description": "Titre de la section des rôles dans les règles"
+  },
+
+  "newGameTitle": "Nouvelle partie",
+  "@newGameTitle": {
+    "description": "Titre de l'écran du choix du nombre de joueurs"
+  },
+  "playerCountHowMany": "Combien de joueurs ?",
+  "@playerCountHowMany": {
+    "description": "Question sur le nombre de joueurs"
+  },
+  "playerCountRangeDescription": "De 5 à 24 joueurs autour de la table.",
+  "@playerCountRangeDescription": {
+    "description": "Explication de la limite de joueurs"
+  },
+
+  "roleSelectionTitle": "Répartition des rôles",
+  "@roleSelectionTitle": {
+    "description": "Titre de l'écran de sélection des rôles"
+  },
+  "gameSettingsTooltip": "Options de jeu",
+  "@gameSettingsTooltip": {
+    "description": "Tooltip du bouton options de jeu dans la sélection des rôles"
+  },
+  "roleSelectionPlayerCount": "{count, plural, =1{1 joueur} other{{count} joueurs}}",
+  "@roleSelectionPlayerCount": {
+    "description": "Affichage du nombre de joueurs sélectionnés",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "roleSelectionVoleurExtraCards": " · +2 cartes pour le Voleur",
+  "@roleSelectionVoleurExtraCards": {
+    "description": "Indication des 2 cartes supplémentaires réservées pour le voleur"
+  },
+  "roleSelectionTooManyRoles": "{count, plural, =1{1 rôle en trop} other{{count} rôles en trop}}",
+  "@roleSelectionTooManyRoles": {
+    "description": "Indication d'un surplus de rôles configurés",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "roleSelectionAutoVillagers": "{count, plural, =1{1 Simple Villageois automatique} other{{count} Simples Villageois automatiques}}",
+  "@roleSelectionAutoVillagers": {
+    "description": "Indication des villageois ajoutés automatiquement",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "playerNamesTitle": "Les joueurs",
+  "@playerNamesTitle": {
+    "description": "Titre de l'écran de saisie des noms"
+  },
+  "playerNamesInstruction": "Entrez le prénom de chaque joueur, dans l'ordre où vous voulez leur faire découvrir leur rôle.",
+  "@playerNamesInstruction": {
+    "description": "Instruction pour la saisie des prénoms"
+  },
+  "playerNamesPlayerLabel": "Joueur {number}",
+  "@playerNamesPlayerLabel": {
+    "description": "Label du champ prénom de joueur",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "playerNamesErrorEmpty": "Chaque joueur doit avoir un prénom.",
+  "@playerNamesErrorEmpty": {
+    "description": "Erreur si un prénom est vide"
+  },
+  "playerNamesErrorDuplicate": "Deux joueurs ne peuvent pas avoir le même prénom.",
+  "@playerNamesErrorDuplicate": {
+    "description": "Erreur si deux prénoms sont identiques"
+  },
+  "dealRolesButton": "Distribuer les rôles",
+  "@dealRolesButton": {
+    "description": "Bouton pour valider les prénoms et distribuer les rôles"
+  },
+
+  "roleRevealSubtitle": "Ton rôle va s'afficher. Assure-toi que personne d'autre ne regarde l'écran.",
+  "@roleRevealSubtitle": {
+    "description": "Sous-titre d'avertissement de l'écran de découverte du rôle"
+  },
+  "roleRevealPlayerProgress": "Joueur {current} / {total}",
+  "@roleRevealPlayerProgress": {
+    "description": "Indicateur d'avancement de découverte des rôles",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "roleRevealTapToDiscover": "Appuie pour découvrir ton rôle",
+  "@roleRevealTapToDiscover": {
+    "description": "Invite à appuyer pour révéler son rôle"
+  },
+  "roleRevealRevealButton": "Révéler mon rôle",
+  "@roleRevealRevealButton": {
+    "description": "Bouton pour afficher la carte du rôle"
+  },
+  "roleRevealHideButton": "J'ai vu, masquer mon rôle",
+  "@roleRevealHideButton": {
+    "description": "Bouton pour masquer la carte après lecture"
+  },
+
+  "boucEmissaireTitle": "Le Bouc Émissaire",
+  "@boucEmissaireTitle": {
+    "description": "Titre de l'écran du Bouc Émissaire"
+  },
+  "boucEmissaireInstruction": "Tu dois désigner le joueur qui ne participera pas au prochain vote du village.",
+  "@boucEmissaireInstruction": {
+    "description": "Instruction d'action pour le Bouc Émissaire"
+  },
+
+  "chasseurTitle": "Le Chasseur",
+  "@chasseurTitle": {
+    "description": "Titre de l'écran du Chasseur"
+  },
+  "chasseurInstruction": "Tu as été éliminé. Choisis immédiatement un joueur à emporter avec toi.",
+  "@chasseurInstruction": {
+    "description": "Instruction d'action pour le Chasseur éliminé"
+  },
+
+  "corbeauSubtitle": "Choisis ta victime",
+  "@corbeauSubtitle": {
+    "description": "Sous-titre d'action pour le Corbeau"
+  },
+  "corbeauTitle": "Le Corbeau",
+  "@corbeauTitle": {
+    "description": "Titre de l'écran du Corbeau"
+  },
+  "corbeauInstruction": "Désigne un joueur qui recevra deux voix contre lui au vote.",
+  "@corbeauInstruction": {
+    "description": "Instruction d'action pour le Corbeau"
+  },
+
+  "cupidonSubtitle": "C'est le rôle de Cupidon. Réveille-toi.",
+  "@cupidonSubtitle": {
+    "description": "Sous-titre du réveil de Cupidon"
+  },
+  "cupidonTitle": "Cupidon",
+  "@cupidonTitle": {
+    "description": "Titre de l'écran de Cupidon"
+  },
+  "cupidonInstruction": "Désigne les deux Amoureux ({count}/{max}). Tu peux te choisir toi-même.",
+  "@cupidonInstruction": {
+    "description": "Instruction pour le choix des deux amoureux par Cupidon",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "cupidonConfirmButton": "Confirmer les Amoureux",
+  "@cupidonConfirmButton": {
+    "description": "Bouton pour valider la désignation des deux amoureux"
+  },
+
+  "enfantSauvageTitle": "L’Enfant Sauvage",
+  "@enfantSauvageTitle": {
+    "description": "Titre de l'écran de l'Enfant Sauvage"
+  },
+  "enfantSauvageInstruction": "Choisis ton modèle. S’il meurt, tu rejoindras immédiatement les Loups-Garous.",
+  "@enfantSauvageInstruction": {
+    "description": "Instruction pour le choix du modèle de l'Enfant Sauvage"
+  },
+  "enfantSauvagePassTo": "l'Enfant Sauvage",
+  "@enfantSauvagePassTo": {
+    "description": "Nom du rôle Enfant Sauvage lors du passage de téléphone"
+  },
+  "enfantSauvageCheckSubtitle": "C'est le tour de l'Enfant Sauvage. Réveille-toi.",
+  "@enfantSauvageCheckSubtitle": {
+    "description": "Sous-titre du réveil de l'Enfant Sauvage lors du check"
+  },
+  "enfantSauvageModelAliveInstruction": "Ton modèle est toujours vivant : tu restes un simple villageois sans pouvoir particulier.",
+  "@enfantSauvageModelAliveInstruction": {
+    "description": "Message indiquant que le modèle de l'Enfant Sauvage est vivant"
+  },
+  "enfantSauvageMutationTitle": "Mutation",
+  "@enfantSauvageMutationTitle": {
+    "description": "Titre de la révélation de mutation de l'Enfant Sauvage"
+  },
+  "enfantSauvageMutationInstruction": "Son modèle est mort : l’Enfant Sauvage rejoint désormais la meute.",
+  "@enfantSauvageMutationInstruction": {
+    "description": "Explication de la mutation de l'Enfant Sauvage en loup-garou"
+  },
+
+  "grandMechantLoupSubtitle": "Réveille-toi seul, les autres Loups peuvent se rendormir.",
+  "@grandMechantLoupSubtitle": {
+    "description": "Sous-titre du tour du Grand Méchant Loup"
+  },
+  "grandMechantLoupTitle": "Le Grand Méchant Loup",
+  "@grandMechantLoupTitle": {
+    "description": "Titre de l'écran du Grand Méchant Loup"
+  },
+  "grandMechantLoupInstructionWithVictim": "Les Loups ont déjà désigné {name}. Tant qu’aucun Loup n’est mort, tu peux choisir une seconde victime.",
+  "@grandMechantLoupInstructionWithVictim": {
+    "description": "Instruction pour le Grand Méchant Loup lorsqu'une victime existe déjà",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "grandMechantLoupInstructionNoVictim": "Tant qu’aucun Loup n’est mort, tu peux choisir une seconde victime cette nuit.",
+  "@grandMechantLoupInstructionNoVictim": {
+    "description": "Instruction pour le Grand Méchant Loup sans victime préalable"
+  },
+  "skipPowerThisNightButton": "Ne pas utiliser mon pouvoir cette nuit",
+  "@skipPowerThisNightButton": {
+    "description": "Bouton pour passer son tour de pouvoir sans agir"
+  },
+
+  "idiotDuVillageRevealTitle": "L'Idiot du Village",
+  "@idiotDuVillageRevealTitle": {
+    "description": "Titre de l'écran de révélation de l'Idiot du Village"
+  },
+  "idiotDuVillageRevealInstruction": "Le village a voté contre {name}, mais il révèle son rôle et survit.",
+  "@idiotDuVillageRevealInstruction": {
+    "description": "Texte explicatif lors de la grâce de l'Idiot du Village",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "idiotDuVillageVoteLossMessage": "{name} perd définitivement son droit de vote.",
+  "@idiotDuVillageVoteLossMessage": {
+    "description": "Message indiquant la perte du droit de vote pour l'Idiot du Village",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+
+  "infectPereDesLoupsSubtitle": "C'est ton tour. Réveille-toi seul.",
+  "@infectPereDesLoupsSubtitle": {
+    "description": "Sous-titre du tour de l'Infect Père des Loups"
+  },
+  "infectPereDesLoupsTitle": "Infect Père des Loups",
+  "@infectPereDesLoupsTitle": {
+    "description": "Titre de l'écran de l'Infect Père des Loups"
+  },
+  "infectPereDesLoupsInstructionWithVictim": "Les Loups ont désigné {name}. Veux-tu l’infecter au lieu de le laisser mourir ?",
+  "@infectPereDesLoupsInstructionWithVictim": {
+    "description": "Instruction pour infecter la victime désignée",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "infectPereDesLoupsInstructionNoVictim": "Les Loups n’ont désigné personne cette nuit.",
+  "@infectPereDesLoupsInstructionNoVictim": {
+    "description": "Message si aucune victime n'a été désignée par les loups"
+  },
+  "infectPereDesLoupsInfectButton": "Infecter",
+  "@infectPereDesLoupsInfectButton": {
+    "description": "Bouton pour confirmer l'infection"
+  },
+  "infectPereDesLoupsDoNotInfectButton": "Ne pas infecter",
+  "@infectPereDesLoupsDoNotInfectButton": {
+    "description": "Bouton pour refuser l'infection"
+  },
+
+  "jugeBegueSubtitle": "C'est le tour du Juge Bègue. Personne d'autre ne doit savoir qui il est.",
+  "@jugeBegueSubtitle": {
+    "description": "Sous-titre du tour du Juge Bègue"
+  },
+  "jugeBegueTitle": "Le Juge Bègue",
+  "@jugeBegueTitle": {
+    "description": "Titre de l'écran du Juge Bègue"
+  },
+  "jugeBegueInstruction": "Une fois par partie, tu peux décider en secret que le vote du village sera rejoué immédiatement.",
+  "@jugeBegueInstruction": {
+    "description": "Instruction d'action pour le Juge Bègue"
+  },
+  "jugeBegueQuestion": "Veux-tu utiliser ce pouvoir maintenant ?",
+  "@jugeBegueQuestion": {
+    "description": "Question posée au Juge Bègue"
+  },
+
+  "loupBlancSubtitle": "Choisis ta victime",
+  "@loupBlancSubtitle": {
+    "description": "Sous-titre du tour du Loup Blanc"
+  },
+  "loupBlancTitle": "Le Loup Blanc",
+  "@loupBlancTitle": {
+    "description": "Titre de l'écran du Loup Blanc"
+  },
+  "loupBlancInstruction": "Choisis un joueur à éliminer secrètement pendant ton tour.",
+  "@loupBlancInstruction": {
+    "description": "Instruction d'action pour le Loup Blanc"
+  },
+
+  "loupsSubtitle": "Réveillez-vous et mettez-vous d'accord en silence sur votre victime.",
+  "@loupsSubtitle": {
+    "description": "Sous-titre du tour des Loups-Garous"
+  },
+  "loupsTitle": "Les Loups-Garous",
+  "@loupsTitle": {
+    "description": "Titre de l'écran des Loups-Garous"
+  },
+  "loupsInstruction": "Mettez-vous d’accord en silence, puis désignez votre victime.",
+  "@loupsInstruction": {
+    "description": "Instruction d'action pour les Loups-Garous"
+  },
+
+  "petiteFilleSubtitle": "C'est le rôle de la Petite Fille. Réveille-toi.",
+  "@petiteFilleSubtitle": {
+    "description": "Sous-titre du tour de la Petite Fille"
+  },
+  "petiteFilleTitle": "La Petite Fille",
+  "@petiteFilleTitle": {
+    "description": "Titre de l'écran de la Petite Fille"
+  },
+  "petiteFilleWarning": "Attention : si les Loups-Garous te surprennent, tu prendras la place de leur victime.",
+  "@petiteFilleWarning": {
+    "description": "Avertissement pour la Petite Fille"
+  },
+  "petiteFilleSpyButton": "Entrouvrir les yeux et espionner",
+  "@petiteFilleSpyButton": {
+    "description": "Bouton pour espionner les loups"
+  },
+  "petiteFilleSleepButton": "Rester sagement endormie",
+  "@petiteFilleSleepButton": {
+    "description": "Bouton pour ne pas espionner"
+  },
+
+  "renardSubtitle": "C'est le tour du Renard. Réveille-toi.",
+  "@renardSubtitle": {
+    "description": "Sous-titre du tour du Renard"
+  },
+  "renardTitle": "Le Renard",
+  "@renardTitle": {
+    "description": "Titre de l'écran du Renard"
+  },
+  "renardInstruction": "Choisis trois joueurs voisins ({count}/{max}).",
+  "@renardInstruction": {
+    "description": "Instruction pour le Renard choisissant des voisins",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+
+  "salvateurSubtitle": "Réveille-toi et désigne ton protégé.",
+  "@salvateurSubtitle": {
+    "description": "Sous-titre du tour du Salvateur"
+  },
+  "salvateurTitle": "Le Salvateur",
+  "@salvateurTitle": {
+    "description": "Titre de l'écran du Salvateur"
+  },
+  "salvateurInstruction": "Choisis le joueur protégé contre les attaques de cette nuit.",
+  "@salvateurInstruction": {
+    "description": "Instruction d'action pour le Salvateur"
+  },
+
+  "servanteDevoueeSubtitle": "C'est le rôle de la Servante Dévouée. Réveille-toi.",
+  "@servanteDevoueeSubtitle": {
+    "description": "Sous-titre du tour de la Servante Dévouée"
+  },
+  "servanteDevoueeTitle": "La Servante Dévouée",
+  "@servanteDevoueeTitle": {
+    "description": "Titre de l'écran de la Servante Dévouée"
+  },
+  "servanteDevoueeInstruction": "{name} vient d'être éliminé(e). Veux-tu prendre son rôle ?",
+  "@servanteDevoueeInstruction": {
+    "description": "Instruction proposant à la servante de reprendre le rôle du joueur éliminé",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "servanteDevoueeTakeRoleButton": "Oui, prendre ce rôle",
+  "@servanteDevoueeTakeRoleButton": {
+    "description": "Bouton d'acceptation du nouveau rôle par la servante"
+  },
+  "servanteDevoueeKeepRoleButton": "Non, rester Servante Dévouée",
+  "@servanteDevoueeKeepRoleButton": {
+    "description": "Bouton de refus du nouveau rôle par la servante"
+  },
+
+  "sorciereSubtitle": "C'est le tour de la Sorcière. Réveille-toi.",
+  "@sorciereSubtitle": {
+    "description": "Sous-titre du tour de la Sorcière"
+  },
+  "sorciereTitle": "La Sorcière",
+  "@sorciereTitle": {
+    "description": "Titre de l'écran de la Sorcière"
+  },
+  "sorciereInstructionWithVictim": "Cette nuit, les Loups-Garous ont désigné {name}.",
+  "@sorciereInstructionWithVictim": {
+    "description": "Annonce de la victime des loups à la sorcière",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sorciereInstructionNoVictim": "Cette nuit, les Loups-Garous n’ont désigné personne.",
+  "@sorciereInstructionNoVictim": {
+    "description": "Annonce à la sorcière qu'il n'y a pas eu de victime"
+  },
+  "sorciereUseLifePotion": "Utiliser la potion de vie pour sauver {name}",
+  "@sorciereUseLifePotion": {
+    "description": "Option pour utiliser la potion de guérison",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sorciereLifePotionAlreadyUsed": "Potion de vie déjà utilisée.",
+  "@sorciereLifePotionAlreadyUsed": {
+    "description": "Message indiquant que la potion de vie n'est plus disponible"
+  },
+  "sorciereSelfSaveBlocked": "Vous êtes vous-même la victime désignée, mais vous ne pouvez pas vous sauver vous-même.",
+  "@sorciereSelfSaveBlocked": {
+    "description": "Message lorsque la règle interdit à la sorcière de se sauver elle-même"
+  },
+  "sorciereNoVictimToSave": "Aucune victime à sauver cette nuit.",
+  "@sorciereNoVictimToSave": {
+    "description": "Message lorsqu'il n'y a personne à sauver"
+  },
+  "sorciereUseDeathPotion": "Utiliser la potion de mort",
+  "@sorciereUseDeathPotion": {
+    "description": "Option pour activer la potion de mort"
+  },
+  "sorciereChooseDeathPotionTarget": "Choisissez la victime de la potion :",
+  "@sorciereChooseDeathPotionTarget": {
+    "description": "Instruction pour désigner la cible de la potion de mort"
+  },
+  "sorciereDeathPotionAlreadyUsed": "Potion de mort déjà utilisée.",
+  "@sorciereDeathPotionAlreadyUsed": {
+    "description": "Message indiquant que la potion de mort n'est plus disponible"
+  },
+  "confirmAndGoBackToSleepButton": "Confirmer et se rendormir",
+  "@confirmAndGoBackToSleepButton": {
+    "description": "Bouton pour valider ses choix de sorcière et se rendormir"
+  },
+
+  "voleurSubtitle": "C'est le rôle du Voleur. Réveille-toi.",
+  "@voleurSubtitle": {
+    "description": "Sous-titre du tour du Voleur"
+  },
+  "voleurTitle": "Le Voleur",
+  "@voleurTitle": {
+    "description": "Titre de l'écran du Voleur"
+  },
+  "voleurBothWolvesWarning": "Les deux cartes sont des Loups-Garous : tu es obligé d’en prendre une !",
+  "@voleurBothWolvesWarning": {
+    "description": "Avertissement si les deux cartes au centre sont des loups"
+  },
+  "voleurExchangeRoleButton": "Échanger mon rôle contre celle-ci",
+  "@voleurExchangeRoleButton": {
+    "description": "Bouton pour échanger sa carte contre la sélectionnée"
+  },
+  "voleurKeepCurrentRoleButton": "Garder mon rôle actuel",
+  "@voleurKeepCurrentRoleButton": {
+    "description": "Bouton pour conserver son rôle sans échanger"
+  },
+
+  "voyanteSubtitle": "C'est le tour de la Voyante. Réveille-toi.",
+  "@voyanteSubtitle": {
+    "description": "Sous-titre du tour de la Voyante"
+  },
+  "voyanteTitle": "La Voyante",
+  "@voyanteTitle": {
+    "description": "Titre de l'écran de la Voyante"
+  },
+  "voyanteObservedTargetInstruction": "Tu as observé {name}. Son rôle est révélé.",
+  "@voyanteObservedTargetInstruction": {
+    "description": "Message révélant le rôle observé par la Voyante",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "voyanteDoneButton": "J'ai vu, continuer",
+  "@voyanteDoneButton": {
+    "description": "Bouton pour clore l'observation de la Voyante"
+  },
+  "voyanteChooseTargetInstruction": "Choisis un joueur pour découvrir son rôle.",
+  "@voyanteChooseTargetInstruction": {
+    "description": "Instruction pour sélectionner la cible de la Voyante"
+  },
+
+  "dayRevealDayRises": "Le jour {day} se lève",
+  "@dayRevealDayRises": {
+    "description": "Titre de l'aube du jour",
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "dayRevealNoDeaths": "Miracle ! Personne n'est mort cette nuit.",
+  "@dayRevealNoDeaths": {
+    "description": "Message si aucune victime n'a été faite durant la nuit"
+  },
+  "dayRevealMultipleDeaths": "Le village pleure ses morts...",
+  "@dayRevealMultipleDeaths": {
+    "description": "Message lors du décès de plusieurs villageois dans la nuit"
+  },
+  "dayRevealSingleDeath": "Le village pleure son mort...",
+  "@dayRevealSingleDeath": {
+    "description": "Message lors du décès d'un seul villageois dans la nuit"
+  },
+  "montreurDoursGrowlsText": "L'ours du Montreur d'Ours grogne : un Loup-Garou se cache parmi ses voisins.",
+  "@montreurDoursGrowlsText": {
+    "description": "Message quand l'ours grogne au réveil"
+  },
+  "montreurDoursCalmText": "L'ours du Montreur d'Ours reste calme cette nuit.",
+  "@montreurDoursCalmText": {
+    "description": "Message quand l'ours reste calme au réveil"
+  },
+  "villageWakesUpButton": "Le village se réveille",
+  "@villageWakesUpButton": {
+    "description": "Bouton pour confirmer les révélations de l'aube"
+  },
+  "deathCauseDevoreParLesLoups": "dévoré(e) par les Loups-Garous",
+  "@deathCauseDevoreParLesLoups": {
+    "description": "Cause de décès par les loups"
+  },
+  "deathCausePotionDeMort": "empoisonné(e) par la Sorcière",
+  "@deathCausePotionDeMort": {
+    "description": "Cause de décès par poison de sorcière"
+  },
+  "deathCauseChagrinDAmourCupidon": "mort(e) de chagrin d'amour",
+  "@deathCauseChagrinDAmourCupidon": {
+    "description": "Cause de décès par amour brisé"
+  },
+  "deathCauseVengeanceDuChasseur": "abattu(e) par le Chasseur",
+  "@deathCauseVengeanceDuChasseur": {
+    "description": "Cause de décès par tir de chasseur"
+  },
+  "deathCauseVote": "pendu(e) par le village",
+  "@deathCauseVote": {
+    "description": "Cause de décès par vote du village"
+  },
+  "deathCauseTueParLoupBlanc": "dévoré(e) par le Loup Blanc",
+  "@deathCauseTueParLoupBlanc": {
+    "description": "Cause de décès par le loup blanc"
+  },
+
+  "debateTitle": "Débat",
+  "@debateTitle": {
+    "description": "Titre de l'écran de débat"
+  },
+  "debateVillageDebates": "Le village débat",
+  "@debateVillageDebates": {
+    "description": "Grand titre de l'écran de débat"
+  },
+  "debateInstruction": "Les survivants discutent pour démasquer les Loups-Garous. Les Loups doivent bluffer pour se faire passer pour des villageois.",
+  "@debateInstruction": {
+    "description": "Instruction pour la phase de débat"
+  },
+  "goToVoteButton": "Passer au vote",
+  "@goToVoteButton": {
+    "description": "Bouton pour terminer le débat et passer au vote"
+  },
+
+  "endGameTitle": "Fin de la partie",
+  "@endGameTitle": {
+    "description": "Titre de l'écran de fin de partie"
+  },
+  "endGameWinnerVillage": "Le Village l'emporte !",
+  "@endGameWinnerVillage": {
+    "description": "Annonce de la victoire du village"
+  },
+  "endGameWinnerWolves": "Les Loups-Garous l'emportent !",
+  "@endGameWinnerWolves": {
+    "description": "Annonce de la victoire des loups-garous"
+  },
+  "endGameWinnerLovers": "Les Amoureux l'emportent !",
+  "@endGameWinnerLovers": {
+    "description": "Annonce de la victoire des amoureux"
+  },
+  "endGameWinnerSolo": "Il l'emporte !",
+  "@endGameWinnerSolo": {
+    "description": "Annonce d'une victoire solo"
+  },
+  "endGameViewStatsButton": "Voir les statistiques",
+  "@endGameViewStatsButton": {
+    "description": "Bouton pour afficher les statistiques après la fin de partie"
+  },
+  "endGameReturnHomeButton": "Retour à l'accueil",
+  "@endGameReturnHomeButton": {
+    "description": "Bouton pour revenir à l'écran d'accueil"
+  },
+
+  "mayorElectionExplainText": "Vous allez élire le Capitaine",
+  "@mayorElectionExplainText": {
+    "description": "Explication avant le vote de l'élection du maire"
+  },
+  "mayorElectionExplainContinueButton": "Continuer vers le vote",
+  "@mayorElectionExplainContinueButton": {
+    "description": "Bouton pour avancer vers le vote du maire"
+  },
+  "mayorElectionTitle": "Élection du maire",
+  "@mayorElectionTitle": {
+    "description": "Titre du vote du maire"
+  },
+  "mayorElectionInstruction": "Chaque joueur désigne le futur maire du village.",
+  "@mayorElectionInstruction": {
+    "description": "Instruction pour le vote du maire"
+  },
+  "mayorRevealTitle": "Le village a choisi son maire",
+  "@mayorRevealTitle": {
+    "description": "Titre de révélation du maire élu"
+  },
+  "mayorRevealSubtitle": "Son vote comptera double en cas d'égalité.",
+  "@mayorRevealSubtitle": {
+    "description": "Explication du pouvoir du maire"
+  },
+  "mayorRevealContinueButton": "Continuer vers le débat",
+  "@mayorRevealContinueButton": {
+    "description": "Bouton pour aller au débat après l'élection du maire"
+  },
+  "mayorSuccessionTitle": "Succession du maire",
+  "@mayorSuccessionTitle": {
+    "description": "Titre de l'écran de succession du maire"
+  },
+  "mayorSuccessionInstruction": "Le maire est mort. Avant de rendre son dernier souffle, il désigne son successeur.",
+  "@mayorSuccessionInstruction": {
+    "description": "Instruction pour désigner le successeur du maire"
+  },
+
+  "nightIntroFirstNight": "La nuit tombe sur Thiercelieux",
+  "@nightIntroFirstNight": {
+    "description": "Titre de la première nuit"
+  },
+  "nightIntroOtherNights": "La nuit {night} tombe à nouveau",
+  "@nightIntroOtherNights": {
+    "description": "Titre des nuits suivantes",
+    "placeholders": {
+      "night": {
+        "type": "int"
+      }
+    }
+  },
+  "nightIntroSleepInstruction": "Tout le village ferme les yeux et s'endort.\nPose le téléphone au centre de la table.",
+  "@nightIntroSleepInstruction": {
+    "description": "Instruction d'endormissement du village"
+  },
+  "nightIntroEveryoneAsleepButton": "Tout le monde dort",
+  "@nightIntroEveryoneAsleepButton": {
+    "description": "Bouton confirmant que tout le monde est endormi"
+  },
+  "nightGoBackToSleepTitle": "Tu peux te rendormir",
+  "@nightGoBackToSleepTitle": {
+    "description": "Titre pour se rendormir après son tour"
+  },
+  "nightGoBackToSleepInstruction": "Referme les yeux. Le village continue de dormir...",
+  "@nightGoBackToSleepInstruction": {
+    "description": "Texte incitant à refermer les yeux"
+  },
+
+  "voteSecretSubtitle": "Vote secret : les autres joueurs ne doivent pas regarder.",
+  "@voteSecretSubtitle": {
+    "description": "Avertissement de confidentialité lors du vote"
+  },
+  "voteRunoffTieNotice": "Égalité au tour précédent — on revote entre les candidats à égalité.",
+  "@voteRunoffTieNotice": {
+    "description": "Avis de second tour en cas d'égalité"
+  },
+
+  "powerLossPrivatePassSubtitle": "Une information privée va s'afficher. Assure-toi que personne d'autre ne regarde l'écran.",
+  "@powerLossPrivatePassSubtitle": {
+    "description": "Avertissement avant d'afficher la perte de pouvoir"
+  },
+  "powerLossTitle": "La sagesse s'éteint",
+  "@powerLossTitle": {
+    "description": "Titre de la perte de pouvoir suite à la mort de l'Ancien"
+  },
+  "powerLossPlayerCount": "Joueur {current} / {total}",
+  "@powerLossPlayerCount": {
+    "description": "Numéro du joueur passant devant l'écran de perte de pouvoir",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "powerLossAncienHangedHeadline": "Le village a fait pendre l'Ancien par erreur.",
+  "@powerLossAncienHangedHeadline": {
+    "description": "Accroche annonçant la pendaison de l'Ancien"
+  },
+  "powerLossReallyLostNotice": "Privé(e) de sa sagesse, tu perds ton don :",
+  "@powerLossReallyLostNotice": {
+    "description": "Message annonçant la perte de pouvoir réelle"
+  },
+  "powerLossNowSimpleVillageois": "Tu es désormais un Simple Villageois.",
+  "@powerLossNowSimpleVillageois": {
+    "description": "Indication du nouveau rôle Simple Villageois"
+  },
+  "powerLossFakeGiftNotice": "La sagesse de l'Ancien t'accorde un don :",
+  "@powerLossFakeGiftNotice": {
+    "description": "Message leurre accordant un don fictif"
+  },
+  "powerLossFakeGiftName": "Don du Sommeil Profond",
+  "@powerLossFakeGiftName": {
+    "description": "Nom du faux don de sommeil profond"
+  },
+  "powerLossFakeGiftUseless": "...totalement inutile. Rien ne change pour toi.",
+  "@powerLossFakeGiftUseless": {
+    "description": "Explication humoristique du don fictif"
+  },
+  "powerLossKeepSecretWarning": "Garde-le pour toi : personne d'autre à la table ne doit savoir ce qui s'est affiché sur cet écran.",
+  "@powerLossKeepSecretWarning": {
+    "description": "Avertissement de discrétion pour la perte de pouvoir"
+  },
+  "powerLossUnderstoodButton": "J'ai compris, masquer",
+  "@powerLossUnderstoodButton": {
+    "description": "Bouton pour acquitter la perte de pouvoir et masquer l'écran"
+  },
+  "powerLossPublicExplanation": "Privés de sa sagesse, certains villageois ont senti leur don s'éteindre... mais eux seuls savent lesquels.",
+  "@powerLossPublicExplanation": {
+    "description": "Explication publique lors de la mort de l'Ancien"
+  },
+  "powerLossNightFallsAgainButton": "La nuit tombe à nouveau",
+  "@powerLossNightFallsAgainButton": {
+    "description": "Bouton pour clore l'annonce publique de perte de pouvoirs"
+  },
+
+  "villageVoteTitle": "Vote du village",
+  "@villageVoteTitle": {
+    "description": "Titre de l'écran du vote du village"
+  },
+  "villageVoteInstruction": "Chaque joueur désigne le suspect à éliminer.",
+  "@villageVoteInstruction": {
+    "description": "Instruction pour le vote d'élimination du village"
+  },
+  "voteResultTitle": "Résultat du vote",
+  "@voteResultTitle": {
+    "description": "Titre de l'écran de résultat du vote"
+  },
+  "voteResultNoDeaths": "Le village n'a éliminé personne.",
+  "@voteResultNoDeaths": {
+    "description": "Résultat de vote sans élimination"
+  },
+  "voteResultVillageHasVoted": "Le village a voté...",
+  "@voteResultVillageHasVoted": {
+    "description": "Résultat de vote avec élimination"
+  },
+
+  "gameSettingsTitle": "Options de jeu",
+  "@gameSettingsTitle": {
+    "description": "Titre de l'écran des options de jeu"
+  },
+
+  "statsTitle": "Statistiques",
+  "@statsTitle": {
+    "description": "Titre de l'écran des statistiques"
+  },
+  "statsResetTooltip": "Réinitialiser les statistiques",
+  "@statsResetTooltip": {
+    "description": "Tooltip pour réinitialiser les statistiques"
+  },
+  "statsResetDialogTitle": "Réinitialiser les statistiques ?",
+  "@statsResetDialogTitle": {
+    "description": "Titre du dialogue de réinitialisation des statistiques"
+  },
+  "statsResetDialogMessage": "Tout l'historique des parties sera définitivement supprimé.",
+  "@statsResetDialogMessage": {
+    "description": "Message d'avertissement de réinitialisation des statistiques"
+  },
+  "statsResetConfirmLabel": "Réinitialiser",
+  "@statsResetConfirmLabel": {
+    "description": "Bouton de confirmation de réinitialisation des statistiques"
+  },
+  "statsEmptyMessage": "Aucune partie enregistrée pour l'instant.\nJouez une partie complète pour voir apparaître vos statistiques ici.",
+  "@statsEmptyMessage": {
+    "description": "Message affiché quand aucune statistique n'est enregistrée"
+  },
+  "statsCardSummary": "{gamesPlayed, plural, =1{1 partie} other{{gamesPlayed} parties}} · {winRate}% de victoires",
+  "@statsCardSummary": {
+    "description": "Résumé des parties jouées et taux de victoires",
+    "placeholders": {
+      "gamesPlayed": {
+        "type": "int"
+      },
+      "winRate": {
+        "type": "int"
+      }
+    }
+  },
+  "statsFavoriteSuffix": " · {roleName} favori",
+  "@statsFavoriteSuffix": {
+    "description": "Suffixe mentionnant le rôle favori",
+    "placeholders": {
+      "roleName": {
+        "type": "String"
+      }
+    }
+  },
+  "statsWinsAbbr": "{wins} V",
+  "@statsWinsAbbr": {
+    "description": "Nombre de victoires abrégé",
+    "placeholders": {
+      "wins": {
+        "type": "int"
+      }
+    }
+  },
+  "statsLossesAbbr": "{losses} D",
+  "@statsLossesAbbr": {
+    "description": "Nombre de défaites abrégé",
+    "placeholders": {
+      "losses": {
+        "type": "int"
+      }
+    }
+  },
+
+  "gameProgressSheetTitle": "Résumé de la partie",
+  "@gameProgressSheetTitle": {
+    "description": "Titre du panneau de progression de partie"
+  },
+  "gameProgressNightCounter": "Nuit {number}",
+  "@gameProgressNightCounter": {
+    "description": "Compteur de nuit dans le panneau de progression",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "gameProgressDayCounter": "Jour {number}",
+  "@gameProgressDayCounter": {
+    "description": "Compteur de jour dans le panneau de progression",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "gameProgressStarting": "La partie commence...",
+  "@gameProgressStarting": {
+    "description": "Texte quand aucune manche n'a encore débuté"
+  },
+  "gameProgressInProgress": "En cours",
+  "@gameProgressInProgress": {
+    "description": "Indication qu'une manche est en cours"
+  },
+  "gameProgressInProgressDots": "En cours...",
+  "@gameProgressInProgressDots": {
+    "description": "Indication que des étapes sont en cours"
+  },
+  "gameProgressNightTitle": "Nuit {number}",
+  "@gameProgressNightTitle": {
+    "description": "Titre d'une manche de nuit dans la liste",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "gameProgressDayTitle": "Jour {number}",
+  "@gameProgressDayTitle": {
+    "description": "Titre d'une manche de jour dans la liste",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+
+  "phaseNightVoleur": "Le Voleur",
+  "@phaseNightVoleur": {
+    "description": "Nom de phase pour le Voleur"
+  },
+  "phaseNightCupidon": "Cupidon",
+  "@phaseNightCupidon": {
+    "description": "Nom de phase pour Cupidon"
+  },
+  "phaseNightEnfantSauvage": "L'Enfant Sauvage — choix du modèle",
+  "@phaseNightEnfantSauvage": {
+    "description": "Nom de phase pour le choix du modèle de l'Enfant Sauvage"
+  },
+  "phaseNightSalvateur": "Le Salvateur",
+  "@phaseNightSalvateur": {
+    "description": "Nom de phase pour le Salvateur"
+  },
+  "phaseNightVoyante": "La Voyante",
+  "@phaseNightVoyante": {
+    "description": "Nom de phase pour la Voyante"
+  },
+  "phaseNightLoups": "Les Loups-Garous",
+  "@phaseNightLoups": {
+    "description": "Nom de phase pour les Loups-Garous"
+  },
+  "phaseNightPetiteFille": "La Petite Fille",
+  "@phaseNightPetiteFille": {
+    "description": "Nom de phase pour la Petite Fille"
+  },
+  "phaseNightLoupBlanc": "Le Loup Blanc",
+  "@phaseNightLoupBlanc": {
+    "description": "Nom de phase pour le Loup Blanc"
+  },
+  "phaseNightGrandMechantLoup": "Le Grand Méchant Loup",
+  "@phaseNightGrandMechantLoup": {
+    "description": "Nom de phase pour le Grand Méchant Loup"
+  },
+  "phaseNightEnfantSauvageCheck": "L'Enfant Sauvage",
+  "@phaseNightEnfantSauvageCheck": {
+    "description": "Nom de phase pour le réveil de vérification de l'Enfant Sauvage"
+  },
+  "phaseNightInfectPereDesLoups": "Infect Père des Loups",
+  "@phaseNightInfectPereDesLoups": {
+    "description": "Nom de phase pour l'Infect Père des Loups"
+  },
+  "phaseNightRenard": "Le Renard",
+  "@phaseNightRenard": {
+    "description": "Nom de phase pour le Renard"
+  },
+  "phaseNightCorbeau": "Le Corbeau",
+  "@phaseNightCorbeau": {
+    "description": "Nom de phase pour le Corbeau"
+  },
+  "phaseNightSorciere": "La Sorcière",
+  "@phaseNightSorciere": {
+    "description": "Nom de phase pour la Sorcière"
+  },
+  "phaseChasseurRevange": "Riposte du Chasseur",
+  "@phaseChasseurRevange": {
+    "description": "Nom de phase pour la riposte du Chasseur"
+  },
+  "phaseSuccessionMaire": "Succession du Maire",
+  "@phaseSuccessionMaire": {
+    "description": "Nom de phase pour la succession du Maire"
+  },
+  "phaseEnfantsauvageReveal": "Mutation de l'Enfant Sauvage",
+  "@phaseEnfantsauvageReveal": {
+    "description": "Nom de phase pour la mutation de l'Enfant Sauvage"
+  },
+  "phaseDayReveal": "Réveil du village",
+  "@phaseDayReveal": {
+    "description": "Nom de phase pour le réveil du village"
+  },
+  "phaseMayorElectionExplain": "Élection du maire",
+  "@phaseMayorElectionExplain": {
+    "description": "Nom de phase pour l'explication de l'élection du maire"
+  },
+  "phaseMayorElection": "Vote pour le maire",
+  "@phaseMayorElection": {
+    "description": "Nom de phase pour le vote du maire"
+  },
+  "phaseMayorReveal": "Résultat de l'élection",
+  "@phaseMayorReveal": {
+    "description": "Nom de phase pour le résultat de l'élection du maire"
+  },
+  "phaseDebate": "Débat",
+  "@phaseDebate": {
+    "description": "Nom de phase pour le débat du village"
+  },
+  "phaseJugeBegueDecision": "Le Juge Bègue",
+  "@phaseJugeBegueDecision": {
+    "description": "Nom de phase pour la décision du Juge Bègue"
+  },
+  "phaseVillageVote": "Vote du village",
+  "@phaseVillageVote": {
+    "description": "Nom de phase pour le vote du village"
+  },
+  "phaseVoteResult": "Résultat du vote",
+  "@phaseVoteResult": {
+    "description": "Nom de phase pour le résultat du vote"
+  },
+  "phaseVillagePowerLoss": "Perte des pouvoirs",
+  "@phaseVillagePowerLoss": {
+    "description": "Nom de phase pour la perte des pouvoirs après pendaison de l'Ancien"
+  },
+  "phaseServanteDevouee": "La Servante Dévouée",
+  "@phaseServanteDevouee": {
+    "description": "Nom de phase pour la Servante Dévouée"
+  },
+  "phaseBoucEmissaire": "Le Bouc Émissaire",
+  "@phaseBoucEmissaire": {
+    "description": "Nom de phase pour le Bouc Émissaire"
+  },
+  "phaseIdiotduvillageCivicRightLoss": "Perte de droit civique",
+  "@phaseIdiotduvillageCivicRightLoss": {
+    "description": "Nom de phase pour la perte de droit civique de l'Idiot du Village"
+  },
+  "phaseEndGame": "Fin de partie",
+  "@phaseEndGame": {
+    "description": "Nom de phase pour la fin de partie"
+  }
+}

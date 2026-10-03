@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
@@ -12,10 +13,10 @@ class VoyanteScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
+    final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: "La Voyante",
-      subtitle: 'C\'est le tour de la Voyante. Réveille-toi.',
+      toName: RoleId.voyante.info.name,
+      subtitle: loc.voyanteSubtitle,
       accent: RoleId.voyante.info.accent,
       contentBuilder: (_) => const _VoyanteContent(),
     );
@@ -36,17 +37,18 @@ class _VoyanteContentState extends State<_VoyanteContent> {
     final gp = context.read<GameProvider>();
     final state = gp.state!;
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
 
     if (targetId != null) {
       final target = state.byId(targetId!);
       final info = target.role.info;
       return RoleScreenFrame(
-        title: 'La Voyante',
+        title: loc.voyanteTitle,
         accent: RoleId.voyante.info.accent,
         child: Column(
           children: [
             RoleInstructionCard(
-              text: 'Tu as observé ${target.name}. Son rôle est révélé.',
+              text: loc.voyanteObservedTargetInstruction(target.name),
               accent: RoleId.voyante.info.accent,
             ),
             const SizedBox(height: 20),
@@ -75,7 +77,7 @@ class _VoyanteContentState extends State<_VoyanteContent> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: gp.confirmVoyanteDone,
-                child: const Text("J'ai vu, continuer"),
+                child: Text(loc.voyanteDoneButton),
               ),
             ),
           ],
@@ -84,13 +86,13 @@ class _VoyanteContentState extends State<_VoyanteContent> {
     }
 
     return RoleScreenFrame(
-      title: 'La Voyante',
+      title: loc.voyanteTitle,
       accent: RoleId.voyante.info.accent,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           RoleInstructionCard(
-            text: 'Choisis un joueur pour découvrir son rôle.',
+            text: loc.voyanteChooseTargetInstruction,
             accent: RoleId.voyante.info.accent,
           ),
           const SizedBox(height: 14),

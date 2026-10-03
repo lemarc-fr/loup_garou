@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:thiercelieux/models/role.dart';
 
@@ -12,16 +13,16 @@ class EnfantSauvageScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
+    final loc = AppLocalizations.of(context)!;
     final enfantSauvageId =
         gp.state!.alivePlayersWithRole(RoleId.enfantSauvage).first.id;
     return RoleScreenFrame(
-      title: 'L’Enfant Sauvage',
+      title: loc.enfantSauvageTitle,
       accent: RoleId.enfantSauvage.info.accent,
       child: Column(
         children: [
           RoleInstructionCard(
-            text:
-                'Choisis ton modèle. S’il meurt, tu rejoindras immédiatement les Loups-Garous.',
+            text: loc.enfantSauvageInstruction,
             accent: RoleId.enfantSauvage.info.accent,
           ),
           const SizedBox(height: 14),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/pass_device_gate.dart';
@@ -11,11 +13,11 @@ class LoupsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: 'Loups-Garous',
+      toName: RoleId.loupGarou.info.name,
       pluralToName: true,
-      subtitle:
-      'Réveillez-vous et mettez-vous d\'accord en silence sur votre victime.',
+      subtitle: loc.loupsSubtitle,
       accent: AppColors.blood,
       contentBuilder: (_) => const _LoupsContent(),
     );
@@ -29,6 +31,7 @@ class _LoupsContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
     final state = gp.state!;
+    final loc = AppLocalizations.of(context)!;
 
     final wolfIds = state.aliveWolves.map((w) => w.id).toSet();
     final targets = state.settings.allowWerewolfToKillThemselves
@@ -36,13 +39,13 @@ class _LoupsContent extends StatelessWidget {
         : state.alivePlayers.where((p) => !wolfIds.contains(p.id)).toList();
 
     return RoleScreenFrame(
-      title: 'Les Loups-Garous',
+      title: loc.loupsTitle,
       accent: AppColors.blood,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const RoleInstructionCard(
-            text: 'Mettez-vous d’accord en silence, puis désignez votre victime.',
+          RoleInstructionCard(
+            text: loc.loupsInstruction,
             accent: AppColors.blood,
           ),
           const SizedBox(height: 14),

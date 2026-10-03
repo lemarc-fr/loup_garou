@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
@@ -10,9 +11,10 @@ class EnfantSauvageCheckScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: "l'Enfant Sauvage",
-      subtitle: 'C\'est le tour de l\'Enfant Sauvage. Réveille-toi.',
+      toName: loc.enfantSauvagePassTo,
+      subtitle: loc.enfantSauvageCheckSubtitle,
       accent: RoleId.enfantSauvage.info.accent,
       contentBuilder: (_) => const _EnfantSauvageCheckContent(),
     );
@@ -26,16 +28,16 @@ class _EnfantSauvageCheckContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
     final info = RoleId.enfantSauvage.info;
+    final loc = AppLocalizations.of(context)!;
 
     return RoleScreenFrame(
-      title: 'L’Enfant Sauvage',
+      title: loc.enfantSauvageTitle,
       accent: info.accent,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           RoleInstructionCard(
-            text:
-                'Ton modèle est toujours vivant : tu restes un simple villageois sans pouvoir particulier.',
+            text: loc.enfantSauvageModelAliveInstruction,
             accent: info.accent,
           ),
           const SizedBox(height: 20),
@@ -47,7 +49,7 @@ class _EnfantSauvageCheckContent extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: gp.confirmEnfantSauvageCheck,
-              child: const Text('Se rendormir'),
+              child: Text(loc.goBackToSleepButton),
             ),
           ),
         ],

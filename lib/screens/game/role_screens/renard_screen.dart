@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
@@ -11,9 +12,10 @@ class RenardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: 'Le Renard',
-      subtitle: 'C\'est le tour du Renard. Réveille-toi.',
+      toName: RoleId.renard.info.name,
+      subtitle: loc.renardSubtitle,
       accent: RoleId.renard.info.accent,
       contentBuilder: (_) => const _RenardContent(),
     );
@@ -27,15 +29,16 @@ class _RenardContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final gp = context.watch<GameProvider>();
     final selection = gp.renardDraftSelection;
+    final loc = AppLocalizations.of(context)!;
 
     return RoleScreenFrame(
-      title: 'Le Renard',
+      title: loc.renardTitle,
       accent: RoleId.renard.info.accent,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           RoleInstructionCard(
-            text: 'Choisis trois joueurs voisins (${selection.length}/3).',
+            text: loc.renardInstruction(selection.length, 3),
             accent: RoleId.renard.info.accent,
           ),
           const SizedBox(height: 14),

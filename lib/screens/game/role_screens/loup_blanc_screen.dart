@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/pass_device_gate.dart';
@@ -11,11 +13,11 @@ class LoupBlancScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: 'Loup Blanc',
-      pluralToName: true,
-      subtitle:
-      'Choisis ta victime',
+      toName: RoleId.loupBlanc.info.name,
+      pluralToName: false,
+      subtitle: loc.loupBlancSubtitle,
       accent: AppColors.blood,
       contentBuilder: (_) => const _LoupBlancContent(),
     );
@@ -28,16 +30,16 @@ class _LoupBlancContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
+    final loc = AppLocalizations.of(context)!;
 
     return RoleScreenFrame(
-      title: 'Le Loup Blanc',
+      title: loc.loupBlancTitle,
       accent: AppColors.blood,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const RoleInstructionCard(
-            text:
-                'Choisis un joueur à éliminer secrètement pendant ton tour.',
+          RoleInstructionCard(
+            text: loc.loupBlancInstruction,
             accent: AppColors.blood,
           ),
           const SizedBox(height: 14),

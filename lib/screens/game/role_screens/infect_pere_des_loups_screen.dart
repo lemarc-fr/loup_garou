@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
@@ -10,9 +11,10 @@ class InfectPereDesLoupsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: 'Infect Père des Loups',
-      subtitle: 'C\'est ton tour. Réveille-toi seul.',
+      toName: RoleId.infectPereDesLoups.info.name,
+      subtitle: loc.infectPereDesLoupsSubtitle,
       accent: RoleId.infectPereDesLoups.info.accent,
       contentBuilder: (_) => const _InfectPereDesLoupsContent(),
     );
@@ -27,17 +29,18 @@ class _InfectPereDesLoupsContent extends StatelessWidget {
     final gp = context.read<GameProvider>();
     final state = gp.state!;
     final victim = state.tryById(state.loupsVictimId);
+    final loc = AppLocalizations.of(context)!;
 
     return RoleScreenFrame(
-      title: 'Infect Père des Loups',
+      title: loc.infectPereDesLoupsTitle,
       accent: RoleId.infectPereDesLoups.info.accent,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           RoleInstructionCard(
             text: victim != null
-                ? 'Les Loups ont désigné ${victim.name}. Veux-tu l’infecter au lieu de le laisser mourir ?'
-                : 'Les Loups n’ont désigné personne cette nuit.',
+                ? loc.infectPereDesLoupsInstructionWithVictim(victim.name)
+                : loc.infectPereDesLoupsInstructionNoVictim,
             accent: RoleId.infectPereDesLoups.info.accent,
           ),
           const SizedBox(height: 20),
@@ -50,7 +53,7 @@ class _InfectPereDesLoupsContent extends StatelessWidget {
                     onPressed: victim == null
                         ? null
                         : () => gp.setInfectPereDesLoups(true),
-                    child: const Text('Infecter'),
+                    child: Text(loc.infectPereDesLoupsInfectButton),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -58,7 +61,7 @@ class _InfectPereDesLoupsContent extends StatelessWidget {
                   width: double.infinity,
                   child: OutlinedButton(
                     onPressed: () => gp.setInfectPereDesLoups(false),
-                    child: const Text('Ne pas infecter'),
+                    child: Text(loc.infectPereDesLoupsDoNotInfectButton),
                   ),
                 ),
               ],

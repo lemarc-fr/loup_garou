@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
@@ -12,10 +13,10 @@ class VoleurScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
+    final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: "La Voleuse",
-      subtitle: 'C\'est le rôle du Voleur. Réveille-toi.',
+      toName: RoleId.voleur.info.name,
+      subtitle: loc.voleurSubtitle,
       accent: RoleId.voleur.info.accent,
       contentBuilder: (_) => const _VoleurContent(),
     );
@@ -38,9 +39,10 @@ class _VoleurContentState extends State<_VoleurContent> {
     final cards = state.voleurTableCards;
     final forced =
         cards.isNotEmpty && cards.every((c) => c == RoleId.loupGarou);
+    final loc = AppLocalizations.of(context)!;
 
     return RoleScreenFrame(
-      title: 'Le Voleur',
+      title: loc.voleurTitle,
       accent: RoleId.voleur.info.accent,
       child: Column(
         children: [
@@ -50,11 +52,11 @@ class _VoleurContentState extends State<_VoleurContent> {
           ),
           if (forced) ...[
             const SizedBox(height: 10),
-            const RoleSectionCard(
+            RoleSectionCard(
               child: Text(
-                'Les deux cartes sont des Loups-Garous : tu es obligé d’en prendre une !',
+                loc.voleurBothWolvesWarning,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.blood),
+                style: const TextStyle(color: AppColors.blood),
               ),
             ),
           ],
@@ -80,7 +82,7 @@ class _VoleurContentState extends State<_VoleurContent> {
             child: ElevatedButton(
               onPressed:
                   selected == null ? null : () => gp.resolveVoleur(selected),
-              child: const Text('Échanger mon rôle contre celle-ci'),
+              child: Text(loc.voleurExchangeRoleButton),
             ),
           ),
           const SizedBox(height: 12),
@@ -88,7 +90,7 @@ class _VoleurContentState extends State<_VoleurContent> {
             width: double.infinity,
             child: OutlinedButton(
               onPressed: forced ? null : () => gp.resolveVoleur(null),
-              child: const Text('Garder mon rôle actuel'),
+              child: Text(loc.voleurKeepCurrentRoleButton),
             ),
           ),
         ],

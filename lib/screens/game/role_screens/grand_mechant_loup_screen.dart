@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
@@ -12,9 +13,10 @@ class GrandMechantLoupScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: 'Grand Méchant Loup',
-      subtitle: 'Réveille-toi seul, les autres Loups peuvent se rendormir.',
+      toName: RoleId.grandMechantLoup.info.name,
+      subtitle: loc.grandMechantLoupSubtitle,
       accent: AppColors.blood,
       contentBuilder: (_) => const _GrandMechantLoupContent(),
     );
@@ -29,6 +31,7 @@ class _GrandMechantLoupContent extends StatelessWidget {
     final gp = context.read<GameProvider>();
     final state = gp.state!;
     final firstVictim = state.tryById(state.loupsVictimId);
+    final loc = AppLocalizations.of(context)!;
 
     final targets = state.alivePlayers
         .where((p) => p.id != state.loupsVictimId)
@@ -38,15 +41,15 @@ class _GrandMechantLoupContent extends StatelessWidget {
         .toList();
 
     return RoleScreenFrame(
-      title: 'Le Grand Méchant Loup',
+      title: loc.grandMechantLoupTitle,
       accent: AppColors.blood,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           RoleInstructionCard(
             text: firstVictim != null
-                ? 'Les Loups ont déjà désigné ${firstVictim.name}. Tant qu’aucun Loup n’est mort, tu peux choisir une seconde victime.'
-                : 'Tant qu’aucun Loup n’est mort, tu peux choisir une seconde victime cette nuit.',
+                ? loc.grandMechantLoupInstructionWithVictim(firstVictim.name)
+                : loc.grandMechantLoupInstructionNoVictim,
             accent: AppColors.blood,
           ),
           const SizedBox(height: 14),
@@ -65,7 +68,7 @@ class _GrandMechantLoupContent extends StatelessWidget {
             width: double.infinity,
             child: OutlinedButton(
               onPressed: () => gp.resolveGrandMechantLoup(null),
-              child: const Text('Ne pas utiliser mon pouvoir cette nuit'),
+              child: Text(loc.skipPowerThisNightButton),
             ),
           ),
         ],

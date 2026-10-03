@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/role.dart';
@@ -15,10 +16,10 @@ class JugeBegueScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: 'Le Juge Bègue',
-      subtitle:
-      'C\'est le tour du Juge Bègue. Personne d\'autre ne doit savoir qui il est.',
+      toName: RoleId.jugeBegue.info.name,
+      subtitle: loc.jugeBegueSubtitle,
       accent: RoleId.jugeBegue.info.accent,
       contentBuilder: (_) => const _JugeBegueContent(),
     );
@@ -32,16 +33,16 @@ class _JugeBegueContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
     final info = RoleId.jugeBegue.info;
+    final loc = AppLocalizations.of(context)!;
 
     return RoleScreenFrame(
-      title: 'Le Juge Bègue',
+      title: loc.jugeBegueTitle,
       accent: info.accent,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           RoleInstructionCard(
-            text:
-                'Une fois par partie, tu peux décider en secret que le vote du village sera rejoué immédiatement.',
+            text: loc.jugeBegueInstruction,
             accent: info.accent,
           ),
           const SizedBox(height: 20),
@@ -51,7 +52,7 @@ class _JugeBegueContent extends StatelessWidget {
                 Icon(info.fallbackIcon, size: 64, color: info.accent),
                 const SizedBox(height: 12),
                 Text(
-                  'Veux-tu utiliser ce pouvoir maintenant ?',
+                  loc.jugeBegueQuestion,
                   style: Theme.of(context).textTheme.titleMedium,
                   textAlign: TextAlign.center,
                 ),
@@ -63,7 +64,7 @@ class _JugeBegueContent extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () => gp.resolveJugeBegueDecision(true),
-              child: const Text('Utiliser mon pouvoir'),
+              child: Text(loc.usePowerButton),
             ),
           ),
           const SizedBox(height: 12),
@@ -71,7 +72,7 @@ class _JugeBegueContent extends StatelessWidget {
             width: double.infinity,
             child: OutlinedButton(
               onPressed: () => gp.resolveJugeBegueDecision(false),
-              child: const Text('Ne pas utiliser mon pouvoir'),
+              child: Text(loc.doNotUsePowerButton),
             ),
           ),
         ],

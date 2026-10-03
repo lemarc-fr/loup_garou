@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
@@ -11,10 +12,10 @@ class PetiteFilleScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
+    final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: "Petite Fille",
-      subtitle: 'C\'est le rôle de la Petite Fille. Réveille-toi.',
+      toName: RoleId.petiteFille.info.name,
+      subtitle: loc.petiteFilleSubtitle,
       accent: RoleId.petiteFille.info.accent,
       contentBuilder: (_) => const _PetiteFilleContent(),
     );
@@ -27,9 +28,10 @@ class _PetiteFilleContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
+    final loc = AppLocalizations.of(context)!;
 
     return RoleScreenFrame(
-      title: 'La Petite Fille',
+      title: loc.petiteFilleTitle,
       accent: RoleId.petiteFille.info.accent,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -39,11 +41,11 @@ class _PetiteFilleContent extends StatelessWidget {
             accent: RoleId.petiteFille.info.accent,
           ),
           const SizedBox(height: 14),
-          const RoleSectionCard(
+          RoleSectionCard(
             child: Text(
-              'Attention : si les Loups-Garous te surprennent, tu prendras la place de leur victime.',
+              loc.petiteFilleWarning,
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.blood),
+              style: const TextStyle(color: AppColors.blood),
             ),
           ),
           const SizedBox(height: 28),
@@ -51,7 +53,7 @@ class _PetiteFilleContent extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () => gp.resolvePetiteFille(tried: true),
-              child: const Text('Entrouvrir les yeux et espionner'),
+              child: Text(loc.petiteFilleSpyButton),
             ),
           ),
           const SizedBox(height: 12),
@@ -59,7 +61,7 @@ class _PetiteFilleContent extends StatelessWidget {
             width: double.infinity,
             child: OutlinedButton(
               onPressed: () => gp.resolvePetiteFille(tried: false),
-              child: const Text('Rester sagement endormie'),
+              child: Text(loc.petiteFilleSleepButton),
             ),
           ),
         ],

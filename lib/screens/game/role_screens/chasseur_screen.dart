@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/role.dart';
@@ -12,15 +13,15 @@ class ChasseurScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
+    final loc = AppLocalizations.of(context)!;
 
     return RoleScreenFrame(
-      title: 'Le Chasseur',
+      title: loc.chasseurTitle,
       accent: RoleId.chasseur.info.accent,
       child: Column(
         children: [
           RoleInstructionCard(
-            text:
-                'Tu as été éliminé. Choisis immédiatement un joueur à emporter avec toi.',
+            text: loc.chasseurInstruction,
             accent: RoleId.chasseur.info.accent,
           ),
           const SizedBox(height: 14),

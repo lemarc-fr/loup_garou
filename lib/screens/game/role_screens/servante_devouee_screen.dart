@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/role.dart';
@@ -12,9 +13,10 @@ class ServanteDevoueeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: 'La Servante Dévouée',
-      subtitle: 'C\'est le rôle de la Servante Dévouée. Réveille-toi.',
+      toName: RoleId.servanteDevouee.info.name,
+      subtitle: loc.servanteDevoueeSubtitle,
       accent: RoleId.servanteDevouee.info.accent,
       contentBuilder: (_) => const _ServanteDevoueeContent(),
     );
@@ -29,19 +31,20 @@ class _ServanteDevoueeContent extends StatelessWidget {
     final gp = context.read<GameProvider>();
     final theme = Theme.of(context);
     final offered = gp.servanteDevoueeOfferedPlayer;
+    final loc = AppLocalizations.of(context)!;
 
     // Filet de sécurité : ne devrait pas arriver si la phase n'est
     // déclenchée que lorsque GameState.servanteDevoueeOfferId est posé.
     if (offered == null) {
       return RoleScreenFrame(
-        title: 'La Servante Dévouée',
+        title: loc.servanteDevoueeTitle,
         accent: RoleId.servanteDevouee.info.accent,
         child: Center(
           child: SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () => gp.setServanteDevoueeChoice(false),
-              child: const Text('Continuer'),
+              child: Text(loc.continueButtonLabel),
             ),
           ),
         ),
@@ -51,14 +54,13 @@ class _ServanteDevoueeContent extends StatelessWidget {
     final info = offered.role.info;
 
     return RoleScreenFrame(
-      title: 'La Servante Dévouée',
+      title: loc.servanteDevoueeTitle,
       accent: RoleId.servanteDevouee.info.accent,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           RoleInstructionCard(
-            text:
-                '${offered.name} vient d\'être éliminé(e). Veux-tu prendre son rôle ?',
+            text: loc.servanteDevoueeInstruction(offered.name),
             accent: RoleId.servanteDevouee.info.accent,
           ),
           const SizedBox(height: 20),
@@ -81,7 +83,7 @@ class _ServanteDevoueeContent extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () => gp.setServanteDevoueeChoice(true),
-              child: const Text('Oui, prendre ce rôle'),
+              child: Text(loc.servanteDevoueeTakeRoleButton),
             ),
           ),
           const SizedBox(height: 12),
@@ -89,7 +91,7 @@ class _ServanteDevoueeContent extends StatelessWidget {
             width: double.infinity,
             child: OutlinedButton(
               onPressed: () => gp.setServanteDevoueeChoice(false),
-              child: const Text('Non, rester Servante Dévouée'),
+              child: Text(loc.servanteDevoueeKeepRoleButton),
             ),
           ),
         ],

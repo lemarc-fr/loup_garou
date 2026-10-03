@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/role.dart';
@@ -12,15 +13,15 @@ class BoucEmissaireScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
+    final loc = AppLocalizations.of(context)!;
 
     return RoleScreenFrame(
-      title: 'Le Bouc Émissaire',
+      title: loc.boucEmissaireTitle,
       accent: RoleId.boucEmissaire.info.accent,
       child: Column(
         children: [
           RoleInstructionCard(
-            text:
-                'Tu dois désigner le joueur qui ne participera pas au prochain vote du village.',
+            text: loc.boucEmissaireInstruction,
             accent: RoleId.boucEmissaire.info.accent,
           ),
           const SizedBox(height: 14),

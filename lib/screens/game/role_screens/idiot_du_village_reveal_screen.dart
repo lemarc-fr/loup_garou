@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/role.dart';
@@ -16,16 +17,16 @@ class IdiotDuVillageRevealScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final idiot = state.byId(state.idiotDuVillageRevealId!);
     final info = idiot.role.info;
+    final loc = AppLocalizations.of(context)!;
 
     return RoleScreenFrame(
-      title: "L'Idiot du Village",
+      title: loc.idiotDuVillageRevealTitle,
       accent: info.accent,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           RoleInstructionCard(
-            text:
-                'Le village a voté contre ${idiot.name}, mais il révèle son rôle et survit.',
+            text: loc.idiotDuVillageRevealInstruction(idiot.name),
             accent: info.accent,
           ),
           const SizedBox(height: 20),
@@ -42,7 +43,7 @@ class IdiotDuVillageRevealScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  '${idiot.name} perd définitivement son droit de vote.',
+                  loc.idiotDuVillageVoteLossMessage(idiot.name),
                   style: theme.textTheme.bodyLarge,
                   textAlign: TextAlign.center,
                 ),
@@ -54,7 +55,7 @@ class IdiotDuVillageRevealScreen extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: gp.confirmIdiotDuVillageReveal,
-              child: const Text('Continuer'),
+              child: Text(loc.continueButtonLabel),
             ),
           ),
         ],

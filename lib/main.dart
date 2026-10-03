@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart' show MaterialApp, StatelessWidget, BuildContext, runApp, Widget;
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart' show MultiProvider, ChangeNotifierProvider;
 import 'package:thiercelieux/providers/settings_provider.dart' show SettingsProvider;
 import 'providers/game_provider.dart' show GameProvider;
@@ -25,6 +26,8 @@ class ThiercelieuxApp extends StatelessWidget {
         title: 'Thiercelieux',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.night,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: const HomeScreen(),
       ),
     );
