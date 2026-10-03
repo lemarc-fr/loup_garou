@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../models/role.dart';
 import '../../providers/game_provider.dart';
@@ -23,6 +24,7 @@ class RoleSelectionScreen extends StatelessWidget {
     final gp = context.watch<GameProvider>();
     final theme = Theme.of(context);
     final config = gp.draftConfig!;
+    final loc = AppLocalizations.of(context)!;
 
     final adjustableOrder = [
       // Camp des Loups
@@ -56,11 +58,11 @@ class RoleSelectionScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Répartition des rôles'),
+        title: Text(loc.roleSelectionTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined),
-            tooltip: 'Options de jeu',
+            tooltip: loc.gameSettingsTooltip,
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const GameSettingsScreen()),
             ),
@@ -75,16 +77,16 @@ class RoleSelectionScreen extends StatelessWidget {
               child: Column(
                 children: [
                   Text(
-                    '${config.playerCount} joueurs'
-                        '${config.hasVoleur ? ' · +2 cartes pour le Voleur' : ''}',
+                    '${loc.roleSelectionPlayerCount(config.playerCount)}'
+                        '${config.hasVoleur ? loc.roleSelectionVoleurExtraCards : ''}',
                     style: theme.textTheme.bodyMedium?.copyWith(
                         color: AppColors.moonlight.withValues(alpha: 0.7)),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     remaining < 0
-                        ? '${remaining.abs()} rôle(s) en trop'
-                        : '$remaining Simple(s) Villageois automatique(s)',
+                        ? loc.roleSelectionTooManyRoles(remaining.abs())
+                        : loc.roleSelectionAutoVillagers(remaining),
                     style: theme.textTheme.titleLarge?.copyWith(
                       color: remaining < 0 ? AppColors.blood : AppColors.forest,
                     ),
@@ -165,7 +167,7 @@ class RoleSelectionScreen extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: gp.draftConfigValid ? () => gp.goToNames() : null,
-                  child: const Text('Continuer'),
+                  child: Text(loc.continueButtonLabel),
                 ),
               ),
             ),

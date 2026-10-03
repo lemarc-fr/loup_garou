@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../theme/app_theme.dart';
+
+enum _NameError { empty, duplicate }
 
 class PlayerNamesScreen extends StatefulWidget {
   const PlayerNamesScreen({super.key});
@@ -15,7 +18,7 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
   late List<TextEditingController> _controllers;
   late List<FocusNode> _focusNodes;
 
-  String? _error;
+  _NameError? _error;
 
   @override
   void initState() {
@@ -46,13 +49,12 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
     final names = _controllers.map((c) => c.text.trim()).toList();
 
     if (names.any((n) => n.isEmpty)) {
-      setState(() => _error = 'Chaque joueur doit avoir un prénom.');
+      setState(() => _error = _NameError.empty);
       return;
     }
     final unique = names.map((n) => n.toLowerCase()).toSet();
     if (unique.length != names.length) {
-      setState(
-              () => _error = 'Deux joueurs ne peuvent pas avoir le même prénom.');
+      setState(() => _error = _NameError.duplicate);
       return;
     }
 
@@ -66,15 +68,17 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Les joueurs')),
+      appBar: AppBar(title: Text(loc.playerNamesTitle)),
       body: SafeArea(
         child: Column(
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 8, 24, 12),
               child: Text(
-                'Entrez le prénom de chaque joueur, dans l\'ordre où vous voulez leur faire découvrir leur rôle.',
+                loc.playerNamesInstruction,
                 style: theme.textTheme.bodyMedium?.copyWith(
                     color: AppColors.moonlight.withValues(alpha: 0.75)),
               ),
@@ -99,7 +103,7 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
                     }
                   },
                   decoration: InputDecoration(
-                    labelText: 'Joueur ${index + 1}',
+                    labelText: loc.playerNamesPlayerLabel(index + 1),
                     prefixIcon: const Icon(Icons.person_outline),
                     filled: true,
                     fillColor: AppColors.nightAlt,
@@ -114,7 +118,13 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                child: Text(_error!, style: const TextStyle(color: AppColors.blood)),
+                child: Text(
+                  switch (_error!) {
+                    _NameError.empty => loc.playerNamesErrorEmpty,
+                    _NameError.duplicate => loc.playerNamesErrorDuplicate,
+                  },
+                  style: const TextStyle(color: AppColors.blood),
+                ),
               ),
             Padding(
               padding: const EdgeInsets.all(20),
@@ -122,7 +132,7 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _submit,
-                  child: const Text('Distribuer les rôles'),
+                  child: Text(loc.dealRolesButton),
                 ),
               ),
             ),

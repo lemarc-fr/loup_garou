@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../models/player_stats.dart';
 import '../../providers/stats_provider.dart';
@@ -15,22 +16,22 @@ class StatsScreen extends StatelessWidget {
     final statsProvider = context.watch<StatsProvider>();
     final theme = Theme.of(context);
     final stats = statsProvider.stats;
+    final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Statistiques'),
+        title: Text(loc.statsTitle),
         actions: [
           if (stats.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.delete_outline),
-              tooltip: 'Réinitialiser les statistiques',
+              tooltip: loc.statsResetTooltip,
               onPressed: () async {
                 final ok = await confirmAction(
                   context,
-                  title: 'Réinitialiser les statistiques ?',
-                  message:
-                      'Tout l\'historique des parties sera définitivement supprimé.',
-                  confirmLabel: 'Réinitialiser',
+                  title: loc.statsResetDialogTitle,
+                  message: loc.statsResetDialogMessage,
+                  confirmLabel: loc.statsResetConfirmLabel,
                   destructive: true,
                 );
                 if (ok && context.mounted) {
@@ -48,8 +49,7 @@ class StatsScreen extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(24),
                       child: Text(
-                        'Aucune partie enregistrée pour l\'instant.\n'
-                        'Jouez une partie complète pour voir apparaître vos statistiques ici.',
+                        loc.statsEmptyMessage,
                         style: theme.textTheme.bodyLarge,
                         textAlign: TextAlign.center,
                       ),
@@ -75,6 +75,7 @@ class _PlayerStatsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final favorite = stats.favoriteRole;
+    final loc = AppLocalizations.of(context)!;
 
     return Card(
       child: Padding(
@@ -93,9 +94,8 @@ class _PlayerStatsCard extends StatelessWidget {
                   Text(stats.name, style: theme.textTheme.titleLarge),
                   const SizedBox(height: 2),
                   Text(
-                    '${stats.gamesPlayed} partie(s) · '
-                    '${(stats.winRate * 100).round()}% de victoires'
-                    '${favorite != null ? ' · ${favorite.info.nameShort} favori' : ''}',
+                    '${loc.statsCardSummary(stats.gamesPlayed, (stats.winRate * 100).round())}'
+                    '${favorite != null ? loc.statsFavoriteSuffix(favorite.info.nameShort) : ''}',
                     style: theme.textTheme.bodyMedium?.copyWith(
                         color: AppColors.moonlight.withValues(alpha: 0.7)),
                   ),
@@ -105,10 +105,10 @@ class _PlayerStatsCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text('${stats.wins} V',
+                Text(loc.statsWinsAbbr(stats.wins),
                     style: theme.textTheme.bodyLarge
                         ?.copyWith(color: AppColors.forest)),
-                Text('${stats.losses} D',
+                Text(loc.statsLossesAbbr(stats.losses),
                     style: theme.textTheme.bodyMedium
                         ?.copyWith(color: AppColors.blood)),
               ],

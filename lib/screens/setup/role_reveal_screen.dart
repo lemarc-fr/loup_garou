@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
@@ -14,12 +15,12 @@ class RoleRevealScreen extends StatelessWidget {
     final gp = context.watch<GameProvider>();
     final state = gp.state!;
     final player = state.players[gp.revealIndex];
+    final loc = AppLocalizations.of(context)!;
 
     return PassDeviceGate(
       key: ValueKey('reveal-${player.id}'),
       toName: player.name,
-      subtitle:
-          'Ton rôle va s\'afficher. Assure-toi que personne d\'autre ne regarde l\'écran.',
+      subtitle: loc.roleRevealSubtitle,
       contentBuilder: (_) => _RevealContent(
         playerIndex: gp.revealIndex,
         totalPlayers: state.players.length,
@@ -39,6 +40,7 @@ class _RevealContent extends StatelessWidget {
     final player = gp.state!.players[playerIndex];
     final theme = Theme.of(context);
     final info = player.role.info;
+    final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: SafeArea(
@@ -51,7 +53,7 @@ class _RevealContent extends StatelessWidget {
                 backgroundColor: AppColors.nightAlt,
               ),
               const SizedBox(height: 8),
-              Text('Joueur ${playerIndex + 1} / $totalPlayers',
+              Text(loc.roleRevealPlayerProgress(playerIndex + 1, totalPlayers),
                   style: theme.textTheme.bodyMedium),
               const Spacer(),
               if (!gp.revealCardVisible) ...[
@@ -61,13 +63,13 @@ class _RevealContent extends StatelessWidget {
                 const SizedBox(height: 24),
                 const Icon(Icons.touch_app, size: 56, color: AppColors.lantern),
                 const SizedBox(height: 16),
-                Text('Appuie pour découvrir ton rôle',
+                Text(loc.roleRevealTapToDiscover,
                     style: theme.textTheme.bodyLarge,
                     textAlign: TextAlign.center),
                 const SizedBox(height: 32),
                 ElevatedButton(
                     onPressed: gp.showRevealCard,
-                    child: const Text('Révéler mon rôle')),
+                    child: Text(loc.roleRevealRevealButton)),
               ] else ...[
                 RoleImage(role: player.role, size: 140),
                 const SizedBox(height: 20),
@@ -85,8 +87,8 @@ class _RevealContent extends StatelessWidget {
                   ),
                   child: Text(
                     info.camp.name == 'loups'
-                        ? 'Camp des Loups-Garous'
-                        : 'Camp des Villageois',
+                        ? loc.campWolves
+                        : loc.campVillagers,
                     style: theme.textTheme.labelLarge
                         ?.copyWith(color: info.accent),
                   ),
@@ -103,7 +105,7 @@ class _RevealContent extends StatelessWidget {
                   child: ElevatedButton.icon(
                     onPressed: gp.confirmRevealSeen,
                     icon: const Icon(Icons.visibility_off),
-                    label: const Text("J'ai vu, masquer mon rôle"),
+                    label: Text(loc.roleRevealHideButton),
                   ),
                 ),
             ],

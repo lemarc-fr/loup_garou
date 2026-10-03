@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
@@ -24,21 +25,22 @@ class _PlayerCountScreenState extends State<PlayerCountScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final gp = context.read<GameProvider>();
+    final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Nouvelle partie')),
+      appBar: AppBar(title: Text(loc.newGameTitle)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             children: [
               const Spacer(),
-              Text('Combien de joueurs ?',
+              Text(loc.playerCountHowMany,
                   style: theme.textTheme.headlineMedium,
                   textAlign: TextAlign.center),
               const SizedBox(height: 8),
               Text(
-                'De 5 à 24 joueurs autour de la table.',
+                loc.playerCountRangeDescription,
                 style: theme.textTheme.bodyMedium?.copyWith(
                     color: AppColors.moonlight.withValues(alpha: 0.7)),
               ),
@@ -73,7 +75,7 @@ class _PlayerCountScreenState extends State<PlayerCountScreen> {
                     gp.setDraftPlayerCount(_count);
                     gp.goToRoleSelection();
                   },
-                  child: const Text('Continuer'),
+                  child: Text(loc.continueButtonLabel),
                 ),
               ),
             ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../models/game_settings.dart' show kGameSettingDefinitions;
 import '../../providers/settings_provider.dart' show SettingsProvider;
@@ -13,9 +14,10 @@ class GameSettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final sp = context.watch<SettingsProvider>();
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Options de jeu')),
+      appBar: AppBar(title: Text(loc.gameSettingsTitle)),
       body: SafeArea(
         child: !sp.loaded
             ? const Center(child: CircularProgressIndicator())

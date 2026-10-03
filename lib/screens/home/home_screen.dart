@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../models/role.dart';
 import '../../providers/game_provider.dart';
@@ -15,6 +16,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final gameProvider = context.watch<GameProvider>();
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: SafeArea(
@@ -25,12 +27,12 @@ class HomeScreen extends StatelessWidget {
               const Spacer(flex: 2),
               const Icon(Icons.nightlight_round, size: 84, color: AppColors.lantern),
               const SizedBox(height: 20),
-              Text('Thiercelieux',
+              Text(loc.appTitle,
                   style: theme.textTheme.displayLarge,
                   textAlign: TextAlign.center),
               const SizedBox(height: 8),
               Text(
-                'Les Loups-Garous — partie en local',
+                loc.homeSubtitle,
                 style: theme.textTheme.bodyLarge?.copyWith(
                     color: AppColors.moonlight.withValues(alpha: 0.7)),
                 textAlign: TextAlign.center,
@@ -44,7 +46,7 @@ class HomeScreen extends StatelessWidget {
                       MaterialPageRoute(builder: (_) => const GameFlowScreen()),
                     ),
                     icon: const Icon(Icons.play_arrow),
-                    label: const Text('Reprendre la partie'),
+                    label: Text(loc.resumeGameButton),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -54,10 +56,9 @@ class HomeScreen extends StatelessWidget {
                     onPressed: () async {
                       final ok = await confirmAction(
                         context,
-                        title: 'Abandonner la partie ?',
-                        message:
-                            'La partie en cours sera perdue et non comptabilisée dans les statistiques.',
-                        confirmLabel: 'Abandonner',
+                        title: loc.abandonGameDialogTitle,
+                        message: loc.abandonGameDialogMessage,
+                        confirmLabel: loc.abandonGameConfirmLabel,
                         destructive: true,
                       );
                       if (ok) {
@@ -71,7 +72,7 @@ class HomeScreen extends StatelessWidget {
                       }
                     },
                     icon: const Icon(Icons.refresh),
-                    label: const Text('Nouvelle partie'),
+                    label: Text(loc.newGameButton),
                   ),
                 ),
               ] else
@@ -82,7 +83,7 @@ class HomeScreen extends StatelessWidget {
                       MaterialPageRoute(builder: (_) => const GameFlowScreen()),
                     ),
                     icon: const Icon(Icons.play_arrow),
-                    label: const Text('Nouvelle partie'),
+                    label: Text(loc.newGameButton),
                   ),
                 ),
               const SizedBox(height: 12),
@@ -92,7 +93,7 @@ class HomeScreen extends StatelessWidget {
                   onPressed: () => Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const StatsScreen())),
                   icon: const Icon(Icons.bar_chart),
-                  label: const Text('Statistiques'),
+                  label: Text(loc.statsButton),
                 ),
               ),
               const SizedBox(height: 12),
@@ -102,14 +103,14 @@ class HomeScreen extends StatelessWidget {
                   onPressed: () => Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const GameSettingsScreen())),
                   icon: const Icon(Icons.settings_outlined),
-                  label: const Text('Options de jeu'),
+                  label: Text(loc.gameSettingsButton),
                 ),
               ),
               const SizedBox(height: 12),
               TextButton.icon(
                 onPressed: () => _showRulesSheet(context),
                 icon: const Icon(Icons.menu_book, size: 18),
-                label: const Text('Règles du jeu'),
+                label: Text(loc.gameRulesButton),
               ),
               const Spacer(),
             ],
@@ -120,6 +121,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   void _showRulesSheet(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -136,7 +138,7 @@ class HomeScreen extends StatelessWidget {
           controller: scrollController,
           padding: const EdgeInsets.all(24),
           children: [
-            Text('Les rôles', style: Theme.of(ctx).textTheme.headlineMedium),
+            Text(loc.gameRulesRolesTitle, style: Theme.of(ctx).textTheme.headlineMedium),
             const SizedBox(height: 16),
             for (final role in RoleId.values) ...[
               Text(role.info.name,
