@@ -12,6 +12,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   cupertino_icons: ^1.0.8
+  flutter_svg: ^2.0.10
 
   # State management — simple et robuste pour une machine à états de partie
   provider: ^6.1.2
@@ -50,3 +51,4 @@ flutter:
   # grâce à des Icon() de secours (voir widgets/role_image.dart).
   assets:
     - assets/images/roles/
+    - assets/images/wolf_howling.svg
