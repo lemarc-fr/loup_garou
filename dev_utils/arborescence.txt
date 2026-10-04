@@ -37,6 +37,7 @@
 │   │   │   ├── cupidon_screen.preview.dart
 │   │   │   ├── enfant_sauvage_check_screen.dart
 │   │   │   ├── enfant_sauvage_check_screen.preview.dart
+│   │   │   ├── enfant_sauvage_mutation_screen.dart
 │   │   │   ├── enfant_sauvage_reveal_screen.dart
 │   │   │   ├── enfant_sauvage_reveal_screen.preview.dart
 │   │   │   ├── enfant_sauvage_screen.dart
@@ -93,6 +94,7 @@
 └── widgets
     ├── confirm.dart
     ├── game_progress_sheet.dart
+    ├── night_scene.dart
     ├── pass_device_gate.dart
     ├── player_grid_selector.dart
     ├── role_image.dart

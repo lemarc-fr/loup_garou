@@ -47,26 +47,19 @@ function Generate-Concatenation {
     param (
         [string]$RootPath,
         [string]$OutputFile,
-        [int]$MaxDepth = -1
+        [int]$MaxDepth = -1,
+        [string]$PreText = ""
     )
-    $extensionsAutorisees = @(
-       ".dart"
-    )
+    $extensionsAutorisees = @(".dart")
 
     if (-not (Test-Path $RootPath)) {
         Write-Host "Le dossier spécifié n'existe pas : $RootPath" -ForegroundColor Red
         return
     }
 
-    # Supprimer le fichier s’il existe déjà
-    if (Test-Path $OutputFile) {
-        Remove-Item -Path $OutputFile -Force -ErrorAction SilentlyContinue
-    }
+    # Crée (ou écrase) le fichier avec le PreText, directement en UTF-8
+    Set-Content -Path $OutputFile -Value $PreText -Encoding UTF8
 
-    # Créer un fichier vide
-    New-Item -ItemType File -Path $OutputFile -Force | Out-Null
-
-    # Calcul de la profondeur de chaque fichier
     $rootDepth = ($RootPath.TrimEnd("\") -split '\\').Count
 
     $fichiers = Get-ChildItem -Path $RootPath -File -Recurse | Where-Object {
@@ -76,8 +69,8 @@ function Generate-Concatenation {
         $fileDepth = ($_.FullName -split '\\').Count
         return ($fileDepth - $rootDepth) -le $MaxDepth
     } | Where-Object {
-    $parts = $_.FullName -split '\\'
-    -not ($parts | Where-Object { $dossiersIgnores -contains $_ })
+        $parts = $_.FullName -split '\\'
+        -not ($parts | Where-Object { $dossiersIgnores -contains $_ })
     }
 
     if ($fichiers.Count -eq 0) {
@@ -89,9 +82,9 @@ function Generate-Concatenation {
 
     foreach ($fichier in $fichiers) {
         $cheminRelatif = $fichier.FullName.Substring($RootPath.Length).TrimStart("\")
-        Add-Content -Path $OutputFile -Value "`n===== Fichier: $cheminRelatif =====`n"
+        Add-Content -Path $OutputFile -Value "`n===== Fichier: $cheminRelatif =====`n" -Encoding UTF8
         try {
-            Get-Content -LiteralPath $fichier.FullName | Add-Content -LiteralPath $OutputFile
+            Get-Content -LiteralPath $fichier.FullName -Encoding UTF8 | Add-Content -LiteralPath $OutputFile -Encoding UTF8
         } catch {
             Write-Host "Erreur lecture fichier : $($fichier.FullName) - $_" -ForegroundColor Red
         }
@@ -99,7 +92,6 @@ function Generate-Concatenation {
 
     Write-Host "Concaténation complétée avec succès dans : $OutputFile" -ForegroundColor Green
 }
-
 
 function Main {
     param (
@@ -126,7 +118,7 @@ function Main {
 
     # Génération de la concaténation
     $cheminConcatenation = Join-Path -Path $dossierSortie -ChildPath "concatenation.txt"
-    Generate-Concatenation -RootPath $racine -OutputFile $cheminConcatenation -MaxDepth $profondeur
+    Generate-Concatenation -RootPath $racine -OutputFile $cheminConcatenation -MaxDepth $profondeur -PreText $arborescence
 }
 
 # === PARAMÈTRES D'EXÉCUTION ===

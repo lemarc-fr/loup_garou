@@ -1,5 +1,4 @@
-C:\Users\marcb\StudioProjects\loup_garou\lib
-├── main.dart
+﻿├── main.dart
 ├── models
 │   ├── game_config.dart
 │   ├── game_progress.dart
@@ -37,6 +36,7 @@ C:\Users\marcb\StudioProjects\loup_garou\lib
 │   │   │   ├── cupidon_screen.preview.dart
 │   │   │   ├── enfant_sauvage_check_screen.dart
 │   │   │   ├── enfant_sauvage_check_screen.preview.dart
+│   │   │   ├── enfant_sauvage_mutation_screen.dart
 │   │   │   ├── enfant_sauvage_reveal_screen.dart
 │   │   │   ├── enfant_sauvage_reveal_screen.preview.dart
 │   │   │   ├── enfant_sauvage_screen.dart
@@ -93,6 +93,7 @@ C:\Users\marcb\StudioProjects\loup_garou\lib
 └── widgets
     ├── confirm.dart
     ├── game_progress_sheet.dart
+    ├── night_scene.dart
     ├── pass_device_gate.dart
     ├── player_grid_selector.dart
     ├── role_image.dart
@@ -230,6 +231,7 @@ enum SettingId {
   allowHunterToShootAfterWitchDeathCause,
   allowWitchToPlayIfWerewolfDeathCause,
   allowWitchToSaveHerself,
+  enfantSauvagePublicReveal,
 }
 
 /// Décrit une option pour l'affichage dans l'écran de réglages.
@@ -283,6 +285,16 @@ const List<GameSettingDefinition> kGameSettingDefinitions = [
         'elle-même lorsqu\'elle est la victime désignée par les Loups-Garous.',
     defaultValue: true,
   ),
+  GameSettingDefinition(
+    id: SettingId.enfantSauvagePublicReveal,
+    label: "Mutation de l'Enfant Sauvage annoncée à tous",
+    description:
+    "Si activé, la mutation de l'Enfant Sauvage est révélée publiquement "
+        "dès la mort de son modèle (pas d'écran de nuit). Si désactivé, rien "
+        "n'est annoncé : l'Enfant Sauvage est prévenu en secret au début de "
+        "la nuit suivante.",
+    defaultValue: true,
+  ),
 ];
 
 /// Valeurs courantes des options, avec repli sur la valeur par défaut du
@@ -301,16 +313,11 @@ class GameSettings {
 
   void set(SettingId id, bool value) => _values[id] = value;
 
-  // Raccourcis typés pratiques, un par option — optionnel mais confortable
-  // à l'usage dans le reste du code.
-  bool get allowWerewolfToKillThemselves =>
-      get(SettingId.allowWerewolfToKillThemselves);
-
+  bool get allowWerewolfToKillThemselves => get(SettingId.allowWerewolfToKillThemselves);
   bool get allowHunterToShootAfterWitchDeathCause => get(SettingId.allowHunterToShootAfterWitchDeathCause);
-
   bool get allowWitchToPlayIfWerewolfDeathCause => get(SettingId.allowWitchToPlayIfWerewolfDeathCause);
-
   bool get allowWitchToSaveHerself => get(SettingId.allowWitchToSaveHerself);
+  bool get enfantSauvagePublicReveal => get(SettingId.enfantSauvagePublicReveal);
 
   Map<String, dynamic> toJson() => {
     for (final e in _values.entries) e.key.name: e.value,
@@ -352,6 +359,7 @@ enum GamePhase {
   nightVoleur,
   nightCupidon,
   nightEnfantSauvage,
+  nightEnfantSauvageMutation,
   nightSalvateur,
   nightVoyante,
   nightLoups,
@@ -474,17 +482,12 @@ class GameState {
   // --- Morts de la vague en cours (nuit ou vote), pas encore révélées ---
   List<String> deathsThisWave = [];
 
-  // --- Flags de suivi post-mort ---
-  // C'est le cœur du remplacement de l'ancienne file "pendingActions" :
-  // _applyDeath() pose ces flags dès qu'une mort a une conséquence
-  // différée, et GameEngine._resolveFollowUps() les lit dans un ordre
-  // fixe pour décider de la prochaine phase — un simple enchaînement de
-  // "if", pas de queue générique.
   FollowUpOrigin? followUpOrigin;
   String? chasseurRevengeTargetId; // id du Chasseur qui doit tirer
   String? mayorSuccessionNeededFor; // id de l'ancien maire, mort
   String? enfantSauvageTransformedId; // id de l'Enfant Sauvage venant de muter
   RoleId? enfantSauvagePreviousRole; // pour l'animation de révélation
+  String? enfantSauvageNightMutationId; // mutation à annoncer en privé la nuit suivante
   String? servanteDevoueeOfferId; // id du joueur mort dont le rôle est disponible
   String? boucEmissaireChoiceNeededId; // id du Bouc Émissaire qui vient d'être voté
   String? idiotDuVillageRevealId; // id de l'Idiot qui vient d'être voté (survit)
@@ -539,6 +542,26 @@ class GameState {
     final right = ordered[(idx + 1) % ordered.length];
     return left.camp == Camp.loups || right.camp == Camp.loups;
   }
+  /// Le joueur [centerId] et ses deux voisins vivants immédiats (ordre de
+  /// la liste des joueurs, comme pour le Montreur d'Ours). Avec très peu de
+  /// joueurs vivants, les doublons sont fusionnés (groupe de 1 ou 2).
+  List<String> renardTrioAround(String centerId) {
+    final ordered = alivePlayers;
+    final idx = ordered.indexWhere((p) => p.id == centerId);
+    if (idx == -1) return [];
+    final n = ordered.length;
+    return <String>{
+      ordered[(idx - 1 + n) % n].id,
+      centerId,
+      ordered[(idx + 1) % n].id,
+    }.toList();
+  }
+  /// Vrai si au moins un Loup-Garou se trouve parmi [ids]. Le Loup-Garou
+  /// Blanc compte comme un loup pour le flair (son camp est Camp.seul).
+  bool renardTrioHasWolf(List<String> ids) => ids.any((id) {
+    final p = tryById(id);
+    return p != null && (p.camp == Camp.loups || p.role == RoleId.loupBlanc);
+  });
 }
 
 extension _FirstOrNull<T> on Iterable<T> {
@@ -909,8 +932,7 @@ const Map<RoleId, RoleInfo> kRoleCatalog = {
     nameShort: 'Petite Fille',
     camp: Camp.village,
     description:
-    "Pendant le tour des loups, elle peut entrouvrir les yeux pour espionner. "
-        "Si elle se fait surprendre, elle meurt à la place de la victime prévue.",
+    "Pendant le tour des loups, elle peut entrouvrir les yeux pour espionner. ",
     nightInstruction:
     "Vous pouvez tenter d'espionner les loups. Restez discrète...",
     imageAsset: 'assets/images/roles/petite_fille.png',
@@ -1080,10 +1102,10 @@ const Map<RoleId, RoleInfo> kRoleCatalog = {
     nameShort: 'Renard',
     camp: Camp.village,
     description:
-    "La nuit, il peut désigner un groupe de trois joueurs. Le meneur lui indique "
-        "si au moins un Loup-Garou se trouve parmi eux.",
+    "La nuit, il désigne un joueur : celui-ci et ses deux voisins vivants forment "
+        "un groupe de trois. Le meneur lui indique si au moins un Loup-Garou s'y trouve.",
     nightInstruction:
-    "Choisissez trois joueurs voisins pour utiliser votre flair.",
+    "Choisissez un joueur : lui et ses deux voisins seront flairés.",
     imageAsset: 'assets/images/roles/renard.png',
     fallbackIcon: Icons.pets,
     accent: AppColors.forest,
@@ -1306,16 +1328,8 @@ class GameProvider extends ChangeNotifier {
   /// Le Renard désigne trois joueurs d'un coup. Chaque appel ajoute ou
   /// retire [id] de la sélection en cours ; dès que trois joueurs sont
   /// choisis, le pouvoir est résolu automatiquement et on avance de phase.
-  void setRenardTarget(String id) {
-    if (renardDraftSelection.contains(id)) {
-      renardDraftSelection.remove(id);
-    } else if (renardDraftSelection.length < 3) {
-      renardDraftSelection.add(id);
-    }
-    if (renardDraftSelection.length == 3) {
-      engine.resolveRenard(state!, List.of(renardDraftSelection));
-      renardDraftSelection.clear();
-    }
+  void setRenardTarget(String centerId) {
+    engine.resolveRenardCenter(state!, centerId);
     notifyListeners();
   }
 
@@ -1403,6 +1417,12 @@ class GameProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void confirmEnfantSauvageNightMutation() {
+    engine.confirmEnfantSauvageNightMutation(state!);
+    notifyListeners();
+  }
+
+
   // ---------------------------------------------------------------------
   // Jour
   // ---------------------------------------------------------------------
@@ -1482,15 +1502,11 @@ class SettingsProvider extends ChangeNotifier {
     await _storage.saveSettings(settings);
   }
 
-  bool get allowWerewolfToKillThemselves =>
-      settings.allowWerewolfToKillThemselves;
-
+  bool get allowWerewolfToKillThemselves => settings.allowWerewolfToKillThemselves;
   bool get allowHunterToShootAfterWitchDeathCause => settings.allowHunterToShootAfterWitchDeathCause;
-
-  bool get allowWitchToPlayIfWerewolfDeathCause =>
-      settings.allowWitchToPlayIfWerewolfDeathCause;
-
+  bool get allowWitchToPlayIfWerewolfDeathCause => settings.allowWitchToPlayIfWerewolfDeathCause;
   bool get allowWitchToSaveHerself => settings.allowWitchToSaveHerself;
+  bool get enfantSauvagePublicReveal => settings.enfantSauvagePublicReveal;
 }
 
 ===== Fichier: providers\stats_provider.dart =====
@@ -1927,6 +1943,8 @@ import 'role_screens/voyante_screen.dart';
 import 'village_power_loss_screen.dart';
 import 'village_vote_screen.dart';
 import 'vote_result_screen.dart';
+import 'role_screens/enfant_sauvage_mutation_screen.dart';
+
 import '../../widgets/game_progress_sheet.dart';
 
 /// Point d'entrée de la partie une fois la distribution des rôles terminée.
@@ -1980,6 +1998,7 @@ class GameMainScreen extends StatelessWidget {
       GamePhase.nightEnfantSauvageCheck => const EnfantSauvageCheckScreen(),
       GamePhase.enfantsauvageReveal => const EnfantSauvageRevealScreen(),
       GamePhase.idiotduvillageCivicRightLoss => const IdiotDuVillageRevealScreen(),
+      GamePhase.nightEnfantSauvageMutation => const EnfantSauvageMutationScreen(),
       _ => const SizedBox.shrink(),
     };
 
@@ -2415,7 +2434,6 @@ class NightIntroScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
-    final night = gp.state!.night;
     final theme = Theme.of(context);
     final loc = AppLocalizations.of(context)!;
 
@@ -2429,9 +2447,7 @@ class NightIntroScreen extends StatelessWidget {
               const Icon(Icons.dark_mode, size: 72, color: AppColors.lantern),
               const SizedBox(height: 28),
               Text(
-                night == 1
-                    ? loc.nightIntroFirstNight
-                    : loc.nightIntroOtherNights(night),
+                loc.nightIntroFirstNight,
                 style: theme.textTheme.displayMedium,
                 textAlign: TextAlign.center,
               ),
@@ -3304,6 +3320,84 @@ Widget enfantSauvageCheckScreenPreview() {
   return buildRoleScreenPreview(child: const EnfantSauvageCheckScreen());
 }
 
+===== Fichier: screens\game\role_screens\enfant_sauvage_mutation_screen.dart =====
+
+import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
+import '../../../models/role.dart';
+import '../../../providers/game_provider.dart';
+import '../../../theme/app_theme.dart';
+import '../../../widgets/pass_device_gate.dart';
+import '../../../widgets/role_image.dart';
+import 'role_screen_chrome.dart';
+
+class EnfantSauvageMutationScreen extends StatelessWidget {
+  const EnfantSauvageMutationScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final gp = context.read<GameProvider>();
+    final state = gp.state!;
+    final player = state.tryById(state.enfantSauvageNightMutationId);
+    final loc = AppLocalizations.of(context)!;
+
+    return PassDeviceGate(
+      toName: player?.name ?? loc.enfantSauvagePassTo,
+      accent: AppColors.blood,
+      contentBuilder: (_) => const _EnfantSauvageMutationContent(),
+    );
+  }
+}
+
+class _EnfantSauvageMutationContent extends StatelessWidget {
+  const _EnfantSauvageMutationContent();
+
+  @override
+  Widget build(BuildContext context) {
+    final gp = context.read<GameProvider>();
+    final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
+
+    return RoleScreenFrame(
+      title: loc.enfantSauvageMutationTitle,
+      accent: AppColors.blood,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          RoleInstructionCard(
+            text: loc.enfantSauvageMutationInstruction,
+            accent: AppColors.blood,
+          ),
+          const SizedBox(height: 20),
+          RoleSectionCard(
+            child: Column(
+              children: [
+                const RoleImage(role: RoleId.loupGarou, size: 120),
+                const SizedBox(height: 16),
+                Text(
+                  RoleId.loupGarou.info.name,
+                  style: theme.textTheme.displayMedium
+                      ?.copyWith(color: AppColors.blood),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 28),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: gp.confirmEnfantSauvageNightMutation,
+              child: Text(loc.goBackToSleepButton),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 ===== Fichier: screens\game\role_screens\enfant_sauvage_reveal_screen.dart =====
 
 import 'package:flutter/material.dart';
@@ -4082,6 +4176,7 @@ import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
+import '../../../theme/app_theme.dart';
 import '../../../widgets/pass_device_gate.dart';
 import '../../../widgets/player_grid_selector.dart';
 import 'role_screen_chrome.dart';
@@ -4101,33 +4196,97 @@ class RenardScreen extends StatelessWidget {
   }
 }
 
-class _RenardContent extends StatelessWidget {
+class _RenardContent extends StatefulWidget {
   const _RenardContent();
+  @override
+  State<_RenardContent> createState() => _RenardContentState();
+}
+
+class _RenardContentState extends State<_RenardContent> {
+  String? centerId;
 
   @override
   Widget build(BuildContext context) {
-    final gp = context.watch<GameProvider>();
-    final selection = gp.renardDraftSelection;
+    final gp = context.read<GameProvider>();
+    final state = gp.state!;
+    final theme = Theme.of(context);
     final loc = AppLocalizations.of(context)!;
+    final accent = RoleId.renard.info.accent;
 
+    // Étape 2 : résultat du flair, annoncé au Renard.
+    if (centerId != null) {
+      final trioIds = state.renardTrioAround(centerId!);
+      final trio = trioIds.map(state.byId).toList();
+      final foundWolf = state.renardTrioHasWolf(trioIds);
+
+      return RoleScreenFrame(
+        title: loc.renardTitle,
+        accent: accent,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            RoleInstructionCard(
+              text: foundWolf
+                  ? loc.renardResultWolfFound
+                  : loc.renardResultNoWolf,
+              accent: foundWolf ? AppColors.blood : AppColors.forest,
+            ),
+            const SizedBox(height: 20),
+            RoleSectionCard(
+              child: Column(
+                children: [
+                  Text(loc.renardResultTrioLabel,
+                      style: theme.textTheme.bodyMedium,
+                      textAlign: TextAlign.center),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      for (final p in trio)
+                        Chip(
+                          label: Text(p.name),
+                          side: BorderSide(
+                              color: foundWolf
+                                  ? AppColors.blood
+                                  : AppColors.forest),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const Spacer(),
+            ElevatedButton(
+              // C'est ici que le moteur applique la conséquence (pouvoir
+              // conservé ou perdu) et passe à la phase suivante.
+              onPressed: () => gp.setRenardTarget(centerId!),
+              child: Text(loc.goBackToSleepButton),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Étape 1 : choix du joueur central.
     return RoleScreenFrame(
       title: loc.renardTitle,
-      accent: RoleId.renard.info.accent,
+      accent: accent,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           RoleInstructionCard(
-            text: loc.renardInstruction(selection.length, 3),
-            accent: RoleId.renard.info.accent,
+            text: loc.renardInstructionCenter,
+            accent: accent,
           ),
           const SizedBox(height: 14),
           Expanded(
             child: RoleSectionCard(
               child: SingleChildScrollView(
                 child: PlayerGridSelector(
-                  players: gp.state!.alivePlayers,
-                  highlightedIds: selection.toSet(),
-                  onSelect: (id) => gp.setRenardTarget(id),
+                  players: state.alivePlayers,
+                  onSelect: (id) => setState(() => centerId = id),
                 ),
               ),
             ),
@@ -5006,6 +5165,7 @@ import '../../widgets/confirm.dart';
 import '../game_flow_screen.dart';
 import '../settings/game_settings_screen.dart';
 import '../stats/stats_screen.dart';
+import '../../widgets/night_scene.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -5017,103 +5177,108 @@ class HomeScreen extends StatelessWidget {
     final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 28),
-          child: Column(
-            children: [
-              const Spacer(flex: 2),
-              const Icon(Icons.nightlight_round, size: 84, color: AppColors.lantern),
-              const SizedBox(height: 20),
-              Text(loc.appTitle,
-                  style: theme.textTheme.displayLarge,
-                  textAlign: TextAlign.center),
-              const SizedBox(height: 8),
-              Text(
-                loc.homeSubtitle,
-                style: theme.textTheme.bodyLarge?.copyWith(
-                    color: AppColors.moonlight.withValues(alpha: 0.7)),
-                textAlign: TextAlign.center,
-              ),
-              const Spacer(flex: 3),
-              if (gameProvider.hasActiveGame) ...[
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const GameFlowScreen()),
+      body: Stack(
+        children: [
+          const Positioned.fill(child: NightScene(horizon: 0.62)),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 28),
+              child: Column(
+                children: [
+                  const SizedBox(height: 24),
+                  Text(loc.appTitle,
+                      style: theme.textTheme.displayLarge?.copyWith(
+                        shadows: [Shadow(blurRadius: 16, color: Colors.black.withValues(alpha: 0.6))],
+                      ),
+                      textAlign: TextAlign.center),
+                  const SizedBox(height: 8),
+                  Text(loc.homeSubtitle,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                          color: AppColors.moonlight.withValues(alpha: 0.8)),
+                      textAlign: TextAlign.center),
+
+                  const Spacer(), // la lune et le loup restent visibles ici
+
+                  if (gameProvider.hasActiveGame) ...[
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const GameFlowScreen()),
+                        ),
+                        icon: const Icon(Icons.play_arrow),
+                        label: Text(loc.resumeGameButton),
+                      ),
                     ),
-                    icon: const Icon(Icons.play_arrow),
-                    label: Text(loc.resumeGameButton),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: () async {
-                      final ok = await confirmAction(
-                        context,
-                        title: loc.abandonGameDialogTitle,
-                        message: loc.abandonGameDialogMessage,
-                        confirmLabel: loc.abandonGameConfirmLabel,
-                        destructive: true,
-                      );
-                      if (ok) {
-                        gameProvider.abandonGame();
-                        if (context.mounted) {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                                builder: (_) => const GameFlowScreen()),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () async {
+                          final ok = await confirmAction(
+                            context,
+                            title: loc.abandonGameDialogTitle,
+                            message: loc.abandonGameDialogMessage,
+                            confirmLabel: loc.abandonGameConfirmLabel,
+                            destructive: true,
                           );
-                        }
-                      }
-                    },
-                    icon: const Icon(Icons.refresh),
-                    label: Text(loc.newGameButton),
-                  ),
-                ),
-              ] else
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const GameFlowScreen()),
+                          if (ok) {
+                            gameProvider.abandonGame();
+                            if (context.mounted) {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                    builder: (_) => const GameFlowScreen()),
+                              );
+                            }
+                          }
+                        },
+                        icon: const Icon(Icons.refresh),
+                        label: Text(loc.newGameButton),
+                      ),
                     ),
-                    icon: const Icon(Icons.play_arrow),
-                    label: Text(loc.newGameButton),
+                  ] else
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const GameFlowScreen()),
+                        ),
+                        icon: const Icon(Icons.play_arrow),
+                        label: Text(loc.newGameButton),
+                      ),
+                    ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const StatsScreen())),
+                      icon: const Icon(Icons.bar_chart),
+                      label: Text(loc.statsButton),
+                    ),
                   ),
-                ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const StatsScreen())),
-                  icon: const Icon(Icons.bar_chart),
-                  label: Text(loc.statsButton),
-                ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const GameSettingsScreen())),
+                      icon: const Icon(Icons.settings_outlined),
+                      label: Text(loc.gameSettingsButton),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextButton.icon(
+                    onPressed: () => _showRulesSheet(context),
+                    icon: const Icon(Icons.menu_book, size: 18),
+                    label: Text(loc.gameRulesButton),
+                  ),
+                  const SizedBox(height: 16),
+                ],
               ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const GameSettingsScreen())),
-                  icon: const Icon(Icons.settings_outlined),
-                  label: Text(loc.gameSettingsButton),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextButton.icon(
-                onPressed: () => _showRulesSheet(context),
-                icon: const Icon(Icons.menu_book, size: 18),
-                label: Text(loc.gameRulesButton),
-              ),
-              const Spacer(),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -5963,6 +6128,7 @@ class GameEngine {
   static const _untrackedPhases = {
     GamePhase.nightIntro,
     GamePhase.nightGoBackToSleep,
+    GamePhase.nightEnfantSauvageMutation,
   };
 
   void _startRound(GameState s, String wave, int number) {
@@ -6094,12 +6260,16 @@ class GameEngine {
       q.add(GamePhase.nightVoyante);
       addSleep();
     }
-
+    final mutated = s.tryById(s.enfantSauvageNightMutationId);
+    if (mutated != null && mutated.alive && mutated.role == RoleId.loupGarou) {
+      q.add(GamePhase.nightEnfantSauvageMutation);
+      addSleep();
+    }
     if (s.aliveWolves.isNotEmpty) {
       q.add(GamePhase.nightLoups);
       // La Petite Fille espionne PENDANT le tour des loups : sa phase se
       // joue donc juste après, une fois la victime des loups connue.
-      if (s.hasAliveRole(RoleId.petiteFille)) q.add(GamePhase.nightPetiteFille);
+      // if (s.hasAliveRole(RoleId.petiteFille)) q.add(GamePhase.nightPetiteFille);
       if (s.hasAliveRole(RoleId.loupBlanc) && s.night > 1 && s.night.isEven) {
         q.add(GamePhase.nightLoupBlanc);
       }
@@ -6299,6 +6469,11 @@ class GameEngine {
 
   void confirmEnfantSauvageCheck(GameState s) => advance(s);
 
+  void confirmEnfantSauvageNightMutation(GameState s) {
+    s.enfantSauvageNightMutationId = null;
+    advance(s);
+  }
+
   void setLoupsVictim(GameState s, String victimId) {
     s.loupsVictimId = victimId;
     s.finalNightVictimId =
@@ -6354,14 +6529,11 @@ class GameEngine {
 
   void resolveRenard(GameState s, List<String> targetIds) {
     s.renardTargetIds = targetIds;
-    final foundWolf = targetIds.any((id) {
-      final p = s.tryById(id);
-      return p != null && p.camp == Camp.loups;
-    });
+    final foundWolf = s.renardTrioHasWolf(targetIds);
     s.renardFoundWolfLastQuery = foundWolf;
     if (!foundWolf) {
-      // Variante classique : le flair se perd pour le reste de la partie
-      // si aucun Loup-Garou n'est trouvé parmi les trois joueurs choisis.
+      // Aucun loup dans le trio : le Renard perd définitivement son flair,
+      // mais sait que ces trois joueurs sont innocents.
       s.renardPowerLost = true;
     }
     advance(s);
@@ -6387,6 +6559,10 @@ class GameEngine {
       s.sorciereKilledIdTonight = poisonTargetId;
     }
     advance(s);
+  }
+
+  void resolveRenardCenter(GameState s, String centerId) {
+    resolveRenard(s, s.renardTrioAround(centerId));
   }
 
   // ---------------------------------------------------------------------
@@ -6665,19 +6841,18 @@ class GameEngine {
       _applyDeath(s, lover.id, DeathCause.chagrinDAmourCupidon);
     }
 
-    // Enfant Sauvage : si le mort était son modèle (mentorOf pointe vers
-    // lui), il devient Loup-Garou. La mutation du rôle a lieu tout de
-    // suite — elle doit compter dès la prochaine phase des Loups — et un
-    // flag est posé pour que la table en soit informée au bon moment
-    // (voir GamePhase.enfantsauvageReveal dans _resolveFollowUps).
     if (p.mentorOf != null) {
       final enfant = s.tryById(p.mentorOf);
       if (enfant != null &&
           enfant.alive &&
           enfant.role == RoleId.enfantSauvage) {
-        s.enfantSauvagePreviousRole = enfant.role;
-        s.enfantSauvageTransformedId = enfant.id;
         enfant.role = RoleId.loupGarou;
+        if (s.settings.enfantSauvagePublicReveal) {
+          s.enfantSauvagePreviousRole = RoleId.enfantSauvage;
+          s.enfantSauvageTransformedId = enfant.id; // → écran public
+        } else {
+          s.enfantSauvageNightMutationId = enfant.id; // → écran de nuit privé
+        }
       }
     }
 
@@ -7376,6 +7551,331 @@ String gamePhaseLabel(GamePhase phase) {
     default:
       return phase.name;
   }
+}
+
+===== Fichier: widgets\night_scene.dart =====
+
+import 'dart:math' as math;
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
+class NightScene extends StatefulWidget {
+  const NightScene({super.key, this.horizon = 0.62, this.hillX = 0.3});
+
+  /// Hauteur (0..1) de la crête sur laquelle se tient le loup.
+  final double horizon;
+
+  /// Position horizontale (0 = bord gauche, 1 = bord droit) du sommet de la colline.
+  final double hillX;
+
+  @override
+  State<NightScene> createState() => _NightSceneState();
+}
+
+class _NightSceneState extends State<NightScene>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 60),
+  )..repeat();
+
+  Offset _tilt = Offset.zero; // valeur lissée, -1..1
+  Offset _target = Offset.zero; // valeur visée (doigt)
+
+  @override
+  void initState() {
+    super.initState();
+    // Lissage du mouvement à chaque frame
+    _c.addListener(() => _tilt = Offset.lerp(_tilt, _target, 0.06)!);
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  /// depth : 0 = très loin (bouge peu), 1 = premier plan (bouge beaucoup)
+  Widget _layer(double depth, Widget child) {
+    final sway = math.sin(_c.value * 2 * math.pi * 2); // léger balancement
+    final dx = (_tilt.dx * 18 + sway * 5) * depth;
+    final dy = (_tilt.dy * 8) * depth;
+    return Transform.translate(
+      offset: Offset(dx, dy),
+      child: Transform.scale(scale: 1.12, child: child), // évite les bords vides
+    );
+  }
+
+  void _updateTilt(Offset p, Size s) {
+    _target = Offset((p.dx / s.width) * 2 - 1, (p.dy / s.height) * 2 - 1);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (context, box) {
+      final size = box.biggest;
+      final wolfH = size.height * 0.2;
+      final wolfW = wolfH * 1.1;
+      final bumpH = size.height * 0.035;
+      const fg = Color(0xFF05060C);
+
+      return GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onPanUpdate: (d) => _updateTilt(d.localPosition, size),
+        onPanEnd: (_) => _target = Offset.zero,
+        child: ClipRect(
+          child: AnimatedBuilder(
+            animation: _c,
+            builder: (context, _) {
+              final t = _c.value;
+              return Stack(
+                fit: StackFit.expand,
+                children: [
+                  // Ciel
+                  const DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Color(0xFF05060F), Color(0xFF151A3A), Color(0xFF2B3265)],
+                        stops: [0, 0.55, 1],
+                      ),
+                    ),
+                  ),
+                  _layer(0.05, CustomPaint(painter: _StarsPainter(t))),
+                  _layer(0.15, CustomPaint(painter: _MoonPainter(t))),
+                  _layer(0.25, CustomPaint(painter: _FogPainter(t, 0.50, 1, 0.10))),
+                  // Montagnes lointaines
+                  _layer(0.35, CustomPaint(painter: _RidgePainter(
+                      color: const Color(0xFF1F2547), base: 0.50, amp: 50, seed: 3))),
+                  // Forêt de sapins (2 plans)
+                  _layer(0.55, CustomPaint(painter: _RidgePainter(
+                      color: const Color(0xFF121631), base: 0.56, amp: 30, seed: 8, trees: true))),
+                  _layer(0.75, CustomPaint(painter: _RidgePainter(
+                      color: const Color(0xFF0A0C1E), base: 0.60, amp: 22, seed: 21, trees: true))),
+                  _layer(0.85, CustomPaint(painter: _FogPainter(t, 0.60, 2, 0.12))),
+                  // Premier plan : rocher + loup
+                  _layer(
+                    1.0,
+                    Stack(children: [
+                      Positioned.fill(
+                        child: CustomPaint(
+                          painter: _RidgePainter(
+                            color: fg,
+                            base: widget.horizon,
+                            amp: 0,
+                            seed: 1,
+                            bumpAt: widget.hillX,
+                            bumpH: bumpH,
+                            bumpW: 0.28,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: size.width * widget.hillX - wolfW / 2,
+                        top: size.height * widget.horizon - bumpH - wolfH + wolfH * 0.07,
+                        width: wolfW,
+                        height: wolfH,
+                        child: SvgPicture.asset(
+                          'assets/images/wolf_howling.svg',
+                          fit: BoxFit.contain,
+                          alignment: Alignment.bottomCenter, // ← les pattes touchent le bas de la boîte
+                          colorFilter: const ColorFilter.mode(fg, BlendMode.srcIn),
+                        ),
+                      ),
+                    ]),
+                  ),
+                  // Vignette pour assombrir les bords
+                  IgnorePointer(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: RadialGradient(
+                          radius: 1.1,
+                          colors: [Colors.transparent, Colors.black.withValues(alpha: 0.55)],
+                          stops: const [0.6, 1],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      );
+    });
+  }
+}
+
+// ───────────── Étoiles qui scintillent ─────────────
+class _StarsPainter extends CustomPainter {
+  _StarsPainter(this.t);
+  final double t;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final r = math.Random(42);
+    final paint = Paint();
+    for (var i = 0; i < 110; i++) {
+      final x = r.nextDouble() * size.width;
+      final y = r.nextDouble() * size.height * 0.55;
+      final radius = 0.4 + r.nextDouble() * 1.2;
+      final freq = 10 + r.nextInt(15); // entier => boucle parfaite
+      final phase = r.nextDouble();
+      final a = 0.35 + 0.65 * (0.5 + 0.5 * math.sin(2 * math.pi * (t * freq + phase)));
+      paint.color = Colors.white.withValues(alpha: a);
+      canvas.drawCircle(Offset(x, y), radius, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_StarsPainter old) => old.t != t;
+}
+
+// ───────────── Lune + halo qui pulse ─────────────
+class _MoonPainter extends CustomPainter {
+  _MoonPainter(this.t);
+  final double t;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final c = Offset(size.width * 0.5, size.height * 0.32);
+    final rad = math.min(size.width * 0.2, 153.toDouble());
+    final pulse = 0.85 + 0.15 * math.sin(2 * math.pi * t * 6);
+
+    const halo = Color(0xFFFFA070);   // ambre pour le halo
+    const moonLight = Color(0xFFFFF1CC); // crème au centre
+    const moonEdge = Color(0xFFF2C77E);  // doré sur les bords
+
+    // Halo
+    final glowRect = Rect.fromCircle(center: c, radius: rad * 3.2);
+    canvas.drawCircle(
+      c,
+      rad * 3.2,
+      Paint()
+        ..shader = RadialGradient(colors: [
+          halo.withValues(alpha: 0.38 * pulse),
+          halo.withValues(alpha: 0.10 * pulse),
+          Colors.transparent,
+        ], stops: const [0, 0.45, 1])
+            .createShader(glowRect),
+    );
+
+    // Disque avec un dégradé pour donner du volume
+    final moonRect = Rect.fromCircle(center: c, radius: rad);
+    canvas.drawCircle(
+      c,
+      rad,
+      Paint()
+        ..shader = const RadialGradient(
+          center: Alignment(-0.3, -0.3),
+          colors: [moonLight, moonEdge],
+        ).createShader(moonRect),
+    );
+
+    // Cratères, teintés de brun chaud plutôt que de noir
+    final crater = Paint()..color = const Color(0xFF8A5A1E).withValues(alpha: 0.14);
+    canvas.drawCircle(c + Offset(-rad * .35, -rad * .25), rad * .18, crater);
+    canvas.drawCircle(c + Offset(rad * .30, rad * .10), rad * .24, crater);
+    canvas.drawCircle(c + Offset(-rad * .10, rad * .45), rad * .12, crater);
+  }
+
+  @override
+  bool shouldRepaint(_MoonPainter old) => old.t != t;
+}
+
+// ───────────── Brume qui dérive ─────────────
+class _FogPainter extends CustomPainter {
+  _FogPainter(this.t, this.y, this.speed, this.opacity);
+  final double t, y, opacity;
+  final int speed; // entier => boucle sans saut
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withValues(alpha: opacity)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 40);
+    for (var i = 0; i < 4; i++) {
+      final u = (t * speed + i / 4) % 1.0;
+      final x = (u * 2 - 0.5) * size.width;
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(x, size.height * y + (i.isEven ? 12 : -12)),
+          width: size.width * 0.7,
+          height: 70,
+        ),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_FogPainter old) => old.t != t;
+}
+
+// ───────────── Crêtes, sapins et rocher ─────────────
+class _RidgePainter extends CustomPainter {
+  _RidgePainter({
+    required this.color,
+    required this.base,
+    required this.amp,
+    required this.seed,
+    this.trees = false,
+    this.bumpAt = 0.5,
+    this.bumpH = 0,
+    this.bumpW = 0.2,
+  });
+
+  final Color color;
+  final double base, amp, bumpAt, bumpH, bumpW;
+  final int seed;
+  final bool trees;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final r = math.Random(seed);
+    final p1 = r.nextDouble() * 6, p2 = r.nextDouble() * 6;
+
+    double yAt(double x) {
+      final u = x / size.width;
+      final wave = amp * (0.6 * math.sin(u * 3 + p1) + 0.4 * math.sin(u * 7 + p2));
+      final d = (u - bumpAt) / bumpW;
+      final bump = bumpH * math.exp(-d * d);
+      return size.height * base - wave - bump;
+    }
+
+    final path = Path()
+      ..moveTo(0, size.height)
+      ..lineTo(0, yAt(0));
+    for (double x = 0; x <= size.width; x += 4) {
+      path.lineTo(x, yAt(x));
+    }
+    path
+      ..lineTo(size.width, size.height)
+      ..close();
+
+    final paint = Paint()..color = color;
+    canvas.drawPath(path, paint);
+
+    if (trees) {
+      for (double x = 0; x < size.width; x += 10 + r.nextDouble() * 14) {
+        final h = 22 + r.nextDouble() * 34;
+        final w = h * 0.38;
+        final y = yAt(x) + 4;
+        canvas.drawPath(
+          Path()
+            ..moveTo(x, y - h)
+            ..lineTo(x - w, y)
+            ..lineTo(x + w, y)
+            ..close(),
+          paint,
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_RidgePainter old) => false;
 }
 
 ===== Fichier: widgets\pass_device_gate.dart =====
