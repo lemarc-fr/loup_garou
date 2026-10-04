@@ -230,7 +230,7 @@ class GameEngine {
       q.add(GamePhase.nightLoups);
       // La Petite Fille espionne PENDANT le tour des loups : sa phase se
       // joue donc juste après, une fois la victime des loups connue.
-      if (s.hasAliveRole(RoleId.petiteFille)) q.add(GamePhase.nightPetiteFille);
+      // if (s.hasAliveRole(RoleId.petiteFille)) q.add(GamePhase.nightPetiteFille);
       if (s.hasAliveRole(RoleId.loupBlanc) && s.night > 1 && s.night.isEven) {
         q.add(GamePhase.nightLoupBlanc);
       }

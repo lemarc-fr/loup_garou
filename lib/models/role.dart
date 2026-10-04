@@ -219,8 +219,7 @@ const Map<RoleId, RoleInfo> kRoleCatalog = {
     nameShort: 'Petite Fille',
     camp: Camp.village,
     description:
-    "Pendant le tour des loups, elle peut entrouvrir les yeux pour espionner. "
-        "Si elle se fait surprendre, elle meurt à la place de la victime prévue.",
+    "Pendant le tour des loups, elle peut entrouvrir les yeux pour espionner. ",
     nightInstruction:
     "Vous pouvez tenter d'espionner les loups. Restez discrète...",
     imageAsset: 'assets/images/roles/petite_fille.png',
