@@ -22,6 +22,7 @@ enum GamePhase {
   nightVoleur,
   nightCupidon,
   nightEnfantSauvage,
+  nightEnfantSauvageMutation,
   nightSalvateur,
   nightVoyante,
   nightLoups,
@@ -155,6 +156,7 @@ class GameState {
   String? mayorSuccessionNeededFor; // id de l'ancien maire, mort
   String? enfantSauvageTransformedId; // id de l'Enfant Sauvage venant de muter
   RoleId? enfantSauvagePreviousRole; // pour l'animation de révélation
+  String? enfantSauvageNightMutationId; // mutation à annoncer en privé la nuit suivante
   String? servanteDevoueeOfferId; // id du joueur mort dont le rôle est disponible
   String? boucEmissaireChoiceNeededId; // id du Bouc Émissaire qui vient d'être voté
   String? idiotDuVillageRevealId; // id de l'Idiot qui vient d'être voté (survit)

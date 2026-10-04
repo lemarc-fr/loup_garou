@@ -35,6 +35,8 @@ import 'role_screens/voyante_screen.dart';
 import 'village_power_loss_screen.dart';
 import 'village_vote_screen.dart';
 import 'vote_result_screen.dart';
+import 'role_screens/enfant_sauvage_mutation_screen.dart';
+
 import '../../widgets/game_progress_sheet.dart';
 
 /// Point d'entrée de la partie une fois la distribution des rôles terminée.
@@ -88,6 +90,7 @@ class GameMainScreen extends StatelessWidget {
       GamePhase.nightEnfantSauvageCheck => const EnfantSauvageCheckScreen(),
       GamePhase.enfantsauvageReveal => const EnfantSauvageRevealScreen(),
       GamePhase.idiotduvillageCivicRightLoss => const IdiotDuVillageRevealScreen(),
+      GamePhase.nightEnfantSauvageMutation => const EnfantSauvageMutationScreen(),
       _ => const SizedBox.shrink(),
     };
 

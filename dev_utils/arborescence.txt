@@ -2,6 +2,7 @@
 ├── main.dart
 ├── models
 │   ├── game_config.dart
+│   ├── game_progress.dart
 │   ├── game_settings.dart
 │   ├── game_state.dart
 │   ├── player.dart
@@ -23,6 +24,7 @@
 │   │   ├── mayor_reveal_screen.dart
 │   │   ├── mayor_reveal_screen.preview.dart
 │   │   ├── mayor_succession_screen.dart
+│   │   ├── night_go_back_to_sleep_screen.dart
 │   │   ├── night_intro_screen.dart
 │   │   ├── role_screens
 │   │   │   ├── bouc_emissaire_screen.dart
@@ -90,6 +92,7 @@
 │   └── app_theme.dart
 └── widgets
     ├── confirm.dart
+    ├── game_progress_sheet.dart
     ├── pass_device_gate.dart
     ├── player_grid_selector.dart
     ├── role_image.dart

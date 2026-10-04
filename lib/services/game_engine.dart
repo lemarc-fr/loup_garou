@@ -89,6 +89,7 @@ class GameEngine {
   static const _untrackedPhases = {
     GamePhase.nightIntro,
     GamePhase.nightGoBackToSleep,
+    GamePhase.nightEnfantSauvageMutation,
   };
 
   void _startRound(GameState s, String wave, int number) {
@@ -220,7 +221,11 @@ class GameEngine {
       q.add(GamePhase.nightVoyante);
       addSleep();
     }
-
+    final mutated = s.tryById(s.enfantSauvageNightMutationId);
+    if (mutated != null && mutated.alive && mutated.role == RoleId.loupGarou) {
+      q.add(GamePhase.nightEnfantSauvageMutation);
+      addSleep();
+    }
     if (s.aliveWolves.isNotEmpty) {
       q.add(GamePhase.nightLoups);
       // La Petite Fille espionne PENDANT le tour des loups : sa phase se
@@ -424,6 +429,11 @@ class GameEngine {
   void confirmVoyanteDone(GameState s) => advance(s);
 
   void confirmEnfantSauvageCheck(GameState s) => advance(s);
+
+  void confirmEnfantSauvageNightMutation(GameState s) {
+    s.enfantSauvageNightMutationId = null;
+    advance(s);
+  }
 
   void setLoupsVictim(GameState s, String victimId) {
     s.loupsVictimId = victimId;
@@ -791,19 +801,18 @@ class GameEngine {
       _applyDeath(s, lover.id, DeathCause.chagrinDAmourCupidon);
     }
 
-    // Enfant Sauvage : si le mort était son modèle (mentorOf pointe vers
-    // lui), il devient Loup-Garou. La mutation du rôle a lieu tout de
-    // suite — elle doit compter dès la prochaine phase des Loups — et un
-    // flag est posé pour que la table en soit informée au bon moment
-    // (voir GamePhase.enfantsauvageReveal dans _resolveFollowUps).
     if (p.mentorOf != null) {
       final enfant = s.tryById(p.mentorOf);
       if (enfant != null &&
           enfant.alive &&
           enfant.role == RoleId.enfantSauvage) {
-        s.enfantSauvagePreviousRole = enfant.role;
-        s.enfantSauvageTransformedId = enfant.id;
         enfant.role = RoleId.loupGarou;
+        if (s.settings.enfantSauvagePublicReveal) {
+          s.enfantSauvagePreviousRole = RoleId.enfantSauvage;
+          s.enfantSauvageTransformedId = enfant.id; // → écran public
+        } else {
+          s.enfantSauvageNightMutationId = enfant.id; // → écran de nuit privé
+        }
       }
     }
 

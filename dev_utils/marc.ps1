@@ -1,7 +1,7 @@
 ﻿$racine = "C:\Users\marcb\StudioProjects\loup_garou\lib"
 $dossierSortie = "C:\Users\marcb\StudioProjects\loup_garou\dev_utils"
 $profondeur = -1   # -1 = pas de limite, 1 = un seul niveau
-$dossiersIgnores = @("node_modules", ".git", "__pycache__", ".venv", 'dev_utils', '.idea', '.ruff_cache')
+$dossiersIgnores = @("node_modules", ".git", "__pycache__", ".venv", 'dev_utils', '.idea', '.ruff_cache', 'l10n')
 
 function Generate-Tree {
     param (

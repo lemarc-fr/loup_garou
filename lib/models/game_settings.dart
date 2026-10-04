@@ -8,6 +8,7 @@ enum SettingId {
   allowHunterToShootAfterWitchDeathCause,
   allowWitchToPlayIfWerewolfDeathCause,
   allowWitchToSaveHerself,
+  enfantSauvagePublicReveal,
 }
 
 /// Décrit une option pour l'affichage dans l'écran de réglages.
@@ -61,6 +62,16 @@ const List<GameSettingDefinition> kGameSettingDefinitions = [
         'elle-même lorsqu\'elle est la victime désignée par les Loups-Garous.',
     defaultValue: true,
   ),
+  GameSettingDefinition(
+    id: SettingId.enfantSauvagePublicReveal,
+    label: "Mutation de l'Enfant Sauvage annoncée à tous",
+    description:
+    "Si activé, la mutation de l'Enfant Sauvage est révélée publiquement "
+        "dès la mort de son modèle (pas d'écran de nuit). Si désactivé, rien "
+        "n'est annoncé : l'Enfant Sauvage est prévenu en secret au début de "
+        "la nuit suivante.",
+    defaultValue: true,
+  ),
 ];
 
 /// Valeurs courantes des options, avec repli sur la valeur par défaut du
@@ -79,16 +90,11 @@ class GameSettings {
 
   void set(SettingId id, bool value) => _values[id] = value;
 
-  // Raccourcis typés pratiques, un par option — optionnel mais confortable
-  // à l'usage dans le reste du code.
-  bool get allowWerewolfToKillThemselves =>
-      get(SettingId.allowWerewolfToKillThemselves);
-
+  bool get allowWerewolfToKillThemselves => get(SettingId.allowWerewolfToKillThemselves);
   bool get allowHunterToShootAfterWitchDeathCause => get(SettingId.allowHunterToShootAfterWitchDeathCause);
-
   bool get allowWitchToPlayIfWerewolfDeathCause => get(SettingId.allowWitchToPlayIfWerewolfDeathCause);
-
   bool get allowWitchToSaveHerself => get(SettingId.allowWitchToSaveHerself);
+  bool get enfantSauvagePublicReveal => get(SettingId.enfantSauvagePublicReveal);
 
   Map<String, dynamic> toJson() => {
     for (final e in _values.entries) e.key.name: e.value,

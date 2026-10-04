@@ -1,43 +1,8 @@
-
-===== Fichier: main.dart =====
-
-import 'package:flutter/material.dart' show MaterialApp, StatelessWidget, BuildContext, runApp, Widget;
-import 'package:provider/provider.dart' show MultiProvider, ChangeNotifierProvider;
-import 'package:thiercelieux/providers/settings_provider.dart' show SettingsProvider;
-import 'providers/game_provider.dart' show GameProvider;
-import 'providers/stats_provider.dart' show StatsProvider;
-import 'screens/home/home_screen.dart' show HomeScreen;
-import 'theme/app_theme.dart' show AppTheme;
-
-void main() {
-  runApp(const ThiercelieuxApp());
-}
-
-class ThiercelieuxApp extends StatelessWidget {
-  const ThiercelieuxApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => GameProvider()),
-        ChangeNotifierProvider(create: (_) => StatsProvider()..load()),
-        ChangeNotifierProvider(create: (_) => SettingsProvider()..load()),
-      ],
-      child: MaterialApp(
-        title: 'Thiercelieux',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.night,
-        home: const HomeScreen(),
-      ),
-    );
-  }
-}
-
 C:\Users\marcb\StudioProjects\loup_garou\lib
 ├── main.dart
 ├── models
 │   ├── game_config.dart
+│   ├── game_progress.dart
 │   ├── game_settings.dart
 │   ├── game_state.dart
 │   ├── player.dart
@@ -59,6 +24,7 @@ C:\Users\marcb\StudioProjects\loup_garou\lib
 │   │   ├── mayor_reveal_screen.dart
 │   │   ├── mayor_reveal_screen.preview.dart
 │   │   ├── mayor_succession_screen.dart
+│   │   ├── night_go_back_to_sleep_screen.dart
 │   │   ├── night_intro_screen.dart
 │   │   ├── role_screens
 │   │   │   ├── bouc_emissaire_screen.dart
@@ -126,10 +92,49 @@ C:\Users\marcb\StudioProjects\loup_garou\lib
 │   └── app_theme.dart
 └── widgets
     ├── confirm.dart
+    ├── game_progress_sheet.dart
     ├── pass_device_gate.dart
     ├── player_grid_selector.dart
     ├── role_image.dart
     └── role_image.preview.dart
+
+===== Fichier: main.dart =====
+
+import 'package:flutter/material.dart' show MaterialApp, StatelessWidget, BuildContext, runApp, Widget;
+import 'package:thiercelieux/l10n/app_localizations.dart';
+import 'package:provider/provider.dart' show MultiProvider, ChangeNotifierProvider;
+import 'package:thiercelieux/providers/settings_provider.dart' show SettingsProvider;
+import 'providers/game_provider.dart' show GameProvider;
+import 'providers/stats_provider.dart' show StatsProvider;
+import 'screens/home/home_screen.dart' show HomeScreen;
+import 'theme/app_theme.dart' show AppTheme;
+
+void main() {
+  runApp(const ThiercelieuxApp());
+}
+
+class ThiercelieuxApp extends StatelessWidget {
+  const ThiercelieuxApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => GameProvider()),
+        ChangeNotifierProvider(create: (_) => StatsProvider()..load()),
+        ChangeNotifierProvider(create: (_) => SettingsProvider()..load()),
+      ],
+      child: MaterialApp(
+        title: 'Thiercelieux',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.night,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const HomeScreen(),
+      ),
+    );
+  }
+}
 
 ===== Fichier: models\game_config.dart =====
 
@@ -180,6 +185,37 @@ class GameConfig {
     counts[RoleId.simpleVillageois] = remaining.clamp(0, 999);
     return counts;
   }
+}
+
+===== Fichier: models\game_progress.dart =====
+
+import 'game_state.dart';
+
+/// État d'une étape dans le résumé "live" de la partie (voir GameProgressSheet).
+/// - pending : encore à venir, pas encore atteinte.
+/// - current : en train de se jouer maintenant.
+/// - done    : terminée normalement.
+/// - skipped : dans la file mais jamais jouée (ex. Sorcière bloquée par une option).
+enum StepStatus { pending, current, done, skipped }
+
+/// Une étape (un tour de rôle, un vote, ...) au sein d'une nuit ou d'un jour.
+class StepRecord {
+  final GamePhase phase;
+  StepStatus status;
+  StepRecord(this.phase, this.status);
+}
+
+/// Une nuit ou un jour complet, avec la liste chronologique de ses étapes —
+/// y compris celles encore "à venir", pré-remplies dès le début du round à
+/// partir de buildNightQueue/buildDayQueue (donc déjà filtrées selon les
+/// rôles présents/vivants). Alimenté par GameEngine (_seedRoundSteps,
+/// _goToPhase, _logSkippedPhase) pour le résumé "live" (GameProgressSheet).
+class RoundRecord {
+  final String wave; // 'night' ou 'day'
+  final int number;
+  final List<StepRecord> steps = [];
+
+  RoundRecord({required this.wave, required this.number});
 }
 
 ===== Fichier: models\game_settings.dart =====
@@ -296,6 +332,7 @@ import 'game_config.dart';
 import 'game_settings.dart';
 import 'player.dart';
 import 'role.dart';
+import 'game_progress.dart';
 
 /// Toutes les phases possibles de la machine à états du jeu.
 enum GamePhase {
@@ -307,6 +344,11 @@ enum GamePhase {
 
   // Nuit
   nightIntro,
+  // Transition générique affichée après qu'un rôle a fini son action de
+  // nuit, avant de passer au rôle suivant : "tu peux te rendormir". Ne
+  // porte aucune information sur le rôle qui vient d'agir (voir
+  // GameEngine.buildNightQueue) — elle est volontairement neutre.
+  nightGoBackToSleep,
   nightVoleur,
   nightCupidon,
   nightEnfantSauvage,
@@ -385,6 +427,9 @@ class GameState {
 
   List<GamePhase> phaseQueue = [];
   int phaseIndex = 0;
+  /// Historique complet de la partie (une entrée par nuit/jour), pour le
+  /// résumé "live" affiché depuis l'écran de jeu (voir GameProgressSheet).
+  List<RoundRecord> rounds = [];
 
   String? mayorId;
   bool ancienExtraLifeUsed = false;
@@ -1560,6 +1605,7 @@ class GameFlowScreen extends StatelessWidget {
 ===== Fichier: screens\game\day_reveal_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../models/role.dart';
 import '../../providers/game_provider.dart';
@@ -1574,10 +1620,11 @@ class DayRevealScreen extends StatelessWidget {
     final gp = context.watch<GameProvider>();
     final state = gp.state!;
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
     final deaths = state.deathsThisWave.map(state.byId).toList();
 
     return Scaffold(
-      appBar: AppBar(title: Text('Le jour ${state.day} se lève')),
+      appBar: AppBar(title: Text(loc.dayRevealDayRises(state.day))),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -1587,10 +1634,10 @@ class DayRevealScreen extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 deaths.isEmpty
-                    ? 'Miracle ! Personne n\'est mort cette nuit.'
+                    ? loc.dayRevealNoDeaths
                     : deaths.length > 1
-                        ? 'Le village pleure ses morts...'
-                        : 'Le village pleure son mort...',
+                        ? loc.dayRevealMultipleDeaths
+                        : loc.dayRevealSingleDeath,
                 style: theme.textTheme.headlineMedium,
                 textAlign: TextAlign.center,
               ),
@@ -1604,7 +1651,7 @@ class DayRevealScreen extends StatelessWidget {
                           leading: RoleImage(role: p.role, size: 48),
                           title: Text(p.name),
                           subtitle: Text(
-                              '${p.role.info.name} — ${_causeLabel(p.deathCause)}'),
+                              '${p.role.info.name} — ${_causeLabel(loc, p.deathCause)}'),
                         ),
                       ),
                   ],
@@ -1620,9 +1667,8 @@ class DayRevealScreen extends StatelessWidget {
                   ),
                   child: Text(
                     gp.montreurDoursGrowls
-                        ? "L'ours du Montreur d'Ours grogne : un Loup-Garou "
-                        "se cache parmi ses voisins."
-                        : "L'ours du Montreur d'Ours reste calme cette nuit.",
+                        ? loc.montreurDoursGrowlsText
+                        : loc.montreurDoursCalmText,
                     style: Theme.of(context).textTheme.bodyMedium,
                     textAlign: TextAlign.center,
                   ),
@@ -1633,7 +1679,7 @@ class DayRevealScreen extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: gp.confirmDayReveal,
-                  child: const Text('Le village se réveille'),
+                  child: Text(loc.villageWakesUpButton),
                 ),
               ),
             ],
@@ -1643,18 +1689,20 @@ class DayRevealScreen extends StatelessWidget {
     );
   }
 
-  String _causeLabel(DeathCause? c) {
+  String _causeLabel(AppLocalizations loc, DeathCause? c) {
     switch (c) {
       case DeathCause.devoreParLesLoups:
-        return 'dévoré(e) par les Loups-Garous';
+        return loc.deathCauseDevoreParLesLoups;
       case DeathCause.potionDeMort:
-        return 'empoisonné(e) par la Sorcière';
+        return loc.deathCausePotionDeMort;
       case DeathCause.chagrinDAmourCupidon:
-        return 'mort(e) de chagrin d\'amour';
+        return loc.deathCauseChagrinDAmourCupidon;
       case DeathCause.vengeanceDuChasseur:
-        return 'abattu(e) par le Chasseur';
+        return loc.deathCauseVengeanceDuChasseur;
       case DeathCause.vote:
-        return 'pendu(e) par le village';
+        return loc.deathCauseVote;
+      case DeathCause.tueParLoupBlanc:
+        return loc.deathCauseTueParLoupBlanc;
       default :
         return '';
     }
@@ -1664,6 +1712,7 @@ class DayRevealScreen extends StatelessWidget {
 ===== Fichier: screens\game\debate_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
@@ -1675,9 +1724,10 @@ class DebateScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Débat')),
+      appBar: AppBar(title: Text(loc.debateTitle)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(28),
@@ -1687,21 +1737,20 @@ class DebateScreen extends StatelessWidget {
               const Icon(Icons.forum, size: 72, color: AppColors.forest),
               const SizedBox(height: 24),
               Text(
-                'Le village débat',
+                loc.debateVillageDebates,
                 style: theme.textTheme.displayMedium,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
               Text(
-                'Les survivants discutent pour démasquer les Loups-Garous. '
-                'Les Loups doivent bluffer pour se faire passer pour des villageois.',
+                loc.debateInstruction,
                 style: theme.textTheme.bodyLarge,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 40),
               ElevatedButton(
                 onPressed: gp.confirmDebate,
-                child: const Text('Passer au vote'),
+                child: Text(loc.goToVoteButton),
               ),
             ],
           ),
@@ -1714,6 +1763,7 @@ class DebateScreen extends StatelessWidget {
 ===== Fichier: screens\game\end_game_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
 import '../../providers/stats_provider.dart';
@@ -1747,16 +1797,16 @@ class _EndGameScreenState extends State<EndGameScreen> {
     }
   }
 
-  String _winnerLabel(Camp w) {
+  String _winnerLabel(AppLocalizations loc, Camp w) {
     switch (w) {
       case Camp.village:
-        return 'Le Village l\'emporte !';
+        return loc.endGameWinnerVillage;
       case Camp.loups:
-        return 'Les Loups-Garous l\'emportent !';
+        return loc.endGameWinnerWolves;
       case Camp.amoureux:
-        return 'Les Amoureux l\'emportent !';
+        return loc.endGameWinnerLovers;
       case Camp.seul:
-        return 'Il l\'emporte !';
+        return loc.endGameWinnerSolo;
     }
   }
 
@@ -1766,10 +1816,11 @@ class _EndGameScreenState extends State<EndGameScreen> {
     final state = gp.state!;
     final result = state.result!;
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
     final winners = result.winningPlayerIds.map(state.byId).toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Fin de la partie')),
+      appBar: AppBar(title: Text(loc.endGameTitle)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -1780,7 +1831,7 @@ class _EndGameScreenState extends State<EndGameScreen> {
                   size: 72, color: AppColors.lantern),
               const SizedBox(height: 20),
               Text(
-                _winnerLabel(result.winner),
+                _winnerLabel(loc, result.winner),
                 style: theme.textTheme.displayMedium,
                 textAlign: TextAlign.center,
               ),
@@ -1814,7 +1865,7 @@ class _EndGameScreenState extends State<EndGameScreen> {
                         MaterialPageRoute(builder: (_) => const StatsScreen()));
                   },
                   icon: const Icon(Icons.bar_chart),
-                  label: const Text('Voir les statistiques'),
+                  label: Text(loc.endGameViewStatsButton),
                 ),
               ),
               const SizedBox(height: 12),
@@ -1826,7 +1877,7 @@ class _EndGameScreenState extends State<EndGameScreen> {
                     Navigator.of(context).popUntil((route) => route.isFirst);
                   },
                   icon: const Icon(Icons.home),
-                  label: const Text('Retour à l\'accueil'),
+                  label: Text(loc.endGameReturnHomeButton),
                 ),
               ),
             ],
@@ -1855,6 +1906,7 @@ import 'mayor_election_explain.dart';
 import 'mayor_election_screen.dart';
 import 'mayor_reveal_screen.dart';
 import 'mayor_succession_screen.dart';
+import 'night_go_back_to_sleep_screen.dart';
 import 'night_intro_screen.dart';
 import 'role_screens/bouc_emissaire_screen.dart';
 import 'role_screens/chasseur_screen.dart';
@@ -1875,6 +1927,7 @@ import 'role_screens/voyante_screen.dart';
 import 'village_power_loss_screen.dart';
 import 'village_vote_screen.dart';
 import 'vote_result_screen.dart';
+import '../../widgets/game_progress_sheet.dart';
 
 /// Point d'entrée de la partie une fois la distribution des rôles terminée.
 /// Regarde `GameState.phase` et affiche l'écran correspondant.
@@ -1896,6 +1949,7 @@ class GameMainScreen extends StatelessWidget {
 
     final screen = switch (phase) {
       GamePhase.nightIntro => const NightIntroScreen(),
+      GamePhase.nightGoBackToSleep => const NightGoBackToSleepScreen(),
       GamePhase.nightVoleur => const VoleurScreen(),
       GamePhase.nightCupidon => const CupidonScreen(),
       GamePhase.nightEnfantSauvage => const EnfantSauvageScreen(),
@@ -1926,29 +1980,33 @@ class GameMainScreen extends StatelessWidget {
       GamePhase.nightEnfantSauvageCheck => const EnfantSauvageCheckScreen(),
       GamePhase.enfantsauvageReveal => const EnfantSauvageRevealScreen(),
       GamePhase.idiotduvillageCivicRightLoss => const IdiotDuVillageRevealScreen(),
-    // GamePhase.nightGrandMechantLoup, GamePhase.enfantsauvageReveal et
-    // GamePhase.idiotduvillageCivicRightLoss n'ont pas encore d'écran :
-    // les rôles correspondants restent désactivés dans
-    // RoleSelectionScreen tant que ces écrans ne sont pas écrits.
-    // Les phases de setup (avant distribution) ne passent jamais par ici :
-    // GameFlowScreen les intercepte plus haut. Filet de sécurité :
       _ => const SizedBox.shrink(),
     };
 
+    final content = Stack(
+      children: [
+        screen,
+        const Align(
+          alignment: Alignment.topRight,
+          child: SafeArea(child: GameProgressButton()),
+        ),
+      ],
+    );
+
     if (state.currentWave == 'day') {
-      return Theme(data: AppTheme.day, child: screen);
+      return Theme(data: AppTheme.day, child: content);
     }
-    return screen;
+    return content;
   }
 }
 
 ===== Fichier: screens\game\mayor_election_explain.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
-
 
 class MayorElectionExplainScreen extends StatefulWidget {
   const MayorElectionExplainScreen({super.key});
@@ -1982,6 +2040,7 @@ class _MayorElectionExplainScreenState extends State<MayorElectionExplainScreen>
   @override
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -2001,13 +2060,13 @@ class _MayorElectionExplainScreenState extends State<MayorElectionExplainScreen>
                 ),
               ),
               const SizedBox(height: 28),
-              const Text("you're going to elect the mayor"),
+              Text(loc.mayorElectionExplainText),
               const SizedBox(height: 40),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: gp.confirmMayorElectionExplain,
-                  child: const Text('Continue to the vote'),
+                  child: Text(loc.mayorElectionExplainContinueButton),
                 ),
               ),
             ],
@@ -2064,6 +2123,7 @@ Widget mayorElectionExplainPreview() {
 ===== Fichier: screens\game\mayor_election_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
@@ -2076,10 +2136,11 @@ class MayorElectionScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
     final state = gp.state!;
+    final loc = AppLocalizations.of(context)!;
 
     return SequentialVoteFlow(
-      title: 'Élection du maire',
-      instruction: 'Chaque joueur désigne le futur maire du village.',
+      title: loc.mayorElectionTitle,
+      instruction: loc.mayorElectionInstruction,
       accent: AppColors.lantern,
       voters: state.alivePlayers,
       initialCandidates: state.alivePlayers,
@@ -2091,6 +2152,7 @@ class MayorElectionScreen extends StatelessWidget {
 ===== Fichier: screens\game\mayor_reveal_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
@@ -2132,6 +2194,7 @@ class _MayorRevealScreenState extends State<MayorRevealScreen>
     final state = gp.state!;
     final mayor = state.byId(state.mayorId!);
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: SafeArea(
@@ -2154,7 +2217,7 @@ class _MayorRevealScreenState extends State<MayorRevealScreen>
               ),
               const SizedBox(height: 28),
               Text(
-                'The village has chosen its mayor',
+                loc.mayorRevealTitle,
                 style: theme.textTheme.titleLarge,
                 textAlign: TextAlign.center,
               ),
@@ -2167,7 +2230,7 @@ class _MayorRevealScreenState extends State<MayorRevealScreen>
               ),
               const SizedBox(height: 16),
               Text(
-                'Their vote will count double during ties.',
+                loc.mayorRevealSubtitle,
                 style: theme.textTheme.bodyLarge,
                 textAlign: TextAlign.center,
               ),
@@ -2176,7 +2239,7 @@ class _MayorRevealScreenState extends State<MayorRevealScreen>
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: gp.confirmMayorReveal,
-                  child: const Text('Continue to the debate'),
+                  child: Text(loc.mayorRevealContinueButton),
                 ),
               ),
             ],
@@ -2221,6 +2284,7 @@ Widget mayorRevealPreview() {
 ===== Fichier: screens\game\mayor_succession_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
@@ -2240,9 +2304,10 @@ class MayorSuccessionScreen extends StatelessWidget {
     final gp = context.read<GameProvider>();
     final state = gp.state!;
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Succession du maire')),
+      appBar: AppBar(title: Text(loc.mayorSuccessionTitle)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -2253,8 +2318,7 @@ class MayorSuccessionScreen extends StatelessWidget {
                   size: 56, color: AppColors.lantern),
               const SizedBox(height: 16),
               Text(
-                'Le maire est mort. Avant de rendre son dernier souffle, '
-                    'il désigne son successeur.',
+                loc.mayorSuccessionInstruction,
                 style: theme.textTheme.bodyLarge,
                 textAlign: TextAlign.center,
               ),
@@ -2275,9 +2339,72 @@ class MayorSuccessionScreen extends StatelessWidget {
   }
 }
 
+===== Fichier: screens\game\night_go_back_to_sleep_screen.dart =====
+
+import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
+import '../../providers/game_provider.dart';
+import '../../theme/app_theme.dart';
+
+/// Écran de transition générique affiché après qu'un rôle (ou un petit
+/// groupe de rôles liés, comme les Loups et leurs sous-phases) a terminé
+/// son action de nuit.
+///
+/// Volontairement neutre : il ne mentionne ni nom ni rôle, pour ne rien
+/// laisser filtrer à qui que ce soit qui regarderait par-dessus l'épaule.
+/// Il donne juste un point de fermeture clair avant que le téléphone ne
+/// parte vers le rôle suivant — lequel reste de toute façon protégé par
+/// son propre [PassDeviceGate].
+class NightGoBackToSleepScreen extends StatelessWidget {
+  const NightGoBackToSleepScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final gp = context.read<GameProvider>();
+    final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
+
+    return Scaffold(
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.bedtime, size: 72, color: AppColors.lantern),
+              const SizedBox(height: 28),
+              Text(
+                loc.nightGoBackToSleepTitle,
+                style: theme.textTheme.displayMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                loc.nightGoBackToSleepInstruction,
+                style: theme.textTheme.bodyLarge,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 40),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: gp.advanceGeneric,
+                  child: Text(loc.continueButtonLabel),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 ===== Fichier: screens\game\night_intro_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/game_provider.dart';
 import '../../../theme/app_theme.dart';
@@ -2290,6 +2417,7 @@ class NightIntroScreen extends StatelessWidget {
     final gp = context.read<GameProvider>();
     final night = gp.state!.night;
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: SafeArea(
@@ -2302,21 +2430,21 @@ class NightIntroScreen extends StatelessWidget {
               const SizedBox(height: 28),
               Text(
                 night == 1
-                    ? 'La nuit tombe sur Thiercelieux'
-                    : 'La nuit $night tombe à nouveau',
+                    ? loc.nightIntroFirstNight
+                    : loc.nightIntroOtherNights(night),
                 style: theme.textTheme.displayMedium,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
               Text(
-                'Tout le village ferme les yeux et s\'endort.\nPose le téléphone au centre de la table.',
+                loc.nightIntroSleepInstruction,
                 style: theme.textTheme.bodyLarge,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 40),
               ElevatedButton(
                   onPressed: gp.advanceGeneric,
-                  child: const Text('Tout le monde dort')),
+                  child: Text(loc.nightIntroEveryoneAsleepButton)),
             ],
           ),
         ),
@@ -2328,6 +2456,7 @@ class NightIntroScreen extends StatelessWidget {
 ===== Fichier: screens\game\sequential_vote_flow.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/player.dart';
 import '../../../providers/game_provider.dart';
@@ -2407,12 +2536,13 @@ class _SequentialVoteFlowState extends State<SequentialVoteFlow> {
   Widget build(BuildContext context) {
     final voter = widget.voters[voterIndex];
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
     final selectable = widget.allowSelfVote ? [...candidates] : candidates.where((c) => c.id != voter.id).toList();
 
     return PassDeviceGate(
       key: ValueKey('vote-${voter.id}-$isRunoff-${candidates.length}'),
       toName: voter.name,
-      subtitle: 'Vote secret : les autres joueurs ne doivent pas regarder.',
+      subtitle: loc.voteSecretSubtitle,
       accent: widget.accent,
       contentBuilder: (_) => Scaffold(
         appBar: AppBar(title: Text(widget.title)),
@@ -2431,7 +2561,7 @@ class _SequentialVoteFlowState extends State<SequentialVoteFlow> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      'Égalité au tour précédent — on revote entre les candidats à égalité.',
+                      loc.voteRunoffTieNotice,
                       style: theme.textTheme.bodyMedium,
                       textAlign: TextAlign.center,
                     ),
@@ -2458,87 +2588,200 @@ class _SequentialVoteFlowState extends State<SequentialVoteFlow> {
 ===== Fichier: screens\game\village_power_loss_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../models/role.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/pass_device_gate.dart';
 import '../../widgets/role_image.dart';
 
-/// Révélation animée : le village a pendu l'Ancien par erreur, tous les
-/// villageois à pouvoir perdent leur don. Chaque carte se dévoile avec un
-/// léger décalage puis bascule visuellement vers "Simple Villageois".
+/// Le village a fait pendre l'Ancien par erreur : tous les villageois à
+/// pouvoir perdent leur don pour le reste de la partie.
+///
+/// Cette information doit rester SECRÈTE : dans la partie physique,
+/// personne d'autre que le joueur concerné n'apprend qu'il a perdu son
+/// pouvoir, ni lequel c'était.
+///
+/// Un premier correctif avait fait défiler le téléphone en privé
+/// uniquement vers les joueurs réellement touchés (`powerLossThisWave`).
+/// Mais ça fuit quand même : le simple fait que le téléphone ne passe
+/// QUE chez certains joueurs — en sautant les autres — suffit à toute la
+/// table pour deviner qui a un pouvoir et qui n'en a jamais eu, sans même
+/// avoir besoin de regarder l'écran. Pour que la procédure ne révèle
+/// rien, TOUS les joueurs vivants doivent passer par le même rituel
+/// (même écran, même bouton, même déroulé) : ceux qui perdent vraiment un
+/// pouvoir voient leur ancien rôle, les autres reçoivent un don fictif et
+/// totalement inutile — mais personne à l'extérieur ne peut faire la
+/// différence entre les deux passages.
 class VillagePowerLossScreen extends StatefulWidget {
   const VillagePowerLossScreen({super.key});
 
   @override
-  State<VillagePowerLossScreen> createState() => _VillagePowerLossScreenState();
+  State<VillagePowerLossScreen> createState() =>
+      _VillagePowerLossScreenState();
 }
 
 class _VillagePowerLossScreenState extends State<VillagePowerLossScreen> {
-  bool _introDone = false;
-
-  @override
-  void initState() {
-    super.initState();
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (mounted) setState(() => _introDone = true);
-    });
-  }
+  // Index dans la liste de TOUS les joueurs vivants (pas seulement ceux
+  // qui ont réellement perdu un pouvoir) du prochain joueur à faire
+  // passer en privé.
+  int _index = 0;
 
   @override
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
     final state = gp.state!;
+    final players = state.alivePlayers;
+    final loc = AppLocalizations.of(context)!;
+
+    // Rôle perdu pour ce joueur, si (et seulement si) il fait
+    // effectivement partie des victimes de la perte de pouvoirs.
+    final lostRoleByPlayerId = <String, RoleId>{
+      for (final e in state.powerLossThisWave) e.playerId: e.previousRole,
+    };
+
+    if (_index < players.length) {
+      final player = players[_index];
+      final lostRole = lostRoleByPlayerId[player.id];
+
+      return PassDeviceGate(
+        // Une clé différente à chaque joueur : force une nouvelle
+        // confirmation "c'est moi qui ai le téléphone" à chaque tour.
+        key: ValueKey('power-loss-${player.id}'),
+        toName: player.name,
+        subtitle: loc.powerLossPrivatePassSubtitle,
+        accent: AppColors.blood,
+        contentBuilder: (_) => _PowerLossPrivateScreen(
+          index: _index,
+          total: players.length,
+          lostRole: lostRole,
+          onContinue: () => setState(() => _index++),
+        ),
+      );
+    }
+
+    // Tout le monde est passé par le même rituel : on peut informer la
+    // table, sans citer aucun nom ni aucun rôle.
+    return _PublicPowerLossAnnouncement(
+      onContinue: gp.confirmPowerLossReveal,
+    );
+  }
+}
+
+/// Écran privé montré à UN SEUL joueur à la fois. [lostRole] non-null
+/// signifie que ce joueur a réellement perdu ce pouvoir ; null signifie
+/// qu'il ne se passe rien pour lui, mais on lui montre quand même un
+/// "don" — fictif et inutile — pour que la structure de l'écran (titre,
+/// image, texte, bouton) soit rigoureusement identique dans les deux cas.
+class _PowerLossPrivateScreen extends StatelessWidget {
+  final int index;
+  final int total;
+  final RoleId? lostRole;
+  final VoidCallback onContinue;
+
+  const _PowerLossPrivateScreen({
+    required this.index,
+    required this.total,
+    required this.lostRole,
+    required this.onContinue,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final entries = state.powerLossThisWave;
+    final reallyLost = lostRole != null;
+    final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("La sagesse s'éteint")),
+      appBar: AppBar(title: Text(loc.powerLossTitle)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             children: [
-              AnimatedOpacity(
-                opacity: _introDone ? 1 : 0,
-                duration: const Duration(milliseconds: 500),
-                child: Column(
-                  children: [
-                    const Icon(Icons.auto_awesome_outlined,
-                        size: 56, color: AppColors.blood),
-                    const SizedBox(height: 12),
-                    Text(
-                      "Le village a fait pendre l'Ancien par erreur.",
-                      style: theme.textTheme.headlineMedium,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Privé de sa sagesse, le village voit ses pouvoirs se tarir...',
-                      style: theme.textTheme.bodyLarge,
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+              LinearProgressIndicator(
+                value: (index + 1) / total,
+                backgroundColor: AppColors.nightAlt,
+              ),
+              const SizedBox(height: 8),
+              Text(loc.powerLossPlayerCount(index + 1, total),
+                  style: theme.textTheme.bodyMedium),
+              const Spacer(),
+              const Icon(Icons.auto_awesome_outlined,
+                  size: 56, color: AppColors.blood),
+              const SizedBox(height: 16),
+              Text(
+                loc.powerLossAncienHangedHeadline,
+                style: theme.textTheme.headlineMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              if (reallyLost) ...[
+                Text(
+                  loc.powerLossReallyLostNotice,
+                  style: theme.textTheme.bodyLarge,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                RoleImage(role: lostRole!, size: 96),
+                const SizedBox(height: 12),
+                Text(
+                  lostRole!.info.name,
+                  style: theme.textTheme.displayMedium
+                      ?.copyWith(color: lostRole!.info.accent),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  loc.powerLossNowSimpleVillageois,
+                  style: theme.textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
+              ] else ...[
+                Text(
+                  loc.powerLossFakeGiftNotice,
+                  style: theme.textTheme.bodyLarge,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                Icon(Icons.bedtime,
+                    size: 96, color: AppColors.moonlight.withValues(alpha: 0.6)),
+                const SizedBox(height: 12),
+                Text(
+                  loc.powerLossFakeGiftName,
+                  style: theme.textTheme.displayMedium
+                      ?.copyWith(color: AppColors.moonlight),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  loc.powerLossFakeGiftUseless,
+                  style: theme.textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+              const SizedBox(height: 20),
+              Container(
+                width: double.infinity,
+                padding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.blood.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  loc.powerLossKeepSecretWarning,
+                  style: theme.textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
                 ),
               ),
-              const SizedBox(height: 24),
-              Expanded(
-                child: ListView.separated(
-                  itemCount: entries.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) => _PowerLossCard(
-                    playerName: state.byId(entries[index].playerId).name,
-                    previousRole: entries[index].previousRole,
-                    delay: Duration(milliseconds: 500 + index * 350),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
+              const Spacer(),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: gp.confirmPowerLossReveal,
-                  child: const Text('La nuit tombe à nouveau'),
+                  onPressed: onContinue,
+                  child: Text(loc.powerLossUnderstoodButton),
                 ),
               ),
             ],
@@ -2549,101 +2792,48 @@ class _VillagePowerLossScreenState extends State<VillagePowerLossScreen> {
   }
 }
 
-class _PowerLossCard extends StatefulWidget {
-  final String playerName;
-  final RoleId previousRole;
-  final Duration delay;
-
-  const _PowerLossCard({
-    required this.playerName,
-    required this.previousRole,
-    required this.delay,
-  });
-
-  @override
-  State<_PowerLossCard> createState() => _PowerLossCardState();
-}
-
-class _PowerLossCardState extends State<_PowerLossCard> {
-  bool _visible = false;
-  bool _switched = false;
-
-  @override
-  void initState() {
-    super.initState();
-    Future.delayed(widget.delay, () {
-      if (mounted) setState(() => _visible = true);
-    });
-    Future.delayed(widget.delay + const Duration(milliseconds: 550), () {
-      if (mounted) setState(() => _switched = true);
-    });
-  }
+/// Vu par toute la table : volontairement neutre, aucun nom ni rôle n'y
+/// figure.
+class _PublicPowerLossAnnouncement extends StatelessWidget {
+  final VoidCallback onContinue;
+  const _PublicPowerLossAnnouncement({required this.onContinue});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final info = widget.previousRole.info;
-    final mutedColor =
-        theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.6);
+    final loc = AppLocalizations.of(context)!;
 
-    return AnimatedSlide(
-      offset: _visible ? Offset.zero : const Offset(0, 0.15),
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeOut,
-      child: AnimatedOpacity(
-        opacity: _visible ? 1 : 0,
-        duration: const Duration(milliseconds: 400),
-        child: Card(
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 500),
-                  transitionBuilder: (child, anim) => ScaleTransition(
-                    scale: anim,
-                    child: FadeTransition(opacity: anim, child: child),
-                  ),
-                  child: _switched
-                      ? const RoleImage(
-                          key: ValueKey('villageois'),
-                          role: RoleId.simpleVillageois,
-                          size: 48,
-                        )
-                      : RoleImage(
-                          key: const ValueKey('previous'),
-                          role: widget.previousRole,
-                          size: 48,
-                        ),
+    return Scaffold(
+      appBar: AppBar(title: Text(loc.powerLossTitle)),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.auto_awesome_outlined,
+                  size: 64, color: AppColors.blood),
+              const SizedBox(height: 20),
+              Text(
+                loc.powerLossAncienHangedHeadline,
+                style: theme.textTheme.headlineMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                loc.powerLossPublicExplanation,
+                style: theme.textTheme.bodyLarge,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 40),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: onContinue,
+                  child: Text(loc.powerLossNightFallsAgainButton),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(widget.playerName,
-                          style: theme.textTheme.titleLarge),
-                      const SizedBox(height: 2),
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 400),
-                        child: Text(
-                          _switched ? 'Devient Simple Villageois' : info.name,
-                          key: ValueKey(_switched),
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: _switched ? mutedColor : info.accent,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                AnimatedOpacity(
-                  opacity: _switched ? 1 : 0,
-                  duration: const Duration(milliseconds: 400),
-                  child: const Icon(Icons.power_off, color: AppColors.blood),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -2654,6 +2844,7 @@ class _PowerLossCardState extends State<_PowerLossCard> {
 ===== Fichier: screens\game\village_vote_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
@@ -2666,10 +2857,11 @@ class VillageVoteScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
     final state = gp.state!;
+    final loc = AppLocalizations.of(context)!;
 
     return SequentialVoteFlow(
-      title: 'Vote du village',
-      instruction: 'Chaque joueur désigne le suspect à éliminer.',
+      title: loc.villageVoteTitle,
+      instruction: loc.villageVoteInstruction,
       accent: AppColors.blood,
       voters: state.alivePlayers,
       initialCandidates: state.alivePlayers,
@@ -2681,6 +2873,7 @@ class VillageVoteScreen extends StatelessWidget {
 ===== Fichier: screens\game\vote_result_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
@@ -2695,10 +2888,11 @@ class VoteResultScreen extends StatelessWidget {
     final gp = context.watch<GameProvider>();
     final state = gp.state!;
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
     final deaths = state.deathsThisWave.map(state.byId).toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Résultat du vote')),
+      appBar: AppBar(title: Text(loc.voteResultTitle)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -2708,8 +2902,8 @@ class VoteResultScreen extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 deaths.isEmpty
-                    ? 'Le village n\'a éliminé personne.'
-                    : 'Le village a voté...',
+                    ? loc.voteResultNoDeaths
+                    : loc.voteResultVillageHasVoted,
                 style: theme.textTheme.headlineMedium,
                 textAlign: TextAlign.center,
               ),
@@ -2732,7 +2926,7 @@ class VoteResultScreen extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: gp.confirmVoteResult,
-                  child: const Text('La nuit tombe à nouveau'),
+                  child: Text(loc.nightFallsAgainButton),
                 ),
               ),
             ],
@@ -2746,6 +2940,7 @@ class VoteResultScreen extends StatelessWidget {
 ===== Fichier: screens\game\role_screens\bouc_emissaire_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/role.dart';
@@ -2759,15 +2954,15 @@ class BoucEmissaireScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
+    final loc = AppLocalizations.of(context)!;
 
     return RoleScreenFrame(
-      title: 'Le Bouc Émissaire',
+      title: loc.boucEmissaireTitle,
       accent: RoleId.boucEmissaire.info.accent,
       child: Column(
         children: [
           RoleInstructionCard(
-            text:
-                'Tu dois désigner le joueur qui ne participera pas au prochain vote du village.',
+            text: loc.boucEmissaireInstruction,
             accent: RoleId.boucEmissaire.info.accent,
           ),
           const SizedBox(height: 14),
@@ -2803,6 +2998,7 @@ Widget boucEmissaireScreenPreview() {
 ===== Fichier: screens\game\role_screens\chasseur_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/role.dart';
@@ -2816,15 +3012,15 @@ class ChasseurScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
+    final loc = AppLocalizations.of(context)!;
 
     return RoleScreenFrame(
-      title: 'Le Chasseur',
+      title: loc.chasseurTitle,
       accent: RoleId.chasseur.info.accent,
       child: Column(
         children: [
           RoleInstructionCard(
-            text:
-                'Tu as été éliminé. Choisis immédiatement un joueur à emporter avec toi.',
+            text: loc.chasseurInstruction,
             accent: RoleId.chasseur.info.accent,
           ),
           const SizedBox(height: 14),
@@ -2860,7 +3056,9 @@ Widget chasseurScreenPreview() {
 ===== Fichier: screens\game\role_screens\corbeau_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/pass_device_gate.dart';
@@ -2872,11 +3070,11 @@ class CorbeauScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: 'Corbeau',
-      pluralToName: true,
-      subtitle:
-      'Choisis ta victime',
+      toName: RoleId.corbeau.info.name,
+      pluralToName: false,
+      subtitle: loc.corbeauSubtitle,
       accent: AppColors.blood,
       contentBuilder: (_) => const _CorbeauContent(),
     );
@@ -2889,15 +3087,16 @@ class _CorbeauContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
+    final loc = AppLocalizations.of(context)!;
 
     return RoleScreenFrame(
-      title: 'Le Corbeau',
+      title: loc.corbeauTitle,
       accent: AppColors.blood,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const RoleInstructionCard(
-            text: 'Désigne un joueur qui recevra deux voix contre lui au vote.',
+          RoleInstructionCard(
+            text: loc.corbeauInstruction,
             accent: AppColors.blood,
           ),
           const SizedBox(height: 14),
@@ -2933,6 +3132,7 @@ Widget corbeauScreenPreview() {
 ===== Fichier: screens\game\role_screens\cupidon_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
@@ -2945,10 +3145,10 @@ class CupidonScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
+    final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: "Cupidon",
-      subtitle: 'C\'est le rôle de Cupidon. Réveille-toi.',
+      toName: RoleId.cupidon.info.name,
+      subtitle: loc.cupidonSubtitle,
       accent: RoleId.cupidon.info.accent,
       contentBuilder: (_) => const _CupidonContent(),
     );
@@ -2978,16 +3178,16 @@ class _CupidonContentState extends State<_CupidonContent> {
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
     final players = gp.state!.alivePlayers;
+    final loc = AppLocalizations.of(context)!;
 
     return RoleScreenFrame(
-      title: 'Cupidon',
+      title: loc.cupidonTitle,
       accent: RoleId.cupidon.info.accent,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           RoleInstructionCard(
-            text:
-                'Désigne les deux Amoureux (${chosen.length}/2). Tu peux te choisir toi-même.',
+            text: loc.cupidonInstruction(chosen.length, 2),
             accent: RoleId.cupidon.info.accent,
           ),
           const SizedBox(height: 14),
@@ -3008,7 +3208,7 @@ class _CupidonContentState extends State<_CupidonContent> {
             onPressed: chosen.length == 2
                 ? () => gp.resolveCupidon(chosen[0], chosen[1])
                 : null,
-            child: const Text('Confirmer les Amoureux'),
+            child: Text(loc.cupidonConfirmButton),
           ),
         ],
       ),
@@ -3032,6 +3232,7 @@ Widget cupidonScreenPreview() {
 ===== Fichier: screens\game\role_screens\enfant_sauvage_check_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
@@ -3043,9 +3244,10 @@ class EnfantSauvageCheckScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: "l'Enfant Sauvage",
-      subtitle: 'C\'est le tour de l\'Enfant Sauvage. Réveille-toi.',
+      toName: loc.enfantSauvagePassTo,
+      subtitle: loc.enfantSauvageCheckSubtitle,
       accent: RoleId.enfantSauvage.info.accent,
       contentBuilder: (_) => const _EnfantSauvageCheckContent(),
     );
@@ -3059,16 +3261,16 @@ class _EnfantSauvageCheckContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
     final info = RoleId.enfantSauvage.info;
+    final loc = AppLocalizations.of(context)!;
 
     return RoleScreenFrame(
-      title: 'L’Enfant Sauvage',
+      title: loc.enfantSauvageTitle,
       accent: info.accent,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           RoleInstructionCard(
-            text:
-                'Ton modèle est toujours vivant : tu restes un simple villageois sans pouvoir particulier.',
+            text: loc.enfantSauvageModelAliveInstruction,
             accent: info.accent,
           ),
           const SizedBox(height: 20),
@@ -3080,7 +3282,7 @@ class _EnfantSauvageCheckContent extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: gp.confirmEnfantSauvageCheck,
-              child: const Text('Se rendormir'),
+              child: Text(loc.goBackToSleepButton),
             ),
           ),
         ],
@@ -3105,6 +3307,7 @@ Widget enfantSauvageCheckScreenPreview() {
 ===== Fichier: screens\game\role_screens\enfant_sauvage_reveal_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
@@ -3146,16 +3349,16 @@ class _EnfantSauvageRevealScreenState extends State<EnfantSauvageRevealScreen>
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
 
     return RoleScreenFrame(
-      title: 'Mutation',
+      title: loc.enfantSauvageMutationTitle,
       accent: AppColors.blood,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const RoleInstructionCard(
-            text:
-                'Son modèle est mort : l’Enfant Sauvage rejoint désormais la meute.',
+          RoleInstructionCard(
+            text: loc.enfantSauvageMutationInstruction,
             accent: AppColors.blood,
           ),
           const SizedBox(height: 20),
@@ -3181,7 +3384,7 @@ class _EnfantSauvageRevealScreenState extends State<EnfantSauvageRevealScreen>
             width: double.infinity,
             child: ElevatedButton(
               onPressed: gp.confirmEnfantSauvageReveal,
-              child: const Text('Continuer'),
+              child: Text(loc.continueButtonLabel),
             ),
           ),
         ],
@@ -3206,6 +3409,7 @@ Widget enfantSauvageRevealScreenPreview() {
 ===== Fichier: screens\game\role_screens\enfant_sauvage_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:thiercelieux/models/role.dart';
 
@@ -3219,16 +3423,16 @@ class EnfantSauvageScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
+    final loc = AppLocalizations.of(context)!;
     final enfantSauvageId =
         gp.state!.alivePlayersWithRole(RoleId.enfantSauvage).first.id;
     return RoleScreenFrame(
-      title: 'L’Enfant Sauvage',
+      title: loc.enfantSauvageTitle,
       accent: RoleId.enfantSauvage.info.accent,
       child: Column(
         children: [
           RoleInstructionCard(
-            text:
-                'Choisis ton modèle. S’il meurt, tu rejoindras immédiatement les Loups-Garous.',
+            text: loc.enfantSauvageInstruction,
             accent: RoleId.enfantSauvage.info.accent,
           ),
           const SizedBox(height: 14),
@@ -3266,6 +3470,7 @@ Widget enfantSauvageScreenPreview() {
 ===== Fichier: screens\game\role_screens\grand_mechant_loup_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
@@ -3279,9 +3484,10 @@ class GrandMechantLoupScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: 'Grand Méchant Loup',
-      subtitle: 'Réveille-toi seul, les autres Loups peuvent se rendormir.',
+      toName: RoleId.grandMechantLoup.info.name,
+      subtitle: loc.grandMechantLoupSubtitle,
       accent: AppColors.blood,
       contentBuilder: (_) => const _GrandMechantLoupContent(),
     );
@@ -3296,6 +3502,7 @@ class _GrandMechantLoupContent extends StatelessWidget {
     final gp = context.read<GameProvider>();
     final state = gp.state!;
     final firstVictim = state.tryById(state.loupsVictimId);
+    final loc = AppLocalizations.of(context)!;
 
     final targets = state.alivePlayers
         .where((p) => p.id != state.loupsVictimId)
@@ -3305,15 +3512,15 @@ class _GrandMechantLoupContent extends StatelessWidget {
         .toList();
 
     return RoleScreenFrame(
-      title: 'Le Grand Méchant Loup',
+      title: loc.grandMechantLoupTitle,
       accent: AppColors.blood,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           RoleInstructionCard(
             text: firstVictim != null
-                ? 'Les Loups ont déjà désigné ${firstVictim.name}. Tant qu’aucun Loup n’est mort, tu peux choisir une seconde victime.'
-                : 'Tant qu’aucun Loup n’est mort, tu peux choisir une seconde victime cette nuit.',
+                ? loc.grandMechantLoupInstructionWithVictim(firstVictim.name)
+                : loc.grandMechantLoupInstructionNoVictim,
             accent: AppColors.blood,
           ),
           const SizedBox(height: 14),
@@ -3332,7 +3539,7 @@ class _GrandMechantLoupContent extends StatelessWidget {
             width: double.infinity,
             child: OutlinedButton(
               onPressed: () => gp.resolveGrandMechantLoup(null),
-              child: const Text('Ne pas utiliser mon pouvoir cette nuit'),
+              child: Text(loc.skipPowerThisNightButton),
             ),
           ),
         ],
@@ -3357,6 +3564,7 @@ Widget grandMechantLoupScreenPreview() {
 ===== Fichier: screens\game\role_screens\idiot_du_village_reveal_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/role.dart';
@@ -3374,16 +3582,16 @@ class IdiotDuVillageRevealScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final idiot = state.byId(state.idiotDuVillageRevealId!);
     final info = idiot.role.info;
+    final loc = AppLocalizations.of(context)!;
 
     return RoleScreenFrame(
-      title: "L'Idiot du Village",
+      title: loc.idiotDuVillageRevealTitle,
       accent: info.accent,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           RoleInstructionCard(
-            text:
-                'Le village a voté contre ${idiot.name}, mais il révèle son rôle et survit.',
+            text: loc.idiotDuVillageRevealInstruction(idiot.name),
             accent: info.accent,
           ),
           const SizedBox(height: 20),
@@ -3400,7 +3608,7 @@ class IdiotDuVillageRevealScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  '${idiot.name} perd définitivement son droit de vote.',
+                  loc.idiotDuVillageVoteLossMessage(idiot.name),
                   style: theme.textTheme.bodyLarge,
                   textAlign: TextAlign.center,
                 ),
@@ -3412,7 +3620,7 @@ class IdiotDuVillageRevealScreen extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: gp.confirmIdiotDuVillageReveal,
-              child: const Text('Continuer'),
+              child: Text(loc.continueButtonLabel),
             ),
           ),
         ],
@@ -3437,6 +3645,7 @@ Widget idiotDuVillageRevealScreenPreview() {
 ===== Fichier: screens\game\role_screens\infect_pere_des_loups_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
@@ -3448,9 +3657,10 @@ class InfectPereDesLoupsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: 'Infect Père des Loups',
-      subtitle: 'C\'est ton tour. Réveille-toi seul.',
+      toName: RoleId.infectPereDesLoups.info.name,
+      subtitle: loc.infectPereDesLoupsSubtitle,
       accent: RoleId.infectPereDesLoups.info.accent,
       contentBuilder: (_) => const _InfectPereDesLoupsContent(),
     );
@@ -3465,17 +3675,18 @@ class _InfectPereDesLoupsContent extends StatelessWidget {
     final gp = context.read<GameProvider>();
     final state = gp.state!;
     final victim = state.tryById(state.loupsVictimId);
+    final loc = AppLocalizations.of(context)!;
 
     return RoleScreenFrame(
-      title: 'Infect Père des Loups',
+      title: loc.infectPereDesLoupsTitle,
       accent: RoleId.infectPereDesLoups.info.accent,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           RoleInstructionCard(
             text: victim != null
-                ? 'Les Loups ont désigné ${victim.name}. Veux-tu l’infecter au lieu de le laisser mourir ?'
-                : 'Les Loups n’ont désigné personne cette nuit.',
+                ? loc.infectPereDesLoupsInstructionWithVictim(victim.name)
+                : loc.infectPereDesLoupsInstructionNoVictim,
             accent: RoleId.infectPereDesLoups.info.accent,
           ),
           const SizedBox(height: 20),
@@ -3488,7 +3699,7 @@ class _InfectPereDesLoupsContent extends StatelessWidget {
                     onPressed: victim == null
                         ? null
                         : () => gp.setInfectPereDesLoups(true),
-                    child: const Text('Infecter'),
+                    child: Text(loc.infectPereDesLoupsInfectButton),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -3496,7 +3707,7 @@ class _InfectPereDesLoupsContent extends StatelessWidget {
                   width: double.infinity,
                   child: OutlinedButton(
                     onPressed: () => gp.setInfectPereDesLoups(false),
-                    child: const Text('Ne pas infecter'),
+                    child: Text(loc.infectPereDesLoupsDoNotInfectButton),
                   ),
                 ),
               ],
@@ -3524,6 +3735,7 @@ Widget infectPereDesLoupsScreenPreview() {
 ===== Fichier: screens\game\role_screens\juge_begue_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/role.dart';
@@ -3540,10 +3752,10 @@ class JugeBegueScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: 'Le Juge Bègue',
-      subtitle:
-      'C\'est le tour du Juge Bègue. Personne d\'autre ne doit savoir qui il est.',
+      toName: RoleId.jugeBegue.info.name,
+      subtitle: loc.jugeBegueSubtitle,
       accent: RoleId.jugeBegue.info.accent,
       contentBuilder: (_) => const _JugeBegueContent(),
     );
@@ -3557,16 +3769,16 @@ class _JugeBegueContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
     final info = RoleId.jugeBegue.info;
+    final loc = AppLocalizations.of(context)!;
 
     return RoleScreenFrame(
-      title: 'Le Juge Bègue',
+      title: loc.jugeBegueTitle,
       accent: info.accent,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           RoleInstructionCard(
-            text:
-                'Une fois par partie, tu peux décider en secret que le vote du village sera rejoué immédiatement.',
+            text: loc.jugeBegueInstruction,
             accent: info.accent,
           ),
           const SizedBox(height: 20),
@@ -3576,7 +3788,7 @@ class _JugeBegueContent extends StatelessWidget {
                 Icon(info.fallbackIcon, size: 64, color: info.accent),
                 const SizedBox(height: 12),
                 Text(
-                  'Veux-tu utiliser ce pouvoir maintenant ?',
+                  loc.jugeBegueQuestion,
                   style: Theme.of(context).textTheme.titleMedium,
                   textAlign: TextAlign.center,
                 ),
@@ -3588,7 +3800,7 @@ class _JugeBegueContent extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () => gp.resolveJugeBegueDecision(true),
-              child: const Text('Utiliser mon pouvoir'),
+              child: Text(loc.usePowerButton),
             ),
           ),
           const SizedBox(height: 12),
@@ -3596,7 +3808,7 @@ class _JugeBegueContent extends StatelessWidget {
             width: double.infinity,
             child: OutlinedButton(
               onPressed: () => gp.resolveJugeBegueDecision(false),
-              child: const Text('Ne pas utiliser mon pouvoir'),
+              child: Text(loc.doNotUsePowerButton),
             ),
           ),
         ],
@@ -3621,7 +3833,9 @@ Widget jugeBegueScreenPreview() {
 ===== Fichier: screens\game\role_screens\loups_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/pass_device_gate.dart';
@@ -3633,11 +3847,11 @@ class LoupsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: 'Loups-Garous',
+      toName: RoleId.loupGarou.info.name,
       pluralToName: true,
-      subtitle:
-      'Réveillez-vous et mettez-vous d\'accord en silence sur votre victime.',
+      subtitle: loc.loupsSubtitle,
       accent: AppColors.blood,
       contentBuilder: (_) => const _LoupsContent(),
     );
@@ -3651,6 +3865,7 @@ class _LoupsContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
     final state = gp.state!;
+    final loc = AppLocalizations.of(context)!;
 
     final wolfIds = state.aliveWolves.map((w) => w.id).toSet();
     final targets = state.settings.allowWerewolfToKillThemselves
@@ -3658,13 +3873,13 @@ class _LoupsContent extends StatelessWidget {
         : state.alivePlayers.where((p) => !wolfIds.contains(p.id)).toList();
 
     return RoleScreenFrame(
-      title: 'Les Loups-Garous',
+      title: loc.loupsTitle,
       accent: AppColors.blood,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const RoleInstructionCard(
-            text: 'Mettez-vous d’accord en silence, puis désignez votre victime.',
+          RoleInstructionCard(
+            text: loc.loupsInstruction,
             accent: AppColors.blood,
           ),
           const SizedBox(height: 14),
@@ -3700,7 +3915,9 @@ Widget loupsScreenPreview() {
 ===== Fichier: screens\game\role_screens\loup_blanc_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/pass_device_gate.dart';
@@ -3712,11 +3929,11 @@ class LoupBlancScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: 'Loup Blanc',
-      pluralToName: true,
-      subtitle:
-      'Choisis ta victime',
+      toName: RoleId.loupBlanc.info.name,
+      pluralToName: false,
+      subtitle: loc.loupBlancSubtitle,
       accent: AppColors.blood,
       contentBuilder: (_) => const _LoupBlancContent(),
     );
@@ -3729,16 +3946,16 @@ class _LoupBlancContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
+    final loc = AppLocalizations.of(context)!;
 
     return RoleScreenFrame(
-      title: 'Le Loup Blanc',
+      title: loc.loupBlancTitle,
       accent: AppColors.blood,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const RoleInstructionCard(
-            text:
-                'Choisis un joueur à éliminer secrètement pendant ton tour.',
+          RoleInstructionCard(
+            text: loc.loupBlancInstruction,
             accent: AppColors.blood,
           ),
           const SizedBox(height: 14),
@@ -3774,6 +3991,7 @@ Widget loupBlancScreenPreview() {
 ===== Fichier: screens\game\role_screens\petite_fille_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
@@ -3786,10 +4004,10 @@ class PetiteFilleScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
+    final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: "Petite Fille",
-      subtitle: 'C\'est le rôle de la Petite Fille. Réveille-toi.',
+      toName: RoleId.petiteFille.info.name,
+      subtitle: loc.petiteFilleSubtitle,
       accent: RoleId.petiteFille.info.accent,
       contentBuilder: (_) => const _PetiteFilleContent(),
     );
@@ -3802,9 +4020,10 @@ class _PetiteFilleContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
+    final loc = AppLocalizations.of(context)!;
 
     return RoleScreenFrame(
-      title: 'La Petite Fille',
+      title: loc.petiteFilleTitle,
       accent: RoleId.petiteFille.info.accent,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -3814,11 +4033,11 @@ class _PetiteFilleContent extends StatelessWidget {
             accent: RoleId.petiteFille.info.accent,
           ),
           const SizedBox(height: 14),
-          const RoleSectionCard(
+          RoleSectionCard(
             child: Text(
-              'Attention : si les Loups-Garous te surprennent, tu prendras la place de leur victime.',
+              loc.petiteFilleWarning,
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.blood),
+              style: const TextStyle(color: AppColors.blood),
             ),
           ),
           const SizedBox(height: 28),
@@ -3826,7 +4045,7 @@ class _PetiteFilleContent extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () => gp.resolvePetiteFille(tried: true),
-              child: const Text('Entrouvrir les yeux et espionner'),
+              child: Text(loc.petiteFilleSpyButton),
             ),
           ),
           const SizedBox(height: 12),
@@ -3834,7 +4053,7 @@ class _PetiteFilleContent extends StatelessWidget {
             width: double.infinity,
             child: OutlinedButton(
               onPressed: () => gp.resolvePetiteFille(tried: false),
-              child: const Text('Rester sagement endormie'),
+              child: Text(loc.petiteFilleSleepButton),
             ),
           ),
         ],
@@ -3859,6 +4078,7 @@ Widget petiteFilleScreenPreview() {
 ===== Fichier: screens\game\role_screens\renard_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
@@ -3871,9 +4091,10 @@ class RenardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: 'Le Renard',
-      subtitle: 'C\'est le tour du Renard. Réveille-toi.',
+      toName: RoleId.renard.info.name,
+      subtitle: loc.renardSubtitle,
       accent: RoleId.renard.info.accent,
       contentBuilder: (_) => const _RenardContent(),
     );
@@ -3887,15 +4108,16 @@ class _RenardContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final gp = context.watch<GameProvider>();
     final selection = gp.renardDraftSelection;
+    final loc = AppLocalizations.of(context)!;
 
     return RoleScreenFrame(
-      title: 'Le Renard',
+      title: loc.renardTitle,
       accent: RoleId.renard.info.accent,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           RoleInstructionCard(
-            text: 'Choisis trois joueurs voisins (${selection.length}/3).',
+            text: loc.renardInstruction(selection.length, 3),
             accent: RoleId.renard.info.accent,
           ),
           const SizedBox(height: 14),
@@ -3932,6 +4154,7 @@ Widget renardScreenPreview() {
 ===== Fichier: screens\game\role_screens\role_screens_preview_support.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/game_config.dart';
@@ -4021,6 +4244,8 @@ Widget buildRoleScreenPreview({
     value: gp,
     child: MaterialApp(
       theme: AppTheme.night,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: SafeArea(
           child: 
@@ -4147,6 +4372,7 @@ class RoleSectionCard extends StatelessWidget {
 ===== Fichier: screens\game\role_screens\salvateur_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
@@ -4159,9 +4385,10 @@ class SalvateurScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: 'Salvateur',
-      subtitle: 'Réveille-toi et désigne ton protégé.',
+      toName: RoleId.salvateur.info.name,
+      subtitle: loc.salvateurSubtitle,
       accent: RoleId.salvateur.info.accent,
       contentBuilder: (_) => const _SalvateurContent(),
     );
@@ -4174,15 +4401,16 @@ class _SalvateurContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
+    final loc = AppLocalizations.of(context)!;
 
     return RoleScreenFrame(
-      title: 'Le Salvateur',
+      title: loc.salvateurTitle,
       accent: RoleId.salvateur.info.accent,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           RoleInstructionCard(
-            text: 'Choisis le joueur protégé contre les attaques de cette nuit.',
+            text: loc.salvateurInstruction,
             accent: RoleId.salvateur.info.accent,
           ),
           const SizedBox(height: 14),
@@ -4218,6 +4446,7 @@ Widget salvateurScreenPreview() {
 ===== Fichier: screens\game\role_screens\servante_devouee_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/role.dart';
@@ -4231,9 +4460,10 @@ class ServanteDevoueeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: 'La Servante Dévouée',
-      subtitle: 'C\'est le rôle de la Servante Dévouée. Réveille-toi.',
+      toName: RoleId.servanteDevouee.info.name,
+      subtitle: loc.servanteDevoueeSubtitle,
       accent: RoleId.servanteDevouee.info.accent,
       contentBuilder: (_) => const _ServanteDevoueeContent(),
     );
@@ -4248,19 +4478,20 @@ class _ServanteDevoueeContent extends StatelessWidget {
     final gp = context.read<GameProvider>();
     final theme = Theme.of(context);
     final offered = gp.servanteDevoueeOfferedPlayer;
+    final loc = AppLocalizations.of(context)!;
 
     // Filet de sécurité : ne devrait pas arriver si la phase n'est
     // déclenchée que lorsque GameState.servanteDevoueeOfferId est posé.
     if (offered == null) {
       return RoleScreenFrame(
-        title: 'La Servante Dévouée',
+        title: loc.servanteDevoueeTitle,
         accent: RoleId.servanteDevouee.info.accent,
         child: Center(
           child: SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () => gp.setServanteDevoueeChoice(false),
-              child: const Text('Continuer'),
+              child: Text(loc.continueButtonLabel),
             ),
           ),
         ),
@@ -4270,14 +4501,13 @@ class _ServanteDevoueeContent extends StatelessWidget {
     final info = offered.role.info;
 
     return RoleScreenFrame(
-      title: 'La Servante Dévouée',
+      title: loc.servanteDevoueeTitle,
       accent: RoleId.servanteDevouee.info.accent,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           RoleInstructionCard(
-            text:
-                '${offered.name} vient d\'être éliminé(e). Veux-tu prendre son rôle ?',
+            text: loc.servanteDevoueeInstruction(offered.name),
             accent: RoleId.servanteDevouee.info.accent,
           ),
           const SizedBox(height: 20),
@@ -4300,7 +4530,7 @@ class _ServanteDevoueeContent extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () => gp.setServanteDevoueeChoice(true),
-              child: const Text('Oui, prendre ce rôle'),
+              child: Text(loc.servanteDevoueeTakeRoleButton),
             ),
           ),
           const SizedBox(height: 12),
@@ -4308,7 +4538,7 @@ class _ServanteDevoueeContent extends StatelessWidget {
             width: double.infinity,
             child: OutlinedButton(
               onPressed: () => gp.setServanteDevoueeChoice(false),
-              child: const Text('Non, rester Servante Dévouée'),
+              child: Text(loc.servanteDevoueeKeepRoleButton),
             ),
           ),
         ],
@@ -4333,6 +4563,7 @@ Widget servanteDevoueeScreenPreview() {
 ===== Fichier: screens\game\role_screens\sorciere_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
@@ -4345,10 +4576,10 @@ class SorciereScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
+    final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: "La Sorcière",
-      subtitle: 'C\'est le tour de la Sorcière. Réveille-toi.',
+      toName: RoleId.sorciere.info.name,
+      subtitle: loc.sorciereSubtitle,
       accent: RoleId.sorciere.info.accent,
       contentBuilder: (_) => const _SorciereContent(),
     );
@@ -4371,6 +4602,7 @@ class _SorciereContentState extends State<_SorciereContent> {
     final gp = context.read<GameProvider>();
     final state = gp.state!;
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
 
     final sorciereId = state.alivePlayersWithRole(RoleId.sorciere).first.id;
     final victim = state.tryById(state.finalNightVictimId);
@@ -4383,7 +4615,7 @@ class _SorciereContentState extends State<_SorciereContent> {
         state.alivePlayers.where((p) => p.id != sorciereId).toList();
 
     return RoleScreenFrame(
-      title: 'La Sorcière',
+      title: loc.sorciereTitle,
       accent: RoleId.sorciere.info.accent,
       child: SingleChildScrollView(
         child: Column(
@@ -4391,8 +4623,8 @@ class _SorciereContentState extends State<_SorciereContent> {
           children: [
             RoleInstructionCard(
               text: victim != null
-                  ? 'Cette nuit, les Loups-Garous ont désigné ${victim.name}.'
-                  : 'Cette nuit, les Loups-Garous n’ont désigné personne.',
+                  ? loc.sorciereInstructionWithVictim(victim.name)
+                  : loc.sorciereInstructionNoVictim,
               accent: RoleId.sorciere.info.accent,
             ),
             const SizedBox(height: 14),
@@ -4405,7 +4637,7 @@ class _SorciereContentState extends State<_SorciereContent> {
                       value: saveVictim,
                       onChanged: (v) => setState(() => saveVictim = v),
                       title: Text(
-                        'Utiliser la potion de vie pour sauver ${victim.name}',
+                        loc.sorciereUseLifePotion(victim.name),
                       ),
                     )
                   else
@@ -4413,10 +4645,10 @@ class _SorciereContentState extends State<_SorciereContent> {
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Text(
                         state.sorciereVieUsed
-                            ? 'Potion de vie déjà utilisée.'
+                            ? loc.sorciereLifePotionAlreadyUsed
                             : selfSaveBlocked
-                                ? 'Vous êtes vous-même la victime désignée, mais vous ne pouvez pas vous sauver vous-même.'
-                                : 'Aucune victime à sauver cette nuit.',
+                                ? loc.sorciereSelfSaveBlocked
+                                : loc.sorciereNoVictimToSave,
                         style: theme.textTheme.bodyMedium,
                         textAlign: TextAlign.center,
                       ),
@@ -4429,12 +4661,12 @@ class _SorciereContentState extends State<_SorciereContent> {
                         poisoning = v;
                         if (!v) poisonTargetId = null;
                       }),
-                      title: const Text('Utiliser la potion de mort'),
+                      title: Text(loc.sorciereUseDeathPotion),
                     ),
                     if (poisoning) ...[
                       const SizedBox(height: 8),
                       Text(
-                        'Choisissez la victime de la potion :',
+                        loc.sorciereChooseDeathPotionTarget,
                         style: theme.textTheme.bodyMedium,
                         textAlign: TextAlign.center,
                       ),
@@ -4449,7 +4681,7 @@ class _SorciereContentState extends State<_SorciereContent> {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Text(
-                        'Potion de mort déjà utilisée.',
+                        loc.sorciereDeathPotionAlreadyUsed,
                         style: theme.textTheme.bodyMedium,
                         textAlign: TextAlign.center,
                       ),
@@ -4463,7 +4695,7 @@ class _SorciereContentState extends State<_SorciereContent> {
                 useVie: saveVictim,
                 poisonTargetId: poisoning ? poisonTargetId : null,
               ),
-              child: const Text('Confirmer et se rendormir'),
+              child: Text(loc.confirmAndGoBackToSleepButton),
             ),
           ],
         ),
@@ -4488,6 +4720,7 @@ Widget sorciereScreenPreview() {
 ===== Fichier: screens\game\role_screens\voleur_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
@@ -4501,10 +4734,10 @@ class VoleurScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
+    final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: "La Voleuse",
-      subtitle: 'C\'est le rôle du Voleur. Réveille-toi.',
+      toName: RoleId.voleur.info.name,
+      subtitle: loc.voleurSubtitle,
       accent: RoleId.voleur.info.accent,
       contentBuilder: (_) => const _VoleurContent(),
     );
@@ -4527,9 +4760,10 @@ class _VoleurContentState extends State<_VoleurContent> {
     final cards = state.voleurTableCards;
     final forced =
         cards.isNotEmpty && cards.every((c) => c == RoleId.loupGarou);
+    final loc = AppLocalizations.of(context)!;
 
     return RoleScreenFrame(
-      title: 'Le Voleur',
+      title: loc.voleurTitle,
       accent: RoleId.voleur.info.accent,
       child: Column(
         children: [
@@ -4539,11 +4773,11 @@ class _VoleurContentState extends State<_VoleurContent> {
           ),
           if (forced) ...[
             const SizedBox(height: 10),
-            const RoleSectionCard(
+            RoleSectionCard(
               child: Text(
-                'Les deux cartes sont des Loups-Garous : tu es obligé d’en prendre une !',
+                loc.voleurBothWolvesWarning,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.blood),
+                style: const TextStyle(color: AppColors.blood),
               ),
             ),
           ],
@@ -4569,7 +4803,7 @@ class _VoleurContentState extends State<_VoleurContent> {
             child: ElevatedButton(
               onPressed:
                   selected == null ? null : () => gp.resolveVoleur(selected),
-              child: const Text('Échanger mon rôle contre celle-ci'),
+              child: Text(loc.voleurExchangeRoleButton),
             ),
           ),
           const SizedBox(height: 12),
@@ -4577,7 +4811,7 @@ class _VoleurContentState extends State<_VoleurContent> {
             width: double.infinity,
             child: OutlinedButton(
               onPressed: forced ? null : () => gp.resolveVoleur(null),
-              child: const Text('Garder mon rôle actuel'),
+              child: Text(loc.voleurKeepCurrentRoleButton),
             ),
           ),
         ],
@@ -4634,6 +4868,7 @@ Widget voleurScreenPreview() {
 ===== Fichier: screens\game\role_screens\voyante_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
@@ -4647,10 +4882,10 @@ class VoyanteScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
+    final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: "La Voyante",
-      subtitle: 'C\'est le tour de la Voyante. Réveille-toi.',
+      toName: RoleId.voyante.info.name,
+      subtitle: loc.voyanteSubtitle,
       accent: RoleId.voyante.info.accent,
       contentBuilder: (_) => const _VoyanteContent(),
     );
@@ -4671,17 +4906,18 @@ class _VoyanteContentState extends State<_VoyanteContent> {
     final gp = context.read<GameProvider>();
     final state = gp.state!;
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
 
     if (targetId != null) {
       final target = state.byId(targetId!);
       final info = target.role.info;
       return RoleScreenFrame(
-        title: 'La Voyante',
+        title: loc.voyanteTitle,
         accent: RoleId.voyante.info.accent,
         child: Column(
           children: [
             RoleInstructionCard(
-              text: 'Tu as observé ${target.name}. Son rôle est révélé.',
+              text: loc.voyanteObservedTargetInstruction(target.name),
               accent: RoleId.voyante.info.accent,
             ),
             const SizedBox(height: 20),
@@ -4710,7 +4946,7 @@ class _VoyanteContentState extends State<_VoyanteContent> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: gp.confirmVoyanteDone,
-                child: const Text("J'ai vu, continuer"),
+                child: Text(loc.voyanteDoneButton),
               ),
             ),
           ],
@@ -4719,13 +4955,13 @@ class _VoyanteContentState extends State<_VoyanteContent> {
     }
 
     return RoleScreenFrame(
-      title: 'La Voyante',
+      title: loc.voyanteTitle,
       accent: RoleId.voyante.info.accent,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           RoleInstructionCard(
-            text: 'Choisis un joueur pour découvrir son rôle.',
+            text: loc.voyanteChooseTargetInstruction,
             accent: RoleId.voyante.info.accent,
           ),
           const SizedBox(height: 14),
@@ -4761,6 +4997,7 @@ Widget voyanteScreenPreview() {
 ===== Fichier: screens\home\home_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../models/role.dart';
 import '../../providers/game_provider.dart';
@@ -4777,6 +5014,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final gameProvider = context.watch<GameProvider>();
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: SafeArea(
@@ -4787,12 +5025,12 @@ class HomeScreen extends StatelessWidget {
               const Spacer(flex: 2),
               const Icon(Icons.nightlight_round, size: 84, color: AppColors.lantern),
               const SizedBox(height: 20),
-              Text('Thiercelieux',
+              Text(loc.appTitle,
                   style: theme.textTheme.displayLarge,
                   textAlign: TextAlign.center),
               const SizedBox(height: 8),
               Text(
-                'Les Loups-Garous — partie en local',
+                loc.homeSubtitle,
                 style: theme.textTheme.bodyLarge?.copyWith(
                     color: AppColors.moonlight.withValues(alpha: 0.7)),
                 textAlign: TextAlign.center,
@@ -4806,7 +5044,7 @@ class HomeScreen extends StatelessWidget {
                       MaterialPageRoute(builder: (_) => const GameFlowScreen()),
                     ),
                     icon: const Icon(Icons.play_arrow),
-                    label: const Text('Reprendre la partie'),
+                    label: Text(loc.resumeGameButton),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -4816,10 +5054,9 @@ class HomeScreen extends StatelessWidget {
                     onPressed: () async {
                       final ok = await confirmAction(
                         context,
-                        title: 'Abandonner la partie ?',
-                        message:
-                            'La partie en cours sera perdue et non comptabilisée dans les statistiques.',
-                        confirmLabel: 'Abandonner',
+                        title: loc.abandonGameDialogTitle,
+                        message: loc.abandonGameDialogMessage,
+                        confirmLabel: loc.abandonGameConfirmLabel,
                         destructive: true,
                       );
                       if (ok) {
@@ -4833,7 +5070,7 @@ class HomeScreen extends StatelessWidget {
                       }
                     },
                     icon: const Icon(Icons.refresh),
-                    label: const Text('Nouvelle partie'),
+                    label: Text(loc.newGameButton),
                   ),
                 ),
               ] else
@@ -4844,7 +5081,7 @@ class HomeScreen extends StatelessWidget {
                       MaterialPageRoute(builder: (_) => const GameFlowScreen()),
                     ),
                     icon: const Icon(Icons.play_arrow),
-                    label: const Text('Nouvelle partie'),
+                    label: Text(loc.newGameButton),
                   ),
                 ),
               const SizedBox(height: 12),
@@ -4854,7 +5091,7 @@ class HomeScreen extends StatelessWidget {
                   onPressed: () => Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const StatsScreen())),
                   icon: const Icon(Icons.bar_chart),
-                  label: const Text('Statistiques'),
+                  label: Text(loc.statsButton),
                 ),
               ),
               const SizedBox(height: 12),
@@ -4864,14 +5101,14 @@ class HomeScreen extends StatelessWidget {
                   onPressed: () => Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const GameSettingsScreen())),
                   icon: const Icon(Icons.settings_outlined),
-                  label: const Text('Options de jeu'),
+                  label: Text(loc.gameSettingsButton),
                 ),
               ),
               const SizedBox(height: 12),
               TextButton.icon(
                 onPressed: () => _showRulesSheet(context),
                 icon: const Icon(Icons.menu_book, size: 18),
-                label: const Text('Règles du jeu'),
+                label: Text(loc.gameRulesButton),
               ),
               const Spacer(),
             ],
@@ -4882,6 +5119,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   void _showRulesSheet(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -4898,7 +5136,7 @@ class HomeScreen extends StatelessWidget {
           controller: scrollController,
           padding: const EdgeInsets.all(24),
           children: [
-            Text('Les rôles', style: Theme.of(ctx).textTheme.headlineMedium),
+            Text(loc.gameRulesRolesTitle, style: Theme.of(ctx).textTheme.headlineMedium),
             const SizedBox(height: 16),
             for (final role in RoleId.values) ...[
               Text(role.info.name,
@@ -4921,6 +5159,7 @@ class HomeScreen extends StatelessWidget {
 ===== Fichier: screens\settings\game_settings_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../models/game_settings.dart' show kGameSettingDefinitions;
 import '../../providers/settings_provider.dart' show SettingsProvider;
@@ -4935,9 +5174,10 @@ class GameSettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final sp = context.watch<SettingsProvider>();
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Options de jeu')),
+      appBar: AppBar(title: Text(loc.gameSettingsTitle)),
       body: SafeArea(
         child: !sp.loaded
             ? const Center(child: CircularProgressIndicator())
@@ -4970,6 +5210,7 @@ class GameSettingsScreen extends StatelessWidget {
 ===== Fichier: screens\setup\player_count_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
@@ -4995,21 +5236,22 @@ class _PlayerCountScreenState extends State<PlayerCountScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final gp = context.read<GameProvider>();
+    final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Nouvelle partie')),
+      appBar: AppBar(title: Text(loc.newGameTitle)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             children: [
               const Spacer(),
-              Text('Combien de joueurs ?',
+              Text(loc.playerCountHowMany,
                   style: theme.textTheme.headlineMedium,
                   textAlign: TextAlign.center),
               const SizedBox(height: 8),
               Text(
-                'De 5 à 24 joueurs autour de la table.',
+                loc.playerCountRangeDescription,
                 style: theme.textTheme.bodyMedium?.copyWith(
                     color: AppColors.moonlight.withValues(alpha: 0.7)),
               ),
@@ -5044,7 +5286,7 @@ class _PlayerCountScreenState extends State<PlayerCountScreen> {
                     gp.setDraftPlayerCount(_count);
                     gp.goToRoleSelection();
                   },
-                  child: const Text('Continuer'),
+                  child: Text(loc.continueButtonLabel),
                 ),
               ),
             ],
@@ -5058,10 +5300,13 @@ class _PlayerCountScreenState extends State<PlayerCountScreen> {
 ===== Fichier: screens\setup\player_names_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../theme/app_theme.dart';
+
+enum _NameError { empty, duplicate }
 
 class PlayerNamesScreen extends StatefulWidget {
   const PlayerNamesScreen({super.key});
@@ -5074,7 +5319,7 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
   late List<TextEditingController> _controllers;
   late List<FocusNode> _focusNodes;
 
-  String? _error;
+  _NameError? _error;
 
   @override
   void initState() {
@@ -5105,13 +5350,12 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
     final names = _controllers.map((c) => c.text.trim()).toList();
 
     if (names.any((n) => n.isEmpty)) {
-      setState(() => _error = 'Chaque joueur doit avoir un prénom.');
+      setState(() => _error = _NameError.empty);
       return;
     }
     final unique = names.map((n) => n.toLowerCase()).toSet();
     if (unique.length != names.length) {
-      setState(
-              () => _error = 'Deux joueurs ne peuvent pas avoir le même prénom.');
+      setState(() => _error = _NameError.duplicate);
       return;
     }
 
@@ -5125,15 +5369,17 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Les joueurs')),
+      appBar: AppBar(title: Text(loc.playerNamesTitle)),
       body: SafeArea(
         child: Column(
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 8, 24, 12),
               child: Text(
-                'Entrez le prénom de chaque joueur, dans l\'ordre où vous voulez leur faire découvrir leur rôle.',
+                loc.playerNamesInstruction,
                 style: theme.textTheme.bodyMedium?.copyWith(
                     color: AppColors.moonlight.withValues(alpha: 0.75)),
               ),
@@ -5158,7 +5404,7 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
                     }
                   },
                   decoration: InputDecoration(
-                    labelText: 'Joueur ${index + 1}',
+                    labelText: loc.playerNamesPlayerLabel(index + 1),
                     prefixIcon: const Icon(Icons.person_outline),
                     filled: true,
                     fillColor: AppColors.nightAlt,
@@ -5173,7 +5419,13 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                child: Text(_error!, style: const TextStyle(color: AppColors.blood)),
+                child: Text(
+                  switch (_error!) {
+                    _NameError.empty => loc.playerNamesErrorEmpty,
+                    _NameError.duplicate => loc.playerNamesErrorDuplicate,
+                  },
+                  style: const TextStyle(color: AppColors.blood),
+                ),
               ),
             Padding(
               padding: const EdgeInsets.all(20),
@@ -5181,7 +5433,7 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _submit,
-                  child: const Text('Distribuer les rôles'),
+                  child: Text(loc.dealRolesButton),
                 ),
               ),
             ),
@@ -5195,6 +5447,7 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
 ===== Fichier: screens\setup\role_reveal_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
@@ -5210,12 +5463,12 @@ class RoleRevealScreen extends StatelessWidget {
     final gp = context.watch<GameProvider>();
     final state = gp.state!;
     final player = state.players[gp.revealIndex];
+    final loc = AppLocalizations.of(context)!;
 
     return PassDeviceGate(
       key: ValueKey('reveal-${player.id}'),
       toName: player.name,
-      subtitle:
-          'Ton rôle va s\'afficher. Assure-toi que personne d\'autre ne regarde l\'écran.',
+      subtitle: loc.roleRevealSubtitle,
       contentBuilder: (_) => _RevealContent(
         playerIndex: gp.revealIndex,
         totalPlayers: state.players.length,
@@ -5235,6 +5488,7 @@ class _RevealContent extends StatelessWidget {
     final player = gp.state!.players[playerIndex];
     final theme = Theme.of(context);
     final info = player.role.info;
+    final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: SafeArea(
@@ -5247,7 +5501,7 @@ class _RevealContent extends StatelessWidget {
                 backgroundColor: AppColors.nightAlt,
               ),
               const SizedBox(height: 8),
-              Text('Joueur ${playerIndex + 1} / $totalPlayers',
+              Text(loc.roleRevealPlayerProgress(playerIndex + 1, totalPlayers),
                   style: theme.textTheme.bodyMedium),
               const Spacer(),
               if (!gp.revealCardVisible) ...[
@@ -5257,13 +5511,13 @@ class _RevealContent extends StatelessWidget {
                 const SizedBox(height: 24),
                 const Icon(Icons.touch_app, size: 56, color: AppColors.lantern),
                 const SizedBox(height: 16),
-                Text('Appuie pour découvrir ton rôle',
+                Text(loc.roleRevealTapToDiscover,
                     style: theme.textTheme.bodyLarge,
                     textAlign: TextAlign.center),
                 const SizedBox(height: 32),
                 ElevatedButton(
                     onPressed: gp.showRevealCard,
-                    child: const Text('Révéler mon rôle')),
+                    child: Text(loc.roleRevealRevealButton)),
               ] else ...[
                 RoleImage(role: player.role, size: 140),
                 const SizedBox(height: 20),
@@ -5281,8 +5535,8 @@ class _RevealContent extends StatelessWidget {
                   ),
                   child: Text(
                     info.camp.name == 'loups'
-                        ? 'Camp des Loups-Garous'
-                        : 'Camp des Villageois',
+                        ? loc.campWolves
+                        : loc.campVillagers,
                     style: theme.textTheme.labelLarge
                         ?.copyWith(color: info.accent),
                   ),
@@ -5299,7 +5553,7 @@ class _RevealContent extends StatelessWidget {
                   child: ElevatedButton.icon(
                     onPressed: gp.confirmRevealSeen,
                     icon: const Icon(Icons.visibility_off),
-                    label: const Text("J'ai vu, masquer mon rôle"),
+                    label: Text(loc.roleRevealHideButton),
                   ),
                 ),
             ],
@@ -5313,6 +5567,7 @@ class _RevealContent extends StatelessWidget {
 ===== Fichier: screens\setup\role_selection_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../models/role.dart';
 import '../../providers/game_provider.dart';
@@ -5337,6 +5592,7 @@ class RoleSelectionScreen extends StatelessWidget {
     final gp = context.watch<GameProvider>();
     final theme = Theme.of(context);
     final config = gp.draftConfig!;
+    final loc = AppLocalizations.of(context)!;
 
     final adjustableOrder = [
       // Camp des Loups
@@ -5370,11 +5626,11 @@ class RoleSelectionScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Répartition des rôles'),
+        title: Text(loc.roleSelectionTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined),
-            tooltip: 'Options de jeu',
+            tooltip: loc.gameSettingsTooltip,
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const GameSettingsScreen()),
             ),
@@ -5389,16 +5645,16 @@ class RoleSelectionScreen extends StatelessWidget {
               child: Column(
                 children: [
                   Text(
-                    '${config.playerCount} joueurs'
-                        '${config.hasVoleur ? ' · +2 cartes pour le Voleur' : ''}',
+                    '${loc.roleSelectionPlayerCount(config.playerCount)}'
+                        '${config.hasVoleur ? loc.roleSelectionVoleurExtraCards : ''}',
                     style: theme.textTheme.bodyMedium?.copyWith(
                         color: AppColors.moonlight.withValues(alpha: 0.7)),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     remaining < 0
-                        ? '${remaining.abs()} rôle(s) en trop'
-                        : '$remaining Simple(s) Villageois automatique(s)',
+                        ? loc.roleSelectionTooManyRoles(remaining.abs())
+                        : loc.roleSelectionAutoVillagers(remaining),
                     style: theme.textTheme.titleLarge?.copyWith(
                       color: remaining < 0 ? AppColors.blood : AppColors.forest,
                     ),
@@ -5479,7 +5735,7 @@ class RoleSelectionScreen extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: gp.draftConfigValid ? () => gp.goToNames() : null,
-                  child: const Text('Continuer'),
+                  child: Text(loc.continueButtonLabel),
                 ),
               ),
             ),
@@ -5493,6 +5749,7 @@ class RoleSelectionScreen extends StatelessWidget {
 ===== Fichier: screens\stats\stats_screen.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../models/player_stats.dart';
 import '../../providers/stats_provider.dart';
@@ -5509,22 +5766,22 @@ class StatsScreen extends StatelessWidget {
     final statsProvider = context.watch<StatsProvider>();
     final theme = Theme.of(context);
     final stats = statsProvider.stats;
+    final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Statistiques'),
+        title: Text(loc.statsTitle),
         actions: [
           if (stats.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.delete_outline),
-              tooltip: 'Réinitialiser les statistiques',
+              tooltip: loc.statsResetTooltip,
               onPressed: () async {
                 final ok = await confirmAction(
                   context,
-                  title: 'Réinitialiser les statistiques ?',
-                  message:
-                      'Tout l\'historique des parties sera définitivement supprimé.',
-                  confirmLabel: 'Réinitialiser',
+                  title: loc.statsResetDialogTitle,
+                  message: loc.statsResetDialogMessage,
+                  confirmLabel: loc.statsResetConfirmLabel,
                   destructive: true,
                 );
                 if (ok && context.mounted) {
@@ -5542,8 +5799,7 @@ class StatsScreen extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(24),
                       child: Text(
-                        'Aucune partie enregistrée pour l\'instant.\n'
-                        'Jouez une partie complète pour voir apparaître vos statistiques ici.',
+                        loc.statsEmptyMessage,
                         style: theme.textTheme.bodyLarge,
                         textAlign: TextAlign.center,
                       ),
@@ -5569,6 +5825,7 @@ class _PlayerStatsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final favorite = stats.favoriteRole;
+    final loc = AppLocalizations.of(context)!;
 
     return Card(
       child: Padding(
@@ -5587,9 +5844,8 @@ class _PlayerStatsCard extends StatelessWidget {
                   Text(stats.name, style: theme.textTheme.titleLarge),
                   const SizedBox(height: 2),
                   Text(
-                    '${stats.gamesPlayed} partie(s) · '
-                    '${(stats.winRate * 100).round()}% de victoires'
-                    '${favorite != null ? ' · ${favorite.info.nameShort} favori' : ''}',
+                    '${loc.statsCardSummary(stats.gamesPlayed, (stats.winRate * 100).round())}'
+                    '${favorite != null ? loc.statsFavoriteSuffix(favorite.info.nameShort) : ''}',
                     style: theme.textTheme.bodyMedium?.copyWith(
                         color: AppColors.moonlight.withValues(alpha: 0.7)),
                   ),
@@ -5599,10 +5855,10 @@ class _PlayerStatsCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text('${stats.wins} V',
+                Text(loc.statsWinsAbbr(stats.wins),
                     style: theme.textTheme.bodyLarge
                         ?.copyWith(color: AppColors.forest)),
-                Text('${stats.losses} D',
+                Text(loc.statsLossesAbbr(stats.losses),
                     style: theme.textTheme.bodyMedium
                         ?.copyWith(color: AppColors.blood)),
               ],
@@ -5619,6 +5875,7 @@ class _PlayerStatsCard extends StatelessWidget {
 import 'dart:math';
 import 'package:uuid/uuid.dart';
 import '../models/game_config.dart';
+import '../models/game_progress.dart';
 import '../models/game_settings.dart';
 import '../models/game_state.dart';
 import '../models/player.dart';
@@ -5689,23 +5946,135 @@ class GameEngine {
     s.currentWave = 'night';
     _resetNightTempData(s);
     s.salvateurLastProtectedId = null;
+    _startRound(s, 'night', 1);
     s.phaseQueue = buildNightQueue(s);
+    _seedRoundSteps(s, s.phaseQueue);
     s.phaseIndex = 0;
-    s.phase = s.phaseQueue[0];
+    _goToPhase(s, s.phaseQueue[0]);
+  }
+
+  // ---------------------------------------------------------------------
+  // Résumé "live" de la partie (nuits/jours + étapes) — voir game_progress.dart
+  // ---------------------------------------------------------------------
+
+  /// Phases purement transitoires, qui ne représentent aucune information
+  /// utile pour le résumé (déjà représentées par le titre "Nuit X" / "Jour X",
+  /// ou juste un écran neutre "tu peux te rendormir").
+  static const _untrackedPhases = {
+    GamePhase.nightIntro,
+    GamePhase.nightGoBackToSleep,
+  };
+
+  void _startRound(GameState s, String wave, int number) {
+    // Referme l'étape "current" laissée en suspens par le round précédent
+    // (le dernier rôle de la nuit, le résultat du vote, ...) avant d'en
+    // commencer un nouveau.
+    if (s.rounds.isNotEmpty) {
+      for (final step in s.rounds.last.steps) {
+        if (step.status == StepStatus.current) step.status = StepStatus.done;
+      }
+    }
+    s.rounds.add(RoundRecord(wave: wave, number: number));
+  }
+
+  /// Pré-remplit le round en cours avec toutes les étapes "à venir" de
+  /// [phases] (celle d'une nuit via buildNightQueue, ou d'un jour via
+  /// buildDayQueue) — déjà filtrées selon la présence/vivacité des rôles
+  /// au moment où le round démarre. Permet d'afficher un résumé "avec les
+  /// étapes à venir" plutôt qu'un simple journal du passé.
+  void _seedRoundSteps(GameState s, List<GamePhase> phases) {
+    if (s.rounds.isEmpty) return;
+    final round = s.rounds.last;
+    for (final phase in phases) {
+      if (_untrackedPhases.contains(phase)) continue;
+      round.steps.add(StepRecord(phase, StepStatus.pending));
+    }
+  }
+
+  /// Change la phase courante ET journalise l'étape dans le round en cours.
+  /// - Si [phase] existe déjà comme étape "à venir" (pré-remplie), elle
+  ///   passe simplement à "current" à sa place.
+  /// - Sinon (suite dynamique déclenchée par une mort : riposte du
+  ///   Chasseur, succession du maire, ...), elle est insérée juste après
+  ///   l'étape qui vient de se terminer, pas à la fin de la liste.
+  /// - endGame referme le round : les étapes encore "pending" ne se
+  ///   produiront jamais, elles sont retirées plutôt que laissées en
+  ///   attente indéfiniment.
+  void _goToPhase(GameState s, GamePhase phase) {
+    s.phase = phase;
+    if (_untrackedPhases.contains(phase) || s.rounds.isEmpty) return;
+    final round = s.rounds.last;
+
+    var insertAt = round.steps.length;
+    for (var i = 0; i < round.steps.length; i++) {
+      if (round.steps[i].status == StepStatus.current) {
+        round.steps[i].status = StepStatus.done;
+        insertAt = i + 1;
+        break;
+      }
+    }
+
+    if (phase == GamePhase.endGame) {
+      round.steps.removeWhere((st) => st.status == StepStatus.pending);
+      round.steps.add(StepRecord(phase, StepStatus.done));
+      return;
+    }
+
+    final existingIndex = round.steps.indexWhere(
+        (st) => st.phase == phase && st.status == StepStatus.pending);
+    if (existingIndex != -1) {
+      round.steps[existingIndex].status = StepStatus.current;
+      return;
+    }
+
+    round.steps.insert(insertAt, StepRecord(phase, StepStatus.current));
+  }
+
+  /// Journalise une étape de la file de nuit que [advance] saute sans
+  /// jamais l'afficher (voir _shouldSkipPhase) — typiquement la Sorcière
+  /// quand l'option correspondante l'empêche de jouer. L'étape était déjà
+  /// pré-remplie en "pending" : on la fait passer directement à "skipped".
+  void _logSkippedPhase(GameState s, GamePhase phase) {
+    if (_untrackedPhases.contains(phase) || s.rounds.isEmpty) return;
+    final round = s.rounds.last;
+    final idx = round.steps.indexWhere(
+        (st) => st.phase == phase && st.status == StepStatus.pending);
+    if (idx != -1) {
+      round.steps[idx].status = StepStatus.skipped;
+    } else {
+      round.steps.add(StepRecord(phase, StepStatus.skipped));
+    }
   }
 
   // ---------------------------------------------------------------------
   // Construction de la file de nuit
   // ---------------------------------------------------------------------
 
+  /// Construit la file des phases d'une nuit. Après chaque bloc "un rôle
+  /// (ou un petit groupe de rôles liés) se réveille et agit", on insère
+  /// une transition [GamePhase.nightGoBackToSleep] : un écran neutre,
+  /// sans nom ni rôle, qui donne un point de fermeture clair avant que le
+  /// téléphone ne parte vers le rôle suivant (lequel reste de toute façon
+  /// protégé par son propre PassDeviceGate). Elle n'est PAS ajoutée après
+  /// nightIntro (qui est déjà l'écran d'ouverture de la nuit) ni après le
+  /// tout dernier bloc si la nuit ne comporte aucun rôle actif.
   List<GamePhase> buildNightQueue(GameState s) {
     final q = <GamePhase>[GamePhase.nightIntro];
 
+    void addSleep() => q.add(GamePhase.nightGoBackToSleep);
+
     if (s.night == 1) {
-      if (s.hasAliveRole(RoleId.voleur)) q.add(GamePhase.nightVoleur);
-      if (s.hasAliveRole(RoleId.cupidon)) q.add(GamePhase.nightCupidon);
+      if (s.hasAliveRole(RoleId.voleur)) {
+        q.add(GamePhase.nightVoleur);
+        addSleep();
+      }
+      if (s.hasAliveRole(RoleId.cupidon)) {
+        q.add(GamePhase.nightCupidon);
+        addSleep();
+      }
       if (s.hasAliveRole(RoleId.enfantSauvage)) {
         q.add(GamePhase.nightEnfantSauvage);
+        addSleep();
       }
     } else if (s.hasAliveRole(RoleId.enfantSauvage)) {
       // Les nuits suivantes, l'Enfant Sauvage se réveille brièvement pour
@@ -5714,13 +6083,16 @@ class GameEngine {
       // son rôle ne serait plus enfantSauvage — donc hasAliveRole serait
       // déjà faux et cette phase ne serait pas ajoutée.
       q.add(GamePhase.nightEnfantSauvageCheck);
+      addSleep();
     }
 
     if (s.hasAliveRole(RoleId.salvateur) && !_isAsleep(s, RoleId.salvateur)) {
       q.add(GamePhase.nightSalvateur);
+      addSleep();
     }
     if (s.hasAliveRole(RoleId.voyante) && !_isAsleep(s, RoleId.voyante)) {
       q.add(GamePhase.nightVoyante);
+      addSleep();
     }
 
     if (s.aliveWolves.isNotEmpty) {
@@ -5738,12 +6110,21 @@ class GameEngine {
           !s.infectPereDesLoupsUsed) {
         q.add(GamePhase.nightInfectPereDesLoups);
       }
+      // Un seul "tu peux te rendormir" pour tout le bloc des loups (et
+      // des rôles qui se réveillent juste après eux) : ces sous-phases
+      // s'enchaînent sans qu'on remette tout le monde à dormir entre
+      // chacune.
+      addSleep();
     }
 
     if (s.hasAliveRole(RoleId.renard) && !s.renardPowerLost) {
       q.add(GamePhase.nightRenard);
+      addSleep();
     }
-    if (s.hasAliveRole(RoleId.corbeau)) q.add(GamePhase.nightCorbeau);
+    if (s.hasAliveRole(RoleId.corbeau)) {
+      q.add(GamePhase.nightCorbeau);
+      addSleep();
+    }
 
     final sorciereEncorePuissante = !s.sorciereVieUsed || !s.sorciereMortUsed;
     if (s.hasAliveRole(RoleId.sorciere) &&
@@ -5751,8 +6132,34 @@ class GameEngine {
         s.aliveWolves.isNotEmpty &&
         !_isAsleep(s, RoleId.sorciere)) {
       q.add(GamePhase.nightSorciere);
+      addSleep();
     }
 
+    return q;
+  }
+
+  /// Construit la file "à venir" d'un jour, dès qu'il commence : le
+  /// réveil, éventuellement l'élection du maire (si aucun maire n'est
+  /// encore en poste), le débat, éventuellement le Juge Bègue (s'il est
+  /// vivant et n'a pas encore utilisé son pouvoir), puis le vote.
+  /// Les suites déclenchées par une mort (riposte du Chasseur, succession
+  /// du maire, ...) n'en font PAS partie : elles dépendent de qui meurt et
+  /// sont insérées dynamiquement par [_goToPhase] au moment où elles
+  /// surviennent réellement.
+  List<GamePhase> buildDayQueue(GameState s) {
+    final q = <GamePhase>[GamePhase.dayReveal];
+    if (s.mayorId == null) {
+      q.addAll([
+        GamePhase.mayorElectionExplain,
+        GamePhase.mayorElection,
+        GamePhase.mayorReveal,
+      ]);
+    }
+    q.add(GamePhase.debate);
+    if (s.hasAliveRole(RoleId.jugeBegue) && !s.jugeBegueUsed) {
+      q.add(GamePhase.jugeBegueDecision);
+    }
+    q.add(GamePhase.villageVote);
     return q;
   }
 
@@ -5794,10 +6201,11 @@ class GameEngine {
     s.phaseIndex++;
     while (s.phaseIndex < s.phaseQueue.length &&
         _shouldSkipPhase(s, s.phaseQueue[s.phaseIndex])) {
+      _logSkippedPhase(s, s.phaseQueue[s.phaseIndex]);
       s.phaseIndex++;
     }
     if (s.phaseIndex < s.phaseQueue.length) {
-      s.phase = s.phaseQueue[s.phaseIndex];
+      _goToPhase(s, s.phaseQueue[s.phaseIndex]);
       return;
     }
     if (s.currentWave == 'night') {
@@ -5805,14 +6213,25 @@ class GameEngine {
     }
   }
 
-  /// Avance simple dans la file du jour (mayorElectionExplain, debate,
-  /// jugeBegueDecision, ...) — contrairement à [advance], ne déclenche
-  /// jamais la fin de nuit.
+ /// Avance dans la file du jour à partir de l'index courant, en sautant
+  /// les étapes devenues invalides entre-temps (voir _shouldSkipDayPhase) —
+  /// contrairement à [advance], ne déclenche jamais la fin de nuit : le
+  /// vote du village (dernier de la file) est toujours résolu directement
+  /// par resolveVillageVote, pas via cette méthode.
+  void _advanceDay(GameState s) {
+    while (s.phaseIndex < s.phaseQueue.length &&
+        _shouldSkipDayPhase(s, s.phaseQueue[s.phaseIndex])) {
+      _logSkippedPhase(s, s.phaseQueue[s.phaseIndex]);
+      s.phaseIndex++;
+    }
+    if (s.phaseIndex < s.phaseQueue.length) {
+      _goToPhase(s, s.phaseQueue[s.phaseIndex]);
+    }
+  }
+
   void advance2(GameState s) {
     s.phaseIndex++;
-    if (s.phaseIndex < s.phaseQueue.length) {
-      s.phase = s.phaseQueue[s.phaseIndex];
-    }
+    _advanceDay(s);
   }
 
   bool _shouldSkipPhase(GameState s, GamePhase phase) {
@@ -5821,6 +6240,17 @@ class GameEngine {
         s.hasAliveRole(RoleId.sorciere)) {
       final sorciere = s.alivePlayersWithRole(RoleId.sorciere).first;
       return s.finalNightVictimId == sorciere.id;
+    }
+    return false;
+  }
+
+/// Comme [_shouldSkipPhase] mais pour la file du jour : une étape ajoutée
+  /// à buildDayQueue() peut devenir invalide entre-temps si un événement
+  /// (riposte du Chasseur, ...) change l'état avant qu'on l'atteigne — par
+  /// exemple le Juge Bègue meurt avant son tour.
+  bool _shouldSkipDayPhase(GameState s, GamePhase phase) {
+    if (phase == GamePhase.jugeBegueDecision) {
+      return !s.hasAliveRole(RoleId.jugeBegue) || s.jugeBegueUsed;
     }
     return false;
   }
@@ -5986,9 +6416,11 @@ class GameEngine {
 
     s.currentWave = 'day';
     s.day += 1;
-    s.phaseQueue = [GamePhase.dayReveal];
+    _startRound(s, 'day', s.day);
+    s.phaseQueue = buildDayQueue(s);
+    _seedRoundSteps(s, s.phaseQueue);
     s.phaseIndex = 0;
-    s.phase = GamePhase.dayReveal;
+    _goToPhase(s, GamePhase.dayReveal);
   }
 
   /// À appeler quand le groupe a fini de lire le récapitulatif des morts
@@ -6000,22 +6432,9 @@ class GameEngine {
 
   void _afterNightDeathsResolved(GameState s) {
     s.deathsThisWave = [];
-    final rest = <GamePhase>[GamePhase.dayReveal];
-    if (s.mayorId == null) {
-      rest.addAll([
-        GamePhase.mayorElectionExplain,
-        GamePhase.mayorElection,
-        GamePhase.mayorReveal,
-      ]);
-    }
-    rest.add(GamePhase.debate);
-    if (s.hasAliveRole(RoleId.jugeBegue) && !s.jugeBegueUsed) {
-      rest.add(GamePhase.jugeBegueDecision);
-    }
-    rest.add(GamePhase.villageVote);
-    s.phaseQueue = rest;
-    s.phaseIndex = 1; // index 0 (dayReveal) déjà affiché
-    s.phase = s.phaseQueue[1];
+    s.phaseIndex = 1; // index 0 (dayReveal) déjà affiché ; la file du jour
+    // a déjà été entièrement construite dans _finishNight.
+    _advanceDay(s);
   }
 
   // ---------------------------------------------------------------------
@@ -6035,35 +6454,35 @@ class GameEngine {
     final result = checkWinCondition(s);
     if (result != null) {
       s.result = result;
-      s.phase = GamePhase.endGame;
+      _goToPhase(s, GamePhase.endGame);
       return;
     }
     if (s.chasseurRevengeTargetId != null) {
-      s.phase = GamePhase.chasseurRevange;
+      _goToPhase(s, GamePhase.chasseurRevange);
       return;
     }
     if (s.mayorSuccessionNeededFor != null) {
-      s.phase = GamePhase.successionMaire;
+      _goToPhase(s, GamePhase.successionMaire);
       return;
     }
     if (s.enfantSauvageTransformedId != null) {
-      s.phase = GamePhase.enfantsauvageReveal;
+      _goToPhase(s, GamePhase.enfantsauvageReveal);
       return;
     }
     if (s.powerLossThisWave.isNotEmpty) {
-      s.phase = GamePhase.villagePowerLoss;
+      _goToPhase(s, GamePhase.villagePowerLoss);
       return;
     }
     if (s.servanteDevoueeOfferId != null) {
-      s.phase = GamePhase.servanteDevouee;
+      _goToPhase(s, GamePhase.servanteDevouee);
       return;
     }
     if (s.boucEmissaireChoiceNeededId != null) {
-      s.phase = GamePhase.boucEmissaire;
+      _goToPhase(s, GamePhase.boucEmissaire);
       return;
     }
     if (s.idiotDuVillageRevealId != null) {
-      s.phase = GamePhase.idiotduvillageCivicRightLoss;
+      _goToPhase(s, GamePhase.idiotduvillageCivicRightLoss);
       return;
     }
 
@@ -6175,7 +6594,7 @@ class GameEngine {
   void resolveVillageVote(GameState s, String eliminatedId) {
     _applyDeath(s, eliminatedId, DeathCause.vote);
     s.corbeauCursedId = null; // la malédiction ne vaut que pour ce vote
-    s.phase = GamePhase.voteResult;
+    _goToPhase(s, GamePhase.voteResult);
   }
 
   void confirmVoteResult(GameState s) {
@@ -6189,7 +6608,7 @@ class GameEngine {
       s.voteReplayPending = false;
       s.phaseQueue = [GamePhase.villageVote];
       s.phaseIndex = 0;
-      s.phase = GamePhase.villageVote;
+      _goToPhase(s, GamePhase.villageVote);
       return;
     }
     _startNextNight(s);
@@ -6199,10 +6618,12 @@ class GameEngine {
     s.night += 1;
     s.currentWave = 'night';
     _resetNightTempData(s);
+    _startRound(s, 'night', s.night);
     s.phaseQueue = buildNightQueue(s);
+    _seedRoundSteps(s, s.phaseQueue);
     s.skippedNextNightPlayerId = null;
     s.phaseIndex = 0;
-    s.phase = s.phaseQueue[0];
+    _goToPhase(s, s.phaseQueue[0]);
   }
 
   // ---------------------------------------------------------------------
@@ -6578,16 +6999,21 @@ class AppTheme {
 ===== Fichier: widgets\confirm.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 
 Future<bool> confirmAction(
   BuildContext context, {
   required String title,
   required String message,
-  String confirmLabel = 'Confirmer',
-  String cancelLabel = 'Annuler',
+  String? confirmLabel,
+  String? cancelLabel,
   bool destructive = false,
 }) async {
   final theme = Theme.of(context);
+  final loc = AppLocalizations.of(context);
+  final effectiveConfirm =
+      confirmLabel ?? loc?.confirmButtonLabel ?? 'Confirmer';
+  final effectiveCancel = cancelLabel ?? loc?.cancelButtonLabel ?? 'Annuler';
   final result = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
@@ -6596,13 +7022,13 @@ Future<bool> confirmAction(
       actions: [
         TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text(cancelLabel)),
+            child: Text(effectiveCancel)),
         FilledButton(
           onPressed: () => Navigator.pop(ctx, true),
           style: destructive
               ? FilledButton.styleFrom(backgroundColor: theme.colorScheme.error)
               : null,
-          child: Text(confirmLabel),
+          child: Text(effectiveConfirm),
         ),
       ],
     ),
@@ -6610,9 +7036,352 @@ Future<bool> confirmAction(
   return result ?? false;
 }
 
+===== Fichier: widgets\game_progress_sheet.dart =====
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../models/game_progress.dart';
+import '../models/game_state.dart';
+import '../providers/game_provider.dart';
+import '../theme/app_theme.dart';
+
+/// Bouton compact affiché en overlay au-dessus de l'écran de jeu (voir
+/// GameMainScreen) : résume en un coup d'œil où on en est ("Nuit 2",
+/// "Jour 1"...) et ouvre le résumé complet de la partie au tap.
+class GameProgressButton extends StatelessWidget {
+  const GameProgressButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final gp = context.watch<GameProvider>();
+    final state = gp.state;
+    if (state == null) return const SizedBox.shrink();
+
+    final theme = Theme.of(context);
+    final isNight = state.currentWave == 'night';
+    final label = isNight ? 'Nuit ${state.night}' : 'Jour ${state.day}';
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 6, right: 6),
+      child: Material(
+        color: AppColors.nightAlt.withValues(alpha: 0.88),
+        borderRadius: BorderRadius.circular(20),
+        elevation: 3,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () => showGameProgressSheet(context),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(isNight ? Icons.dark_mode : Icons.wb_sunny,
+                    size: 18, color: AppColors.lantern),
+                const SizedBox(width: 6),
+                Text(label,
+                    style: theme.textTheme.bodyMedium
+                        ?.copyWith(color: AppColors.moonlight)),
+                const SizedBox(width: 6),
+                const Icon(Icons.checklist_rtl,
+                    size: 16, color: AppColors.moonlight),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Ouvre le résumé complet de la partie dans une ModalBottomSheet.
+void showGameProgressSheet(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: AppColors.nightAlt,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (_) => const GameProgressSheet(),
+  );
+}
+
+class GameProgressSheet extends StatelessWidget {
+  const GameProgressSheet({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final gp = context.watch<GameProvider>();
+    final state = gp.state!;
+    final theme = Theme.of(context);
+    // Le plus récent (donc le round en cours) en premier.
+    final rounds = state.rounds.reversed.toList();
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.65,
+      minChildSize: 0.35,
+      maxChildSize: 0.92,
+      expand: false,
+      builder: (ctx, scrollController) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 6),
+            child: Row(
+              children: [
+                const Icon(Icons.checklist_rtl, color: AppColors.lantern),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text('Résumé de la partie',
+                      style: theme.textTheme.titleLarge),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 6, 20, 12),
+            child: Row(
+              children: [
+                _CounterChip(
+                    icon: Icons.dark_mode, label: 'Nuit', value: state.night),
+                const SizedBox(width: 10),
+                _CounterChip(
+                    icon: Icons.wb_sunny, label: 'Jour', value: state.day),
+              ],
+            ),
+          ),
+          const Divider(height: 1, color: AppColors.nightLine),
+          Expanded(
+            child: rounds.isEmpty
+                ? Center(
+                    child: Text('La partie commence...',
+                        style: theme.textTheme.bodyMedium),
+                  )
+                : ListView.builder(
+                    controller: scrollController,
+                    padding: const EdgeInsets.fromLTRB(12, 10, 12, 20),
+                    itemCount: rounds.length,
+                    itemBuilder: (ctx, i) =>
+                        _RoundTile(round: rounds[i], isLatest: i == 0),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CounterChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final int value;
+
+  const _CounterChip(
+      {required this.icon, required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.night.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.nightLine),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 18, color: AppColors.lantern),
+          const SizedBox(width: 8),
+          Text('$label $value', style: theme.textTheme.bodyMedium),
+        ],
+      ),
+    );
+  }
+}
+
+class _RoundTile extends StatelessWidget {
+  final RoundRecord round;
+  final bool isLatest;
+  const _RoundTile({required this.round, required this.isLatest});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isNight = round.wave == 'night';
+    final title = isNight ? 'Nuit ${round.number}' : 'Jour ${round.number}';
+
+    return Card(
+      key: ValueKey('${round.wave}-${round.number}'),
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      color: AppColors.night.withValues(alpha: 0.5),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: isLatest ? AppColors.lantern : AppColors.nightLine,
+          width: isLatest ? 1.4 : 1,
+        ),
+      ),
+      child: ExpansionTile(
+        initiallyExpanded: isLatest,
+        leading: Icon(isNight ? Icons.dark_mode : Icons.wb_sunny,
+            color: AppColors.lantern),
+        title: Text(title, style: theme.textTheme.titleMedium),
+        subtitle: isLatest
+            ? const Text('En cours', style: TextStyle(color: AppColors.lantern))
+            : null,
+        childrenPadding: const EdgeInsets.only(bottom: 8),
+        children: round.steps.isEmpty
+            ? [
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Text('En cours...', style: theme.textTheme.bodyMedium),
+                ),
+              ]
+            : [for (final step in round.steps) _StepTile(step: step)],
+      ),
+    );
+  }
+}
+
+class _StepTile extends StatelessWidget {
+  final StepRecord step;
+  const _StepTile({required this.step});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final dimmed = step.status == StepStatus.pending;
+    return ListTile(
+      dense: true,
+      leading: _StatusIcon(status: step.status),
+      title: Text(
+        gamePhaseLabel(step.phase),
+        style: theme.textTheme.bodyMedium?.copyWith(
+          color: dimmed ? AppColors.moonlight.withValues(alpha: 0.45) : null,
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusIcon extends StatelessWidget {
+  final StepStatus status;
+  const _StatusIcon({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 350),
+      transitionBuilder: (child, anim) => ScaleTransition(
+        scale: anim,
+        child: FadeTransition(opacity: anim, child: child),
+      ),
+      child: _iconFor(status),
+    );
+  }
+
+  Widget _iconFor(StepStatus status) {
+    switch (status) {
+      case StepStatus.pending:
+        return const Icon(Icons.radio_button_unchecked,
+            key: ValueKey('pending'), color: AppColors.nightLine, size: 22);
+      case StepStatus.done:
+        return const Icon(Icons.check_circle,
+            key: ValueKey('done'), color: AppColors.forest, size: 22);
+      case StepStatus.skipped:
+        return const Icon(Icons.cancel,
+            key: ValueKey('skipped'), color: AppColors.blood, size: 22);
+      case StepStatus.current:
+        return const SizedBox(
+          key: ValueKey('current'),
+          width: 22,
+          height: 22,
+          child: Padding(
+            padding: EdgeInsets.all(2),
+            child: CircularProgressIndicator(
+                strokeWidth: 2.4, color: AppColors.lantern),
+          ),
+        );
+    }
+  }
+}
+
+/// Libellé affiché pour chaque étape dans le résumé de la partie.
+String gamePhaseLabel(GamePhase phase) {
+  switch (phase) {
+    case GamePhase.nightVoleur:
+      return 'Le Voleur';
+    case GamePhase.nightCupidon:
+      return 'Cupidon';
+    case GamePhase.nightEnfantSauvage:
+      return "L'Enfant Sauvage — choix du modèle";
+    case GamePhase.nightSalvateur:
+      return 'Le Salvateur';
+    case GamePhase.nightVoyante:
+      return 'La Voyante';
+    case GamePhase.nightLoups:
+      return 'Les Loups-Garous';
+    case GamePhase.nightPetiteFille:
+      return 'La Petite Fille';
+    case GamePhase.nightLoupBlanc:
+      return 'Le Loup Blanc';
+    case GamePhase.nightGrandMechantLoup:
+      return 'Le Grand Méchant Loup';
+    case GamePhase.nightEnfantSauvageCheck:
+      return "L'Enfant Sauvage";
+    case GamePhase.nightInfectPereDesLoups:
+      return 'Infect Père des Loups';
+    case GamePhase.nightRenard:
+      return 'Le Renard';
+    case GamePhase.nightCorbeau:
+      return 'Le Corbeau';
+    case GamePhase.nightSorciere:
+      return 'La Sorcière';
+    case GamePhase.chasseurRevange:
+      return 'Riposte du Chasseur';
+    case GamePhase.successionMaire:
+      return 'Succession du Maire';
+    case GamePhase.enfantsauvageReveal:
+      return "Mutation de l'Enfant Sauvage";
+    case GamePhase.dayReveal:
+      return 'Réveil du village';
+    case GamePhase.mayorElectionExplain:
+      return 'Élection du maire';
+    case GamePhase.mayorElection:
+      return 'Vote pour le maire';
+    case GamePhase.mayorReveal:
+      return "Résultat de l'élection";
+    case GamePhase.debate:
+      return 'Débat';
+    case GamePhase.jugeBegueDecision:
+      return 'Le Juge Bègue';
+    case GamePhase.villageVote:
+      return 'Vote du village';
+    case GamePhase.voteResult:
+      return 'Résultat du vote';
+    case GamePhase.villagePowerLoss:
+      return 'Perte des pouvoirs';
+    case GamePhase.servanteDevouee:
+      return 'La Servante Dévouée';
+    case GamePhase.boucEmissaire:
+      return 'Le Bouc Émissaire';
+    case GamePhase.idiotduvillageCivicRightLoss:
+      return "L'Idiot du Village";
+    case GamePhase.endGame:
+      return 'Fin de la partie';
+    default:
+      return phase.name;
+  }
+}
+
 ===== Fichier: widgets\pass_device_gate.dart =====
 
 import 'package:flutter/material.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 
 /// Écran tampon affiché entre deux actions de joueurs différents :
@@ -6655,6 +7424,8 @@ class _PassDeviceGateState extends State<PassDeviceGate> {
     if (_confirmed) return widget.contentBuilder(context);
 
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -6664,7 +7435,7 @@ class _PassDeviceGateState extends State<PassDeviceGate> {
             children: [
               Icon(Icons.phonelink_ring, size: 72, color: widget.accent),
               const SizedBox(height: 28),
-              Text(widget.pluralToName ? 'Passe le téléphone aux' : 'Passe le téléphone à',
+              Text(widget.pluralToName ? loc.passDeviceToPlural : loc.passDeviceToSingular,
                   style: theme.textTheme.titleLarge,
                   textAlign: TextAlign.center),
               const SizedBox(height: 8),
@@ -6684,7 +7455,7 @@ class _PassDeviceGateState extends State<PassDeviceGate> {
               FilledButton.icon(
                 onPressed: () => setState(() => _confirmed = true),
                 icon: const Icon(Icons.check),
-                label: const Text("C'est moi, j'ai le téléphone"),
+                label: Text(loc.passDeviceConfirmButton),
                 style: FilledButton.styleFrom(
                   backgroundColor: widget.accent,
                   foregroundColor: Colors.black,

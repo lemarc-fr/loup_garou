@@ -25,13 +25,9 @@ class SettingsProvider extends ChangeNotifier {
     await _storage.saveSettings(settings);
   }
 
-  bool get allowWerewolfToKillThemselves =>
-      settings.allowWerewolfToKillThemselves;
-
+  bool get allowWerewolfToKillThemselves => settings.allowWerewolfToKillThemselves;
   bool get allowHunterToShootAfterWitchDeathCause => settings.allowHunterToShootAfterWitchDeathCause;
-
-  bool get allowWitchToPlayIfWerewolfDeathCause =>
-      settings.allowWitchToPlayIfWerewolfDeathCause;
-
+  bool get allowWitchToPlayIfWerewolfDeathCause => settings.allowWitchToPlayIfWerewolfDeathCause;
   bool get allowWitchToSaveHerself => settings.allowWitchToSaveHerself;
+  bool get enfantSauvagePublicReveal => settings.enfantSauvagePublicReveal;
 }
