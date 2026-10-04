@@ -145,12 +145,6 @@ class GameState {
   // --- Morts de la vague en cours (nuit ou vote), pas encore révélées ---
   List<String> deathsThisWave = [];
 
-  // --- Flags de suivi post-mort ---
-  // C'est le cœur du remplacement de l'ancienne file "pendingActions" :
-  // _applyDeath() pose ces flags dès qu'une mort a une conséquence
-  // différée, et GameEngine._resolveFollowUps() les lit dans un ordre
-  // fixe pour décider de la prochaine phase — un simple enchaînement de
-  // "if", pas de queue générique.
   FollowUpOrigin? followUpOrigin;
   String? chasseurRevengeTargetId; // id du Chasseur qui doit tirer
   String? mayorSuccessionNeededFor; // id de l'ancien maire, mort
@@ -211,6 +205,26 @@ class GameState {
     final right = ordered[(idx + 1) % ordered.length];
     return left.camp == Camp.loups || right.camp == Camp.loups;
   }
+  /// Le joueur [centerId] et ses deux voisins vivants immédiats (ordre de
+  /// la liste des joueurs, comme pour le Montreur d'Ours). Avec très peu de
+  /// joueurs vivants, les doublons sont fusionnés (groupe de 1 ou 2).
+  List<String> renardTrioAround(String centerId) {
+    final ordered = alivePlayers;
+    final idx = ordered.indexWhere((p) => p.id == centerId);
+    if (idx == -1) return [];
+    final n = ordered.length;
+    return <String>{
+      ordered[(idx - 1 + n) % n].id,
+      centerId,
+      ordered[(idx + 1) % n].id,
+    }.toList();
+  }
+  /// Vrai si au moins un Loup-Garou se trouve parmi [ids]. Le Loup-Garou
+  /// Blanc compte comme un loup pour le flair (son camp est Camp.seul).
+  bool renardTrioHasWolf(List<String> ids) => ids.any((id) {
+    final p = tryById(id);
+    return p != null && (p.camp == Camp.loups || p.role == RoleId.loupBlanc);
+  });
 }
 
 extension _FirstOrNull<T> on Iterable<T> {

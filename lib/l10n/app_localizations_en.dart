@@ -348,6 +348,22 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get renardInstructionCenter =>
+      'Pick a player: they and their two living neighbors will be sniffed.';
+
+  @override
+  String get renardResultWolfFound =>
+      'There is at least one werewolf among these three players! You keep your power and can use it again tomorrow night.';
+
+  @override
+  String get renardResultNoWolf =>
+      'No werewolf among these three players: they are all innocent! But you permanently lose your power.';
+
+  @override
+  String get renardResultTrioLabel =>
+      'The chosen player and their two neighbors:';
+
+  @override
   String get salvateurSubtitle => 'Wake up and designate the one you protect.';
 
   @override

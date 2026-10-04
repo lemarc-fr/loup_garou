@@ -389,10 +389,10 @@ const Map<RoleId, RoleInfo> kRoleCatalog = {
     nameShort: 'Renard',
     camp: Camp.village,
     description:
-    "La nuit, il peut désigner un groupe de trois joueurs. Le meneur lui indique "
-        "si au moins un Loup-Garou se trouve parmi eux.",
+    "La nuit, il désigne un joueur : celui-ci et ses deux voisins vivants forment "
+        "un groupe de trois. Le meneur lui indique si au moins un Loup-Garou s'y trouve.",
     nightInstruction:
-    "Choisissez trois joueurs voisins pour utiliser votre flair.",
+    "Choisissez un joueur : lui et ses deux voisins seront flairés.",
     imageAsset: 'assets/images/roles/renard.png',
     fallbackIcon: Icons.pets,
     accent: AppColors.forest,

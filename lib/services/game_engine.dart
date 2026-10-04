@@ -490,14 +490,11 @@ class GameEngine {
 
   void resolveRenard(GameState s, List<String> targetIds) {
     s.renardTargetIds = targetIds;
-    final foundWolf = targetIds.any((id) {
-      final p = s.tryById(id);
-      return p != null && p.camp == Camp.loups;
-    });
+    final foundWolf = s.renardTrioHasWolf(targetIds);
     s.renardFoundWolfLastQuery = foundWolf;
     if (!foundWolf) {
-      // Variante classique : le flair se perd pour le reste de la partie
-      // si aucun Loup-Garou n'est trouvé parmi les trois joueurs choisis.
+      // Aucun loup dans le trio : le Renard perd définitivement son flair,
+      // mais sait que ces trois joueurs sont innocents.
       s.renardPowerLost = true;
     }
     advance(s);
@@ -523,6 +520,10 @@ class GameEngine {
       s.sorciereKilledIdTonight = poisonTargetId;
     }
     advance(s);
+  }
+
+  void resolveRenardCenter(GameState s, String centerId) {
+    resolveRenard(s, s.renardTrioAround(centerId));
   }
 
   // ---------------------------------------------------------------------

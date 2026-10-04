@@ -656,6 +656,30 @@ abstract class AppLocalizations {
   /// **'Choisis trois joueurs voisins ({count}/{max}).'**
   String renardInstruction(int count, int max);
 
+  /// No description provided for @renardInstructionCenter.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pick a player: they and their two living neighbors will be sniffed.'**
+  String get renardInstructionCenter;
+
+  /// No description provided for @renardResultWolfFound.
+  ///
+  /// In fr, this message translates to:
+  /// **'Il y a au moins un Loup-Garou parmi ces trois joueurs ! Vous conservez votre flair et pourrez le réutiliser la nuit prochaine.'**
+  String get renardResultWolfFound;
+
+  /// No description provided for @renardResultNoWolf.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun Loup-Garou parmi ces trois joueurs : ils sont tous innocents ! Mais vous perdez définitivement votre pouvoir.'**
+  String get renardResultNoWolf;
+
+  /// No description provided for @renardResultTrioLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le joueur désigné et ses deux voisins :'**
+  String get renardResultTrioLabel;
+
   /// Sous-titre du tour du Salvateur
   ///
   /// In fr, this message translates to:

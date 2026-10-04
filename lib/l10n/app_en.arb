@@ -112,7 +112,10 @@
   "renardSubtitle": "It is the Fox's turn. Wake up.",
   "renardTitle": "The Fox",
   "renardInstruction": "Choose three neighboring players ({count}/{max}).",
-
+  "renardInstructionCenter": "Pick a player: they and their two living neighbors will be sniffed.",
+  "renardResultWolfFound": "There is at least one werewolf among these three players! You keep your power and can use it again tomorrow night.",
+  "renardResultNoWolf": "No werewolf among these three players: they are all innocent! But you permanently lose your power.",
+  "renardResultTrioLabel": "The chosen player and their two neighbors:",
   "salvateurSubtitle": "Wake up and designate the one you protect.",
   "salvateurTitle": "The Bodyguard",
   "salvateurInstruction": "Choose the player protected from attacks tonight.",

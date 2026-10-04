@@ -352,6 +352,21 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get renardInstructionCenter =>
+      'Pick a player: they and their two living neighbors will be sniffed.';
+
+  @override
+  String get renardResultWolfFound =>
+      'Il y a au moins un Loup-Garou parmi ces trois joueurs ! Vous conservez votre flair et pourrez le réutiliser la nuit prochaine.';
+
+  @override
+  String get renardResultNoWolf =>
+      'Aucun Loup-Garou parmi ces trois joueurs : ils sont tous innocents ! Mais vous perdez définitivement votre pouvoir.';
+
+  @override
+  String get renardResultTrioLabel => 'Le joueur désigné et ses deux voisins :';
+
+  @override
   String get salvateurSubtitle => 'Réveille-toi et désigne ton protégé.';
 
   @override

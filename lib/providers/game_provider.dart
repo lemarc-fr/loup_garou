@@ -194,16 +194,8 @@ class GameProvider extends ChangeNotifier {
   /// Le Renard désigne trois joueurs d'un coup. Chaque appel ajoute ou
   /// retire [id] de la sélection en cours ; dès que trois joueurs sont
   /// choisis, le pouvoir est résolu automatiquement et on avance de phase.
-  void setRenardTarget(String id) {
-    if (renardDraftSelection.contains(id)) {
-      renardDraftSelection.remove(id);
-    } else if (renardDraftSelection.length < 3) {
-      renardDraftSelection.add(id);
-    }
-    if (renardDraftSelection.length == 3) {
-      engine.resolveRenard(state!, List.of(renardDraftSelection));
-      renardDraftSelection.clear();
-    }
+  void setRenardTarget(String centerId) {
+    engine.resolveRenardCenter(state!, centerId);
     notifyListeners();
   }
 
