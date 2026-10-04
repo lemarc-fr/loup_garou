@@ -10,7 +10,6 @@ class NightIntroScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
-    final night = gp.state!.night;
     final theme = Theme.of(context);
     final loc = AppLocalizations.of(context)!;
 
@@ -24,9 +23,7 @@ class NightIntroScreen extends StatelessWidget {
               const Icon(Icons.dark_mode, size: 72, color: AppColors.lantern),
               const SizedBox(height: 28),
               Text(
-                night == 1
-                    ? loc.nightIntroFirstNight
-                    : loc.nightIntroOtherNights(night),
+                loc.nightIntroFirstNight,
                 style: theme.textTheme.displayMedium,
                 textAlign: TextAlign.center,
               ),
