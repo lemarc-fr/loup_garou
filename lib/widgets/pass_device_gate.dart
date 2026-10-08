@@ -46,44 +46,50 @@ class _PassDeviceGateState extends State<PassDeviceGate> {
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.phonelink_ring, size: 72, color: widget.accent),
-              const SizedBox(height: 28),
-              Text(widget.pluralToName ? loc.passDeviceToPlural : loc.passDeviceToSingular,
-                  style: theme.textTheme.titleLarge,
-                  textAlign: TextAlign.center),
-              const SizedBox(height: 8),
-              Text(
-                widget.toName,
-                style: theme.textTheme.displayMedium
-                    ?.copyWith(color: widget.accent),
-                textAlign: TextAlign.center,
-              ),
-              if (widget.subtitle != null) ...[
-                const SizedBox(height: 16),
-                Text(widget.subtitle!,
-                    style: theme.textTheme.bodyMedium,
+        child: SizedBox.expand(
+          child: Padding(
+            padding: const EdgeInsets.all(28),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Icon(Icons.phonelink_ring, size: 72, color: widget.accent),
+                const SizedBox(height: 28),
+                Text(
+                    widget.pluralToName
+                        ? loc.passDeviceToPlural
+                        : loc.passDeviceToSingular,
+                    style: theme.textTheme.titleLarge,
                     textAlign: TextAlign.center),
-              ],
-              const SizedBox(height: 40),
-              FilledButton.icon(
-                onPressed: () => setState(() => _confirmed = true),
-                icon: const Icon(Icons.check),
-                label: Text(loc.passDeviceConfirmButton),
-                style: FilledButton.styleFrom(
-                  backgroundColor: widget.accent,
-                  foregroundColor: Colors.black,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 32, vertical: 18),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
+                const SizedBox(height: 8),
+                Text(
+                  widget.toName,
+                  style: theme.textTheme.displayMedium
+                      ?.copyWith(color: widget.accent),
+                  textAlign: TextAlign.center,
                 ),
-              ),
-            ],
+                if (widget.subtitle != null) ...[
+                  const SizedBox(height: 16),
+                  Text(widget.subtitle!,
+                      style: theme.textTheme.bodyMedium,
+                      textAlign: TextAlign.center),
+                ],
+                const SizedBox(height: 40),
+                FilledButton.icon(
+                  onPressed: () => setState(() => _confirmed = true),
+                  icon: const Icon(Icons.check),
+                  label: Text(loc.passDeviceConfirmButton),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: widget.accent,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 32, vertical: 18),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
