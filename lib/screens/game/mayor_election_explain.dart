@@ -3,6 +3,7 @@ import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/vote_mode_chooser.dart';
 
 class MayorElectionExplainScreen extends StatefulWidget {
   const MayorElectionExplainScreen({super.key});
@@ -36,36 +37,45 @@ class _MayorElectionExplainScreenState extends State<MayorElectionExplainScreen>
   @override
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
+    final theme = Theme.of(context);
     final loc = AppLocalizations.of(context)!;
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ScaleTransition(
-                scale: _scale,
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: const BoxDecoration(
-                    color: AppColors.lantern,
-                    shape: BoxShape.circle,
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ScaleTransition(
+                  scale: _scale,
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: const BoxDecoration(
+                      color: AppColors.lantern,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Image.asset('assets/images/roles/mayor_insign.png',
+                        width: 96, height: 96),
                   ),
-                  child: Image.asset('assets/images/roles/mayor_insign.png')
                 ),
-              ),
-              const SizedBox(height: 28),
-              Text(loc.mayorElectionExplainText),
-              const SizedBox(height: 40),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: gp.confirmMayorElectionExplain,
-                  child: Text(loc.mayorElectionExplainContinueButton),
+                const SizedBox(height: 28),
+                Text(
+                  loc.mayorElectionExplainText,
+                  style: theme.textTheme.headlineMedium,
+                  textAlign: TextAlign.center,
                 ),
-              ),
-            ],
+                const SizedBox(height: 12),
+                Text(
+                  loc.mayorElectionDoubleVoiceExplain,
+                  style: theme.textTheme.bodyLarge,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+                // Sous l'insigne : le choix du mode de vote lance l'élection.
+                VoteModeChooser(onChosen: gp.confirmMayorElectionExplain),
+              ],
+            ),
           ),
         ),
       ),

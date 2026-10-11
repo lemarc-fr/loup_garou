@@ -385,8 +385,8 @@ class GameProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void confirmMayorElectionExplain() {
-    engine.confirmMayorElectionExplain(state!);
+  void confirmMayorElectionExplain(VoteMode mode) {
+    engine.confirmMayorElectionExplain(state!, mode);
     notifyListeners();
   }
 
@@ -395,8 +395,8 @@ class GameProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void confirmDebate() {
-    engine.confirmDebate(state!);
+  void confirmDebate(VoteMode mode) {
+    engine.confirmDebate(state!, mode);
     notifyListeners();
   }
 

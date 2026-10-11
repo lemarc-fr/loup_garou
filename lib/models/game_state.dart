@@ -73,6 +73,11 @@ enum GamePhase {
 /// tous les flags de suivi ont été traités.
 enum FollowUpOrigin { nightDeaths, voteDeaths }
 
+/// Mode du prochain vote (élection du maire ou vote du village), choisi
+/// juste avant : vote secret (le téléphone passe de main en main) ou vote
+/// collectif (toute la table vote ensemble, le résultat est saisi une fois).
+enum VoteMode { secret, collective }
+
 /// Un villageois qui vient de perdre son pouvoir suite à l'exécution
 /// erronée de l'Ancien. On garde son ancien rôle pour l'animation de
 /// révélation, même si Player.role a déjà basculé sur simpleVillageois.
@@ -107,6 +112,7 @@ class GameState {
   List<RoundRecord> rounds = [];
 
   String? mayorId;
+  VoteMode voteMode = VoteMode.secret;
   bool ancienExtraLifeUsed = false;
   List<PowerLossEntry> powerLossThisWave = [];
 

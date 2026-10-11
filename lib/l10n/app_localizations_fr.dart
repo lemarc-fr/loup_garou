@@ -814,9 +814,6 @@ class AppLocalizationsFr extends AppLocalizations {
       'Les survivants discutent pour démasquer les Loups-Garous. Les Loups doivent bluffer pour se faire passer pour des villageois.';
 
   @override
-  String get goToVoteButton => 'Passer au vote';
-
-  @override
   String get endGameTitle => 'Fin de la partie';
 
   @override
@@ -841,9 +838,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get mayorElectionExplainText => 'Vous allez élire le Capitaine';
 
   @override
-  String get mayorElectionExplainContinueButton => 'Continuer vers le vote';
-
-  @override
   String get mayorElectionTitle => 'Élection du maire';
 
   @override
@@ -855,7 +849,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get mayorRevealSubtitle =>
-      'Son vote comptera double en cas d\'égalité.';
+      'Sa voix comptera double lors des votes du village.';
 
   @override
   String get mayorRevealContinueButton => 'Continuer vers le débat';
@@ -1188,4 +1182,61 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get phaseEndGame => 'Fin de partie';
+
+  @override
+  String get mayorElectionDoubleVoiceExplain =>
+      'Sa voix comptera double lors des votes du village.';
+
+  @override
+  String get voteModeQuestion => 'Comment voulez-vous voter ?';
+
+  @override
+  String get voteModeCollectiveButton => 'Vote collectif';
+
+  @override
+  String get voteModeCollectiveHint =>
+      'Tout le monde vote en même temps, à voix haute ou à main levée.';
+
+  @override
+  String get voteModeSecretButton => 'Vote secret';
+
+  @override
+  String get voteModeSecretHint =>
+      'Le téléphone passe de main en main, chacun vote en secret.';
+
+  @override
+  String get collectiveVoteMayorInstruction =>
+      'Votez tous ensemble, puis sélectionnez le joueur élu maire.';
+
+  @override
+  String get collectiveVoteVillageInstruction =>
+      'Votez tous ensemble, puis sélectionnez le joueur qui a reçu le plus de voix.';
+
+  @override
+  String get collectiveVoteSelectPlayer => 'Sélectionnez un joueur';
+
+  @override
+  String collectiveVoteMayorDoubleVoice(String name) {
+    return '$name est maire : sa voix compte double.';
+  }
+
+  @override
+  String collectiveVoteCorbeauCurse(String name) {
+    return 'Le Corbeau a désigné $name : 2 voix de plus contre lui ou elle.';
+  }
+
+  @override
+  String collectiveVoteCannotVote(String name) {
+    return '$name a perdu son droit de vote.';
+  }
+
+  @override
+  String collectiveVoteConfirmMayorButton(String name) {
+    return 'Confirmer : $name est élu(e) maire';
+  }
+
+  @override
+  String collectiveVoteConfirmEliminationButton(String name) {
+    return 'Confirmer : $name est éliminé(e)';
+  }
 }

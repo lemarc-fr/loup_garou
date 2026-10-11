@@ -1466,12 +1466,6 @@ abstract class AppLocalizations {
   /// **'Les survivants discutent pour démasquer les Loups-Garous. Les Loups doivent bluffer pour se faire passer pour des villageois.'**
   String get debateInstruction;
 
-  /// Bouton pour terminer le débat et passer au vote
-  ///
-  /// In fr, this message translates to:
-  /// **'Passer au vote'**
-  String get goToVoteButton;
-
   /// Titre de l'écran de fin de partie
   ///
   /// In fr, this message translates to:
@@ -1520,12 +1514,6 @@ abstract class AppLocalizations {
   /// **'Vous allez élire le Capitaine'**
   String get mayorElectionExplainText;
 
-  /// Bouton pour avancer vers le vote du maire
-  ///
-  /// In fr, this message translates to:
-  /// **'Continuer vers le vote'**
-  String get mayorElectionExplainContinueButton;
-
   /// Titre du vote du maire
   ///
   /// In fr, this message translates to:
@@ -1547,7 +1535,7 @@ abstract class AppLocalizations {
   /// Explication du pouvoir du maire
   ///
   /// In fr, this message translates to:
-  /// **'Son vote comptera double en cas d\'égalité.'**
+  /// **'Sa voix comptera double lors des votes du village.'**
   String get mayorRevealSubtitle;
 
   /// Bouton pour aller au débat après l'élection du maire
@@ -2107,6 +2095,90 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Fin de partie'**
   String get phaseEndGame;
+
+  /// Rappel du pouvoir du maire avant son élection
+  ///
+  /// In fr, this message translates to:
+  /// **'Sa voix comptera double lors des votes du village.'**
+  String get mayorElectionDoubleVoiceExplain;
+
+  /// Question avant un vote : collectif ou secret
+  ///
+  /// In fr, this message translates to:
+  /// **'Comment voulez-vous voter ?'**
+  String get voteModeQuestion;
+
+  /// Choix du vote collectif
+  ///
+  /// In fr, this message translates to:
+  /// **'Vote collectif'**
+  String get voteModeCollectiveButton;
+
+  /// Explication du vote collectif
+  ///
+  /// In fr, this message translates to:
+  /// **'Tout le monde vote en même temps, à voix haute ou à main levée.'**
+  String get voteModeCollectiveHint;
+
+  /// Choix du vote secret
+  ///
+  /// In fr, this message translates to:
+  /// **'Vote secret'**
+  String get voteModeSecretButton;
+
+  /// Explication du vote secret
+  ///
+  /// In fr, this message translates to:
+  /// **'Le téléphone passe de main en main, chacun vote en secret.'**
+  String get voteModeSecretHint;
+
+  /// Instruction du vote collectif pour le maire
+  ///
+  /// In fr, this message translates to:
+  /// **'Votez tous ensemble, puis sélectionnez le joueur élu maire.'**
+  String get collectiveVoteMayorInstruction;
+
+  /// Instruction du vote collectif du village
+  ///
+  /// In fr, this message translates to:
+  /// **'Votez tous ensemble, puis sélectionnez le joueur qui a reçu le plus de voix.'**
+  String get collectiveVoteVillageInstruction;
+
+  /// Bouton désactivé tant qu'aucun joueur n'est sélectionné
+  ///
+  /// In fr, this message translates to:
+  /// **'Sélectionnez un joueur'**
+  String get collectiveVoteSelectPlayer;
+
+  /// Rappel de la voix double du maire en vote collectif
+  ///
+  /// In fr, this message translates to:
+  /// **'{name} est maire : sa voix compte double.'**
+  String collectiveVoteMayorDoubleVoice(String name);
+
+  /// Rappel de la malédiction du Corbeau en vote collectif
+  ///
+  /// In fr, this message translates to:
+  /// **'Le Corbeau a désigné {name} : 2 voix de plus contre lui ou elle.'**
+  String collectiveVoteCorbeauCurse(String name);
+
+  /// Rappel qu'un joueur ne peut plus voter
+  ///
+  /// In fr, this message translates to:
+  /// **'{name} a perdu son droit de vote.'**
+  String collectiveVoteCannotVote(String name);
+
+  /// Bouton de confirmation du vote collectif du maire
+  ///
+  /// In fr, this message translates to:
+  /// **'Confirmer : {name} est élu(e) maire'**
+  String collectiveVoteConfirmMayorButton(String name);
+
+  /// Bouton de confirmation du vote collectif du village
+  ///
+  /// In fr, this message translates to:
+  /// **'Confirmer : {name} est éliminé(e)'**
+  String collectiveVoteConfirmEliminationButton(String name);
 }
 
 class _AppLocalizationsDelegate

@@ -811,9 +811,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'The survivors discuss to unmask Werewolves. Werewolves must bluff to pass as villagers.';
 
   @override
-  String get goToVoteButton => 'Proceed to vote';
-
-  @override
   String get endGameTitle => 'Game Over';
 
   @override
@@ -838,9 +835,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mayorElectionExplainText => 'You are going to elect the Mayor';
 
   @override
-  String get mayorElectionExplainContinueButton => 'Continue to the vote';
-
-  @override
   String get mayorElectionTitle => 'Mayor election';
 
   @override
@@ -851,7 +845,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mayorRevealTitle => 'The village has chosen its mayor';
 
   @override
-  String get mayorRevealSubtitle => 'Their vote will count double during ties.';
+  String get mayorRevealSubtitle =>
+      'Their vote will count twice in village votes.';
 
   @override
   String get mayorRevealContinueButton => 'Continue to the debate';
@@ -1181,4 +1176,61 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get phaseEndGame => 'Game Over';
+
+  @override
+  String get mayorElectionDoubleVoiceExplain =>
+      'Their vote will count twice in village votes.';
+
+  @override
+  String get voteModeQuestion => 'How do you want to vote?';
+
+  @override
+  String get voteModeCollectiveButton => 'Open vote';
+
+  @override
+  String get voteModeCollectiveHint =>
+      'Everyone votes at the same time, out loud or by show of hands.';
+
+  @override
+  String get voteModeSecretButton => 'Secret vote';
+
+  @override
+  String get voteModeSecretHint =>
+      'The phone goes from hand to hand, everyone votes in secret.';
+
+  @override
+  String get collectiveVoteMayorInstruction =>
+      'Vote all together, then select the player elected mayor.';
+
+  @override
+  String get collectiveVoteVillageInstruction =>
+      'Vote all together, then select the player who received the most votes.';
+
+  @override
+  String get collectiveVoteSelectPlayer => 'Select a player';
+
+  @override
+  String collectiveVoteMayorDoubleVoice(String name) {
+    return '$name is the mayor: their vote counts twice.';
+  }
+
+  @override
+  String collectiveVoteCorbeauCurse(String name) {
+    return 'The Raven has designated $name: 2 extra votes against them.';
+  }
+
+  @override
+  String collectiveVoteCannotVote(String name) {
+    return '$name has lost the right to vote.';
+  }
+
+  @override
+  String collectiveVoteConfirmMayorButton(String name) {
+    return 'Confirm: $name is elected mayor';
+  }
+
+  @override
+  String collectiveVoteConfirmEliminationButton(String name) {
+    return 'Confirm: $name is eliminated';
+  }
 }

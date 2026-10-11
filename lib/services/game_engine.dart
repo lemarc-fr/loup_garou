@@ -750,9 +750,18 @@ class GameEngine {
     advance2(s);
   }
 
-  void confirmMayorElectionExplain(GameState s) => advance2(s);
+  void confirmMayorElectionExplain(GameState s, VoteMode mode) {
+    s.voteMode = mode;
+    advance2(s);
+  }
+
   void confirmMayorReveal(GameState s) => advance2(s);
-  void confirmDebate(GameState s) => advance2(s);
+  /// Fin du débat : [mode] vaut pour le vote du village qui suit (et pour
+  /// son éventuelle reprise demandée par le Juge Bègue).
+  void confirmDebate(GameState s, VoteMode mode) {
+    s.voteMode = mode;
+    advance2(s);
+  }
 
   void resolveJugeBegueDecision(GameState s, bool usePower) {
     if (usePower) {
