@@ -87,7 +87,20 @@ class GameEngine {
       phase: GamePhase.roleReveal,
     );
     state.voleurTableCards = tableCards;
+
+    // Amoureux tirés au sort (sans Cupidon) : ils l'apprennent en
+    // découvrant leur rôle (voir RoleRevealScreen).
+    if (config.randomLovers && players.length >= 2) {
+      final shuffled = [...players]..shuffle(_rng);
+      _linkLovers(state, shuffled[0].id, shuffled[1].id);
+    }
     return state;
+  }
+
+  void _linkLovers(GameState s, String playerId1, String playerId2) {
+    s.loversIds = [playerId1, playerId2];
+    s.byId(playerId1).loverId = playerId2;
+    s.byId(playerId2).loverId = playerId1;
   }
 
   void startFirstNight(GameState s) {
@@ -221,6 +234,9 @@ class GameEngine {
       if (s.hasAliveRole(RoleId.cupidon)) {
         q.add(GamePhase.nightCupidon);
         addSleep();
+        // Pas de "tu peux te rendormir" après : chaque passage de la
+        // révélation se termine déjà par "je me rendors".
+        q.add(GamePhase.nightLoversReveal);
       }
       if (s.hasAliveRole(RoleId.enfantSauvage)) {
         q.add(GamePhase.nightEnfantSauvage);
@@ -426,11 +442,12 @@ class GameEngine {
   }
 
   void resolveCupidon(GameState s, String playerId1, String playerId2) {
-    s.loversIds = [playerId1, playerId2];
-    s.byId(playerId1).loverId = playerId2;
-    s.byId(playerId2).loverId = playerId1;
+    _linkLovers(s, playerId1, playerId2);
     advance(s);
   }
+
+  /// Tout le monde est passé par l'écran de révélation des Amoureux.
+  void confirmLoversReveal(GameState s) => advance(s);
 
   /// L'Enfant Sauvage choisit son modèle. On se contente d'écrire l'id de
   /// l'Enfant Sauvage sur le champ [Player.mentorOf] du modèle choisi :

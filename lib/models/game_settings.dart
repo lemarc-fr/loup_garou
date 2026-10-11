@@ -9,6 +9,7 @@ enum SettingId {
   allowWitchToPlayIfWerewolfDeathCause,
   allowWitchToSaveHerself,
   enfantSauvagePublicReveal,
+  randomLoversInsteadOfCupidon,
 }
 
 /// Décrit une option pour l'affichage dans l'écran de réglages. Les textes
@@ -46,6 +47,12 @@ const List<GameSettingDefinition> kGameSettingDefinitions = [
     id: SettingId.enfantSauvagePublicReveal,
     defaultValue: true,
   ),
+  // Deux façons de former les Amoureux : Cupidon (désactivé, par défaut)
+  // ou un tirage au sort proposé à la répartition des rôles (activé).
+  GameSettingDefinition(
+    id: SettingId.randomLoversInsteadOfCupidon,
+    defaultValue: false,
+  ),
 ];
 
 /// Valeurs courantes des options, avec repli sur la valeur par défaut du
@@ -69,6 +76,7 @@ class GameSettings {
   bool get allowWitchToPlayIfWerewolfDeathCause => get(SettingId.allowWitchToPlayIfWerewolfDeathCause);
   bool get allowWitchToSaveHerself => get(SettingId.allowWitchToSaveHerself);
   bool get enfantSauvagePublicReveal => get(SettingId.enfantSauvagePublicReveal);
+  bool get randomLoversInsteadOfCupidon => get(SettingId.randomLoversInsteadOfCupidon);
 
   Map<String, dynamic> toJson() => {
     for (final e in _values.entries) e.key.name: e.value,

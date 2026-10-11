@@ -21,6 +21,10 @@ enum GamePhase {
   nightGoBackToSleep,
   nightVoleur,
   nightCupidon,
+  // Juste après Cupidon : le téléphone passe chez chaque joueur, les deux
+  // Amoureux apprennent en secret qui est leur moitié, les autres voient un
+  // écran neutre (voir LoversRevealScreen).
+  nightLoversReveal,
   nightEnfantSauvage,
   nightEnfantSauvageMutation,
   nightSalvateur,

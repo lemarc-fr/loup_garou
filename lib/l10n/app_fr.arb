@@ -544,6 +544,60 @@
     "description": "Bouton pour valider la désignation des deux amoureux"
   },
 
+  "loversRevealTitle": "Message de la nuit",
+  "@loversRevealTitle": {
+    "description": "Titre de l'écran privé de révélation des Amoureux (identique pour tous les joueurs)"
+  },
+  "loversRevealPassSubtitle": "Un message secret t'attend peut-être. Assure-toi que personne d'autre ne regarde l'écran.",
+  "@loversRevealPassSubtitle": {
+    "description": "Avertissement avant d'afficher l'écran privé de révélation des Amoureux"
+  },
+  "loversRevealLoverHeadline": "Cupidon t'a touché de sa flèche !",
+  "@loversRevealLoverHeadline": {
+    "description": "Titre affiché à un des deux Amoureux"
+  },
+  "loversRevealNothingHeadline": "Aucun message pour toi",
+  "@loversRevealNothingHeadline": {
+    "description": "Titre affiché aux joueurs qui ne sont pas Amoureux"
+  },
+  "loversRevealNothingBody": "Il ne s'est rien passé pour toi. Garde un visage impassible !",
+  "@loversRevealNothingBody": {
+    "description": "Texte affiché aux joueurs qui ne sont pas Amoureux"
+  },
+  "loversRevealDoneButton": "J'ai compris, je me rendors",
+  "@loversRevealDoneButton": {
+    "description": "Bouton pour valider l'écran privé de révélation des Amoureux"
+  },
+  "loverBondMessage": "Tu formes un couple d'Amoureux avec {name}.",
+  "@loverBondMessage": {
+    "description": "Annonce à un Amoureux de l'identité de sa moitié",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "loverBondRule": "Si l'un de vous meurt, l'autre meurt aussitôt de chagrin. Gardez votre secret !",
+  "@loverBondRule": {
+    "description": "Rappel de la règle des Amoureux"
+  },
+  "roleSelectionRandomLovers": "Ajouter deux Amoureux tirés au sort",
+  "@roleSelectionRandomLovers": {
+    "description": "Case à cocher de la répartition des rôles (mode sans Cupidon)"
+  },
+  "roleSelectionRandomLoversHint": "Ils l'apprendront en découvrant leur rôle.",
+  "@roleSelectionRandomLoversHint": {
+    "description": "Précision sous la case à cocher des Amoureux tirés au sort"
+  },
+  "settingRandomLoversInsteadOfCupidonLabel": "Amoureux tirés au sort (sans Cupidon)",
+  "@settingRandomLoversInsteadOfCupidonLabel": {
+    "description": "Libellé de l'option randomLoversInsteadOfCupidon"
+  },
+  "settingRandomLoversInsteadOfCupidonDescription": "Si activé, Cupidon n'est plus proposé : une case dans la répartition des rôles permet d'ajouter deux Amoureux tirés au sort, qui l'apprennent en découvrant leur rôle. Si désactivé, Cupidon désigne les Amoureux la première nuit, puis le téléphone passe chez chaque joueur pour les prévenir en secret.",
+  "@settingRandomLoversInsteadOfCupidonDescription": {
+    "description": "Description de l'option randomLoversInsteadOfCupidon"
+  },
+
   "enfantSauvageTitle": "L’Enfant Sauvage",
   "@enfantSauvageTitle": {
     "description": "Titre de l'écran de l'Enfant Sauvage"
@@ -1357,7 +1411,11 @@
   "@phaseNightCupidon": {
     "description": "Nom de phase pour Cupidon"
   },
-  "phaseNightEnfantSauvage": "L'Enfant Sauvage — choix du modèle",
+  "phaseNightLoversReveal": "Révélation des Amoureux",
+  "@phaseNightLoversReveal": {
+    "description": "Nom de phase pour la révélation des Amoureux après Cupidon"
+  },
+  "phaseNightEnfantSauvage":"L'Enfant Sauvage — choix du modèle",
   "@phaseNightEnfantSauvage": {
     "description": "Nom de phase pour le choix du modèle de l'Enfant Sauvage"
   },

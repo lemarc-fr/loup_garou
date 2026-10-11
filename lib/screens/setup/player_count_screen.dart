@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
+import '../../providers/settings_provider.dart';
 import '../../theme/app_theme.dart';
 
 class PlayerCountScreen extends StatefulWidget {
@@ -73,6 +74,10 @@ class _PlayerCountScreenState extends State<PlayerCountScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     gp.setDraftPlayerCount(_count);
+                    gp.applyLoversMode(
+                        randomLoversInsteadOfCupidon: context
+                            .read<SettingsProvider>()
+                            .randomLoversInsteadOfCupidon);
                     gp.goToRoleSelection();
                   },
                   child: Text(loc.continueButtonLabel),

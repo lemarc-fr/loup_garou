@@ -830,6 +830,78 @@ abstract class AppLocalizations {
   /// **'Confirmer les Amoureux'**
   String get cupidonConfirmButton;
 
+  /// Titre de l'écran privé de révélation des Amoureux (identique pour tous les joueurs)
+  ///
+  /// In fr, this message translates to:
+  /// **'Message de la nuit'**
+  String get loversRevealTitle;
+
+  /// Avertissement avant d'afficher l'écran privé de révélation des Amoureux
+  ///
+  /// In fr, this message translates to:
+  /// **'Un message secret t\'attend peut-être. Assure-toi que personne d\'autre ne regarde l\'écran.'**
+  String get loversRevealPassSubtitle;
+
+  /// Titre affiché à un des deux Amoureux
+  ///
+  /// In fr, this message translates to:
+  /// **'Cupidon t\'a touché de sa flèche !'**
+  String get loversRevealLoverHeadline;
+
+  /// Titre affiché aux joueurs qui ne sont pas Amoureux
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun message pour toi'**
+  String get loversRevealNothingHeadline;
+
+  /// Texte affiché aux joueurs qui ne sont pas Amoureux
+  ///
+  /// In fr, this message translates to:
+  /// **'Il ne s\'est rien passé pour toi. Garde un visage impassible !'**
+  String get loversRevealNothingBody;
+
+  /// Bouton pour valider l'écran privé de révélation des Amoureux
+  ///
+  /// In fr, this message translates to:
+  /// **'J\'ai compris, je me rendors'**
+  String get loversRevealDoneButton;
+
+  /// Annonce à un Amoureux de l'identité de sa moitié
+  ///
+  /// In fr, this message translates to:
+  /// **'Tu formes un couple d\'Amoureux avec {name}.'**
+  String loverBondMessage(String name);
+
+  /// Rappel de la règle des Amoureux
+  ///
+  /// In fr, this message translates to:
+  /// **'Si l\'un de vous meurt, l\'autre meurt aussitôt de chagrin. Gardez votre secret !'**
+  String get loverBondRule;
+
+  /// Case à cocher de la répartition des rôles (mode sans Cupidon)
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter deux Amoureux tirés au sort'**
+  String get roleSelectionRandomLovers;
+
+  /// Précision sous la case à cocher des Amoureux tirés au sort
+  ///
+  /// In fr, this message translates to:
+  /// **'Ils l\'apprendront en découvrant leur rôle.'**
+  String get roleSelectionRandomLoversHint;
+
+  /// Libellé de l'option randomLoversInsteadOfCupidon
+  ///
+  /// In fr, this message translates to:
+  /// **'Amoureux tirés au sort (sans Cupidon)'**
+  String get settingRandomLoversInsteadOfCupidonLabel;
+
+  /// Description de l'option randomLoversInsteadOfCupidon
+  ///
+  /// In fr, this message translates to:
+  /// **'Si activé, Cupidon n\'est plus proposé : une case dans la répartition des rôles permet d\'ajouter deux Amoureux tirés au sort, qui l\'apprennent en découvrant leur rôle. Si désactivé, Cupidon désigne les Amoureux la première nuit, puis le téléphone passe chez chaque joueur pour les prévenir en secret.'**
+  String get settingRandomLoversInsteadOfCupidonDescription;
+
   /// Titre de l'écran de l'Enfant Sauvage
   ///
   /// In fr, this message translates to:
@@ -1861,6 +1933,12 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Cupidon'**
   String get phaseNightCupidon;
+
+  /// Nom de phase pour la révélation des Amoureux après Cupidon
+  ///
+  /// In fr, this message translates to:
+  /// **'Révélation des Amoureux'**
+  String get phaseNightLoversReveal;
 
   /// Nom de phase pour le choix du modèle de l'Enfant Sauvage
   ///

@@ -17,6 +17,8 @@ extension SettingLocalizations on AppLocalizations {
         SettingId.allowWitchToSaveHerself => settingAllowWitchToSaveHerselfLabel,
         SettingId.enfantSauvagePublicReveal =>
           settingEnfantSauvagePublicRevealLabel,
+        SettingId.randomLoversInsteadOfCupidon =>
+          settingRandomLoversInsteadOfCupidonLabel,
       };
 
   String settingDescription(SettingId id) => switch (id) {
@@ -30,5 +32,7 @@ extension SettingLocalizations on AppLocalizations {
           settingAllowWitchToSaveHerselfDescription,
         SettingId.enfantSauvagePublicReveal =>
           settingEnfantSauvagePublicRevealDescription,
+        SettingId.randomLoversInsteadOfCupidon =>
+          settingRandomLoversInsteadOfCupidonDescription,
       };
 }

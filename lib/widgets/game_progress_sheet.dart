@@ -300,6 +300,8 @@ String gamePhaseLabel(AppLocalizations loc, GamePhase phase) {
       return loc.phaseNightVoleur;
     case GamePhase.nightCupidon:
       return loc.phaseNightCupidon;
+    case GamePhase.nightLoversReveal:
+      return loc.phaseNightLoversReveal;
     case GamePhase.nightEnfantSauvage:
       return loc.phaseNightEnfantSauvage;
     case GamePhase.nightSalvateur:

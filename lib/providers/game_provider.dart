@@ -70,6 +70,43 @@ class GameProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Recalcule le nombre de Simples Villageois pour compléter la
+  /// distribution avec les rôles choisis.
+  void recomputeVillagers() {
+    final config = draftConfig;
+    if (config == null) return;
+    final othersSum = config.roleCounts.entries
+        .where((e) => e.key != RoleId.simpleVillageois)
+        .fold(0, (sum, e) => sum + e.value);
+    final remaining = config.expectedTotalCards - othersSum;
+    config.roleCounts[RoleId.simpleVillageois] = remaining.clamp(0, 999);
+    notifyListeners();
+  }
+
+  /// Aligne la configuration en cours sur le mode de formation des
+  /// Amoureux choisi dans les réglages : en mode "Amoureux tirés au sort",
+  /// Cupidon n'est pas proposé (sa carte est retirée) ; en mode Cupidon,
+  /// pas de tirage au sort.
+  void applyLoversMode({required bool randomLoversInsteadOfCupidon}) {
+    final config = draftConfig;
+    if (config == null) return;
+    if (randomLoversInsteadOfCupidon) {
+      if ((config.roleCounts[RoleId.cupidon] ?? 0) > 0) {
+        config.roleCounts[RoleId.cupidon] = 0;
+        recomputeVillagers();
+      }
+    } else {
+      config.randomLovers = false;
+    }
+    notifyListeners();
+  }
+
+  void setRandomLovers(bool value) {
+    if (draftConfig == null) return;
+    draftConfig!.randomLovers = value;
+    notifyListeners();
+  }
+
   bool get draftConfigValid => draftConfig?.isValid ?? false;
 
   void goToNames() {
@@ -184,6 +221,11 @@ class GameProvider extends ChangeNotifier {
 
   void resolveCupidon(String id1, String id2) {
     engine.resolveCupidon(state!, id1, id2);
+    notifyListeners();
+  }
+
+  void confirmLoversReveal() {
+    engine.confirmLoversReveal(state!);
     notifyListeners();
   }
 

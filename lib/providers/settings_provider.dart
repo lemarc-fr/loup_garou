@@ -45,4 +45,5 @@ class SettingsProvider extends ChangeNotifier {
   bool get allowWitchToPlayIfWerewolfDeathCause => settings.allowWitchToPlayIfWerewolfDeathCause;
   bool get allowWitchToSaveHerself => settings.allowWitchToSaveHerself;
   bool get enfantSauvagePublicReveal => settings.enfantSauvagePublicReveal;
+  bool get randomLoversInsteadOfCupidon => settings.randomLoversInsteadOfCupidon;
 }

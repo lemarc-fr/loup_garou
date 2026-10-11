@@ -4,8 +4,16 @@ class GameConfig {
   int playerCount;
   Map<RoleId, int> roleCounts;
 
-  GameConfig({required this.playerCount, Map<RoleId, int>? roleCounts})
-      : roleCounts = roleCounts ?? defaultRoleCounts(playerCount);
+  /// Option "Amoureux tirés au sort" (réglage randomLoversInsteadOfCupidon) :
+  /// deux joueurs sont liés au hasard dès la distribution des rôles, sans
+  /// Cupidon.
+  bool randomLovers;
+
+  GameConfig({
+    required this.playerCount,
+    Map<RoleId, int>? roleCounts,
+    this.randomLovers = false,
+  }) : roleCounts = roleCounts ?? defaultRoleCounts(playerCount);
 
   bool get hasVoleur => (roleCounts[RoleId.voleur] ?? 0) > 0;
 

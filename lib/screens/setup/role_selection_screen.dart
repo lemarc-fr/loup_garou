@@ -4,6 +4,7 @@ import 'package:thiercelieux/l10n/role_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../models/role.dart';
 import '../../providers/game_provider.dart';
+import '../../providers/settings_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/role_image.dart';
 import '../settings/game_settings_screen.dart';
@@ -11,21 +12,16 @@ import '../settings/game_settings_screen.dart';
 class RoleSelectionScreen extends StatelessWidget {
   const RoleSelectionScreen({super.key});
 
-  void _recomputeVillagers(GameProvider gp) {
-    final config = gp.draftConfig!;
-    final othersSum = config.roleCounts.entries
-        .where((e) => e.key != RoleId.simpleVillageois)
-        .fold(0, (sum, e) => sum + e.value);
-    final remaining = config.expectedTotalCards - othersSum;
-    gp.setRoleCount(RoleId.simpleVillageois, remaining.clamp(0, 999));
-  }
-
   @override
   Widget build(BuildContext context) {
     final gp = context.watch<GameProvider>();
     final theme = Theme.of(context);
     final config = gp.draftConfig!;
     final loc = AppLocalizations.of(context)!;
+    // Mode "Amoureux tirés au sort" : Cupidon n'est pas proposé, une case
+    // à cocher le remplace en tête de liste.
+    final randomLoversMode =
+        context.watch<SettingsProvider>().randomLoversInsteadOfCupidon;
 
     final adjustableOrder = [
       // Camp des Loups
@@ -46,7 +42,7 @@ class RoleSelectionScreen extends StatelessWidget {
       RoleId.ancien,
       RoleId.idiotDuVillage,
       RoleId.montreurDours,
-      RoleId.cupidon,
+      if (!randomLoversMode) RoleId.cupidon,
       RoleId.petiteFille,
       RoleId.enfantSauvage,
       RoleId.voleur,
@@ -64,9 +60,18 @@ class RoleSelectionScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             tooltip: loc.gameSettingsTooltip,
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const GameSettingsScreen()),
-            ),
+            onPressed: () async {
+              await Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const GameSettingsScreen()),
+              );
+              // Le mode de formation des Amoureux a pu changer.
+              if (context.mounted) {
+                gp.applyLoversMode(
+                    randomLoversInsteadOfCupidon: context
+                        .read<SettingsProvider>()
+                        .randomLoversInsteadOfCupidon);
+              }
+            },
           ),
         ],
       ),
@@ -100,9 +105,25 @@ class RoleSelectionScreen extends StatelessWidget {
             Expanded(
               child: ListView.separated(
                 padding: const EdgeInsets.all(16),
-                itemCount: adjustableOrder.length,
+                itemCount: adjustableOrder.length + (randomLoversMode ? 1 : 0),
                 separatorBuilder: (_, __) => const SizedBox(height: 10),
                 itemBuilder: (context, index) {
+                  if (randomLoversMode) {
+                    if (index == 0) {
+                      return Card(
+                        child: CheckboxListTile(
+                          value: config.randomLovers,
+                          onChanged: (v) => gp.setRandomLovers(v ?? false),
+                          secondary: Icon(Icons.favorite,
+                              color: context.readableIcon(AppColors.amethyst)),
+                          title: Text(loc.roleSelectionRandomLovers,
+                              style: theme.textTheme.titleMedium),
+                          subtitle: Text(loc.roleSelectionRandomLoversHint),
+                        ),
+                      );
+                    }
+                    index -= 1;
+                  }
                   final role = adjustableOrder[index];
                   final count = config.roleCounts[role] ?? 0;
                   final info = role.info;
@@ -136,7 +157,7 @@ class RoleSelectionScreen extends StatelessWidget {
                             onPressed: count > 0
                                 ? () {
                               gp.incrementRole(role, by: -1);
-                              _recomputeVillagers(gp);
+                              gp.recomputeVillagers();
                             }
                                 : null,
                             icon: const Icon(Icons.remove),
@@ -152,7 +173,7 @@ class RoleSelectionScreen extends StatelessWidget {
                                 ? null
                                 : () {
                               gp.incrementRole(role, by: 1);
-                              _recomputeVillagers(gp);
+                              gp.recomputeVillagers();
                             },
                             icon: const Icon(Icons.add),
                           ),

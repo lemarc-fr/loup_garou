@@ -436,6 +436,50 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cupidonConfirmButton => 'Confirm Lovers';
 
   @override
+  String get loversRevealTitle => 'Night message';
+
+  @override
+  String get loversRevealPassSubtitle =>
+      'A secret message may be waiting for you. Make sure nobody else is looking at the screen.';
+
+  @override
+  String get loversRevealLoverHeadline => 'Cupid\'s arrow has struck you!';
+
+  @override
+  String get loversRevealNothingHeadline => 'No message for you';
+
+  @override
+  String get loversRevealNothingBody =>
+      'Nothing happened to you. Keep a straight face!';
+
+  @override
+  String get loversRevealDoneButton => 'Got it, back to sleep';
+
+  @override
+  String loverBondMessage(String name) {
+    return 'You and $name are the Lovers.';
+  }
+
+  @override
+  String get loverBondRule =>
+      'If one of you dies, the other immediately dies of grief. Keep your secret!';
+
+  @override
+  String get roleSelectionRandomLovers => 'Add two randomly drawn Lovers';
+
+  @override
+  String get roleSelectionRandomLoversHint =>
+      'They will find out when discovering their role.';
+
+  @override
+  String get settingRandomLoversInsteadOfCupidonLabel =>
+      'Random Lovers (no Cupid)';
+
+  @override
+  String get settingRandomLoversInsteadOfCupidonDescription =>
+      'If enabled, Cupid is no longer offered: a checkbox in the role distribution adds two randomly drawn Lovers, who find out when discovering their role. If disabled, Cupid designates the Lovers on the first night, then the phone goes round every player to tell them secretly.';
+
+  @override
   String get enfantSauvageTitle => 'The Wild Child';
 
   @override
@@ -1050,6 +1094,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get phaseNightCupidon => 'Cupid';
+
+  @override
+  String get phaseNightLoversReveal => 'Lovers reveal';
 
   @override
   String get phaseNightEnfantSauvage => 'The Wild Child — role model choice';

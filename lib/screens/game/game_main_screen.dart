@@ -24,6 +24,7 @@ import 'role_screens/enfant_sauvage_screen.dart';
 import 'role_screens/infect_pere_des_loups_screen.dart';
 import 'role_screens/juge_begue_screen.dart';
 import 'role_screens/loup_blanc_screen.dart';
+import 'role_screens/lovers_reveal_screen.dart';
 import 'role_screens/loups_screen.dart';
 import 'role_screens/petite_fille_screen.dart';
 import 'role_screens/renard_screen.dart';
@@ -62,6 +63,7 @@ class GameMainScreen extends StatelessWidget {
       GamePhase.nightGoBackToSleep => const NightGoBackToSleepScreen(),
       GamePhase.nightVoleur => const VoleurScreen(),
       GamePhase.nightCupidon => const CupidonScreen(),
+      GamePhase.nightLoversReveal => const LoversRevealScreen(),
       GamePhase.nightEnfantSauvage => const EnfantSauvageScreen(),
       GamePhase.nightSalvateur => const SalvateurScreen(),
       GamePhase.nightVoyante => const VoyanteScreen(),

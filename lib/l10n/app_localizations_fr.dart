@@ -436,6 +436,50 @@ class AppLocalizationsFr extends AppLocalizations {
   String get cupidonConfirmButton => 'Confirmer les Amoureux';
 
   @override
+  String get loversRevealTitle => 'Message de la nuit';
+
+  @override
+  String get loversRevealPassSubtitle =>
+      'Un message secret t\'attend peut-être. Assure-toi que personne d\'autre ne regarde l\'écran.';
+
+  @override
+  String get loversRevealLoverHeadline => 'Cupidon t\'a touché de sa flèche !';
+
+  @override
+  String get loversRevealNothingHeadline => 'Aucun message pour toi';
+
+  @override
+  String get loversRevealNothingBody =>
+      'Il ne s\'est rien passé pour toi. Garde un visage impassible !';
+
+  @override
+  String get loversRevealDoneButton => 'J\'ai compris, je me rendors';
+
+  @override
+  String loverBondMessage(String name) {
+    return 'Tu formes un couple d\'Amoureux avec $name.';
+  }
+
+  @override
+  String get loverBondRule =>
+      'Si l\'un de vous meurt, l\'autre meurt aussitôt de chagrin. Gardez votre secret !';
+
+  @override
+  String get roleSelectionRandomLovers => 'Ajouter deux Amoureux tirés au sort';
+
+  @override
+  String get roleSelectionRandomLoversHint =>
+      'Ils l\'apprendront en découvrant leur rôle.';
+
+  @override
+  String get settingRandomLoversInsteadOfCupidonLabel =>
+      'Amoureux tirés au sort (sans Cupidon)';
+
+  @override
+  String get settingRandomLoversInsteadOfCupidonDescription =>
+      'Si activé, Cupidon n\'est plus proposé : une case dans la répartition des rôles permet d\'ajouter deux Amoureux tirés au sort, qui l\'apprennent en découvrant leur rôle. Si désactivé, Cupidon désigne les Amoureux la première nuit, puis le téléphone passe chez chaque joueur pour les prévenir en secret.';
+
+  @override
   String get enfantSauvageTitle => 'L’Enfant Sauvage';
 
   @override
@@ -1057,6 +1101,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get phaseNightCupidon => 'Cupidon';
+
+  @override
+  String get phaseNightLoversReveal => 'Révélation des Amoureux';
 
   @override
   String get phaseNightEnfantSauvage => 'L\'Enfant Sauvage — choix du modèle';
