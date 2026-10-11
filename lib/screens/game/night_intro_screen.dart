@@ -23,7 +23,9 @@ class NightIntroScreen extends StatelessWidget {
               const Icon(Icons.dark_mode, size: 72, color: AppColors.lantern),
               const SizedBox(height: 28),
               Text(
-                loc.nightIntroFirstNight,
+                gp.state!.night == 1
+                    ? loc.nightIntroFirstNight
+                    : loc.nightIntroOtherNights(gp.state!.night),
                 style: theme.textTheme.displayMedium,
                 textAlign: TextAlign.center,
               ),
