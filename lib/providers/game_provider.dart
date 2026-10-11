@@ -34,9 +34,14 @@ class GameProvider extends ChangeNotifier {
   // Setup : nombre de joueurs
   // ---------------------------------------------------------------------
 
+  /// Fixe le nombre de joueurs. La répartition des rôles déjà ajustée est
+  /// conservée si le nombre ne change pas (retour arrière depuis la
+  /// sélection des rôles), sinon on repart de la répartition suggérée.
   void setDraftPlayerCount(int count) {
     draftPlayerCount = count;
-    draftConfig = GameConfig(playerCount: count);
+    if (draftConfig == null || draftConfig!.playerCount != count) {
+      draftConfig = GameConfig(playerCount: count);
+    }
     notifyListeners();
   }
 
@@ -68,10 +73,39 @@ class GameProvider extends ChangeNotifier {
   bool get draftConfigValid => draftConfig?.isValid ?? false;
 
   void goToNames() {
-    draftNames = List.generate(draftConfig!.cardsForPlayers, (_) => '');
+    // On garde les prénoms déjà saisis (retour arrière depuis la saisie
+    // des prénoms vers la sélection des rôles).
+    final previous = draftNames;
+    draftNames = List.generate(draftConfig!.cardsForPlayers,
+        (i) => i < previous.length ? previous[i] : '');
     setupStep = SetupStep.names;
     notifyListeners();
   }
+
+  /// Retour à l'étape précédente de l'assistant de création : prénoms →
+  /// sélection des rôles → nombre de joueurs. Renvoie false s'il n'y a pas
+  /// d'étape précédente (on quitte alors l'assistant vers l'accueil).
+  bool backInSetup() {
+    if (state != null) return false;
+    switch (setupStep) {
+      case SetupStep.names:
+        setupStep = SetupStep.roles;
+      case SetupStep.roles:
+        setupStep = SetupStep.playerCount;
+      case SetupStep.playerCount:
+      case SetupStep.reveal:
+      case SetupStep.done:
+        return false;
+    }
+    notifyListeners();
+    return true;
+  }
+
+  /// Vrai si l'assistant de création a une étape précédente vers laquelle
+  /// revenir (voir [backInSetup]).
+  bool get canGoBackInSetup =>
+      state == null &&
+      (setupStep == SetupStep.roles || setupStep == SetupStep.names);
 
   // ---------------------------------------------------------------------
   // Setup : prénoms
@@ -122,7 +156,13 @@ class GameProvider extends ChangeNotifier {
   }
 
   /// Recommence tout depuis le début (retour à l'accueil).
-  void abandonGame() {
+  void abandonGame() => startNewSetup();
+
+  /// Ouvre l'assistant de création d'une nouvelle partie à sa première
+  /// étape (nombre de joueurs), même si une création précédente avait été
+  /// interrompue en cours de route (ex. à la sélection des rôles). Le
+  /// dernier nombre de joueurs choisi reste proposé par défaut.
+  void startNewSetup() {
     state = null;
     setupStep = SetupStep.playerCount;
     draftConfig = null;

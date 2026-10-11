@@ -24,8 +24,9 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
   void initState() {
     super.initState();
     final gp = context.read<GameProvider>();
-    _controllers =
-        List.generate(gp.draftNames.length, (_) => TextEditingController());
+    _controllers = [
+      for (final name in gp.draftNames) TextEditingController(text: name),
+    ];
     _focusNodes =
         List.generate(gp.draftNames.length, (_) => FocusNode());
 
@@ -92,6 +93,10 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
                   controller: _controllers[index],
                   focusNode: _focusNodes[index],
                   textCapitalization: TextCapitalization.words,
+                  // Mémorise la saisie pour la retrouver après un retour
+                  // arrière vers la sélection des rôles.
+                  onChanged: (value) =>
+                      context.read<GameProvider>().setPlayerName(index, value),
                   textInputAction: index == _controllers.length - 1
                       ? TextInputAction.done
                       : TextInputAction.next,

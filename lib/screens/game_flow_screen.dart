@@ -10,6 +10,10 @@ import 'setup/role_selection_screen.dart';
 /// Point d'entrée unique de tout le déroulé "création + partie". Regarde
 /// l'état du [GameProvider] et affiche l'écran correspondant — pas de
 /// pile de navigation complexe, la machine à états fait déjà tout le travail.
+///
+/// Pendant l'assistant de création, le retour arrière (flèche de l'AppBar
+/// ou bouton système) revient à l'étape précédente au lieu de quitter
+/// directement vers l'accueil.
 class GameFlowScreen extends StatelessWidget {
   const GameFlowScreen({super.key});
 
@@ -17,6 +21,16 @@ class GameFlowScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final gp = context.watch<GameProvider>();
 
+    return PopScope(
+      canPop: !gp.canGoBackInSetup,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) gp.backInSetup();
+      },
+      child: _currentScreen(gp),
+    );
+  }
+
+  Widget _currentScreen(GameProvider gp) {
     if (gp.state == null) {
       switch (gp.setupStep) {
         case SetupStep.playerCount:

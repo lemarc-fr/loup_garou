@@ -84,9 +84,16 @@ class HomeScreen extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const GameFlowScreen()),
-                        ),
+                        // Une nouvelle partie démarre toujours au choix du
+                        // nombre de joueurs, même si une création avait été
+                        // abandonnée en cours de route.
+                        onPressed: () {
+                          gameProvider.startNewSetup();
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                                builder: (_) => const GameFlowScreen()),
+                          );
+                        },
                         icon: const Icon(Icons.play_arrow),
                         label: Text(loc.newGameButton),
                       ),
