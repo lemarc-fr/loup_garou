@@ -107,10 +107,14 @@ class _PlayerStatsCard extends StatelessWidget {
               children: [
                 Text(loc.statsWinsAbbr(stats.wins),
                     style: theme.textTheme.bodyLarge
-                        ?.copyWith(color: AppColors.forest)),
+                        ?.copyWith(
+                            color: AppColors.readableOn(
+                                AppColors.forest, AppColors.nightAlt))),
                 Text(loc.statsLossesAbbr(stats.losses),
                     style: theme.textTheme.bodyMedium
-                        ?.copyWith(color: AppColors.blood)),
+                        ?.copyWith(
+                            color: AppColors.readableOn(
+                                AppColors.blood, AppColors.nightAlt))),
               ],
             ),
           ],

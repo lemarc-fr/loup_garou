@@ -21,7 +21,8 @@ class DebateScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.forum, size: 72, color: AppColors.forest),
+              Icon(Icons.forum,
+                  size: 72, color: context.readableIcon(AppColors.forest)),
               const SizedBox(height: 24),
               Text(
                 loc.debateVillageDebates,

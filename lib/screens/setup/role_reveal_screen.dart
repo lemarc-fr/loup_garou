@@ -76,7 +76,7 @@ class _RevealContent extends StatelessWidget {
                 const SizedBox(height: 20),
                 Text(loc.roleName(player.role),
                     style: theme.textTheme.displayMedium
-                        ?.copyWith(color: info.accent),
+                        ?.copyWith(color: context.readable(info.accent)),
                     textAlign: TextAlign.center),
                 const SizedBox(height: 6),
                 Container(
@@ -89,7 +89,7 @@ class _RevealContent extends StatelessWidget {
                   child: Text(
                     loc.campLabel(info.camp),
                     style: theme.textTheme.labelLarge
-                        ?.copyWith(color: info.accent),
+                        ?.copyWith(color: context.readable(info.accent)),
                   ),
                 ),
                 const SizedBox(height: 20),

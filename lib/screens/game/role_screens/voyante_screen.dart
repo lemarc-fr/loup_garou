@@ -8,6 +8,7 @@ import '../../../widgets/pass_device_gate.dart';
 import '../../../widgets/player_grid_selector.dart';
 import '../../../widgets/role_image.dart';
 import 'role_screen_chrome.dart';
+import '../../../theme/app_theme.dart';
 
 class VoyanteScreen extends StatelessWidget {
   const VoyanteScreen({super.key});
@@ -67,7 +68,7 @@ class _VoyanteContentState extends State<_VoyanteContent> {
                   Text(
                     loc.roleName(target.role),
                     style: theme.textTheme.displayMedium
-                        ?.copyWith(color: info.accent),
+                        ?.copyWith(color: context.readable(info.accent)),
                     textAlign: TextAlign.center,
                   ),
                 ],

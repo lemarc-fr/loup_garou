@@ -76,9 +76,9 @@ class _RenardContentState extends State<_RenardContent> {
                         Chip(
                           label: Text(p.name),
                           side: BorderSide(
-                              color: foundWolf
+                              color: context.readableIcon(foundWolf
                                   ? AppColors.blood
-                                  : AppColors.forest),
+                                  : AppColors.forest)),
                         ),
                     ],
                   ),

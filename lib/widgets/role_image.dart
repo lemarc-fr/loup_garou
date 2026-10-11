@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/role.dart';
+import '../theme/app_theme.dart';
 
 /// Affiche l’illustration d’un rôle si le fichier existe dans les assets,
 /// sinon retombe proprement sur une icône colorée.
@@ -64,6 +65,7 @@ class _RoleImageState extends State<RoleImage>
   @override
   Widget build(BuildContext context) {
     final info = widget.role.info;
+    final readableAccent = context.readableIcon(info.accent);
 
     final fallback = Container(
       width: widget.size,
@@ -74,13 +76,13 @@ class _RoleImageState extends State<RoleImage>
         borderRadius:
         widget.circular ? null : BorderRadius.circular(16),
         border: Border.all(
-          color: info.accent,
+          color: readableAccent,
           width: 2,
         ),
       ),
       child: Icon(
         info.fallbackIcon,
-        color: info.accent,
+        color: readableAccent,
         size: widget.size * 0.5,
       ),
     );

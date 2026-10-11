@@ -152,7 +152,9 @@ class HomeScreen extends StatelessWidget {
                   style: Theme.of(ctx)
                       .textTheme
                       .titleLarge
-                      ?.copyWith(color: role.info.accent)),
+                      ?.copyWith(
+                          color: AppColors.readableOn(
+                              role.info.accent, AppColors.nightAlt))),
               const SizedBox(height: 4),
               Text(loc.roleDescription(role),
                   style: Theme.of(ctx).textTheme.bodyMedium),

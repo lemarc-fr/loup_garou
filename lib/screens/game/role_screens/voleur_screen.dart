@@ -57,7 +57,7 @@ class _VoleurContentState extends State<_VoleurContent> {
               child: Text(
                 loc.voleurBothWolvesWarning,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.blood),
+                style: TextStyle(color: context.readable(AppColors.blood)),
               ),
             ),
           ],

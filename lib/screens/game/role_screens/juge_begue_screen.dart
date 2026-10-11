@@ -7,6 +7,7 @@ import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
 import '../../../widgets/pass_device_gate.dart';
 import 'role_screen_chrome.dart';
+import '../../../theme/app_theme.dart';
 
 /// Le Juge Bègue ne désigne jamais un joueur : une fois par partie, il
 /// décide en secret que le vote du village qui va suivre sera rejoué
@@ -50,7 +51,8 @@ class _JugeBegueContent extends StatelessWidget {
           RoleSectionCard(
             child: Column(
               children: [
-                Icon(info.fallbackIcon, size: 64, color: info.accent),
+                Icon(info.fallbackIcon,
+                    size: 64, color: context.readableIcon(info.accent)),
                 const SizedBox(height: 12),
                 Text(
                   loc.jugeBegueQuestion,

@@ -24,7 +24,8 @@ class VoteResultScreen extends StatelessWidget {
           padding: const EdgeInsets.all(24),
           child: Column(
             children: [
-              const Icon(Icons.gavel, size: 64, color: AppColors.blood),
+              Icon(Icons.gavel,
+                  size: 64, color: context.readableIcon(AppColors.blood)),
               const SizedBox(height: 16),
               Text(
                 deaths.isEmpty

@@ -72,7 +72,7 @@ class _MayorRevealScreenState extends State<MayorRevealScreen>
               Text(
                 mayor.name,
                 style: theme.textTheme.displayMedium
-                    ?.copyWith(color: AppColors.lantern),
+                    ?.copyWith(color: context.readable(AppColors.lantern)),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),

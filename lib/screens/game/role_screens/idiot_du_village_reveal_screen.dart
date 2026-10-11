@@ -7,6 +7,7 @@ import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
 import '../../../widgets/role_image.dart';
 import 'role_screen_chrome.dart';
+import '../../../theme/app_theme.dart';
 
 class IdiotDuVillageRevealScreen extends StatelessWidget {
   const IdiotDuVillageRevealScreen({super.key});
@@ -39,7 +40,8 @@ class IdiotDuVillageRevealScreen extends StatelessWidget {
                 Text(
                   loc.roleName(idiot.role),
                   style:
-                      theme.textTheme.displayMedium?.copyWith(color: info.accent),
+                      theme.textTheme.displayMedium
+                      ?.copyWith(color: context.readable(info.accent)),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 12),

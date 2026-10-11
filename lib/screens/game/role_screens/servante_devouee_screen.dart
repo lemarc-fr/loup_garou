@@ -8,6 +8,7 @@ import '../../../providers/game_provider.dart';
 import '../../../widgets/pass_device_gate.dart';
 import '../../../widgets/role_image.dart';
 import 'role_screen_chrome.dart';
+import '../../../theme/app_theme.dart';
 
 class ServanteDevoueeScreen extends StatelessWidget {
   const ServanteDevoueeScreen({super.key});
@@ -73,7 +74,7 @@ class _ServanteDevoueeContent extends StatelessWidget {
                 Text(
                   loc.roleName(offered.role),
                   style: theme.textTheme.displayMedium
-                      ?.copyWith(color: info.accent),
+                      ?.copyWith(color: context.readable(info.accent)),
                   textAlign: TextAlign.center,
                 ),
               ],

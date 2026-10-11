@@ -89,7 +89,8 @@ class RoleSelectionScreen extends StatelessWidget {
                         ? loc.roleSelectionTooManyRoles(remaining.abs())
                         : loc.roleSelectionAutoVillagers(remaining),
                     style: theme.textTheme.titleLarge?.copyWith(
-                      color: remaining < 0 ? AppColors.blood : AppColors.forest,
+                      color: context.readable(
+                          remaining < 0 ? AppColors.blood : AppColors.forest),
                     ),
                   ),
                 ],

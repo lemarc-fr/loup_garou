@@ -25,7 +25,8 @@ class DayRevealScreen extends StatelessWidget {
           padding: const EdgeInsets.all(24),
           child: Column(
             children: [
-              const Icon(Icons.wb_sunny, size: 64, color: AppColors.lantern),
+              Icon(Icons.wb_sunny,
+                  size: 64, color: context.readableIcon(AppColors.lantern)),
               const SizedBox(height: 16),
               Text(
                 deaths.isEmpty

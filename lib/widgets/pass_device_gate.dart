@@ -53,7 +53,8 @@ class _PassDeviceGateState extends State<PassDeviceGate> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Icon(Icons.phonelink_ring, size: 72, color: widget.accent),
+                Icon(Icons.phonelink_ring,
+                    size: 72, color: context.readableIcon(widget.accent)),
                 const SizedBox(height: 28),
                 Text(
                     widget.pluralToName
@@ -65,7 +66,7 @@ class _PassDeviceGateState extends State<PassDeviceGate> {
                 Text(
                   widget.toName,
                   style: theme.textTheme.displayMedium
-                      ?.copyWith(color: widget.accent),
+                      ?.copyWith(color: context.readable(widget.accent)),
                   textAlign: TextAlign.center,
                 ),
                 if (widget.subtitle != null) ...[
@@ -81,7 +82,7 @@ class _PassDeviceGateState extends State<PassDeviceGate> {
                   label: Text(loc.passDeviceConfirmButton),
                   style: FilledButton.styleFrom(
                     backgroundColor: widget.accent,
-                    foregroundColor: Colors.black,
+                    foregroundColor: AppColors.onFill(widget.accent),
                     padding: const EdgeInsets.symmetric(
                         horizontal: 32, vertical: 18),
                     shape: RoundedRectangleBorder(

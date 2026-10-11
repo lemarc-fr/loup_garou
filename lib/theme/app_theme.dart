@@ -25,6 +25,58 @@ class AppColors {
   static const Color forest = Color(0xFF3C6355); // camp village / vie / voyante
   static const Color amethyst =
       Color(0xFF6E4B8E); // pouvoirs magiques (sorcière, cupidon)
+
+  /// Rapport de contraste WCAG entre deux couleurs opaques (de 1 à 21).
+  static double contrast(Color a, Color b) {
+    final la = a.computeLuminance();
+    final lb = b.computeLuminance();
+    final hi = la > lb ? la : lb;
+    final lo = la > lb ? lb : la;
+    return (hi + 0.05) / (lo + 0.05);
+  }
+
+  /// Variante de [accent] assez contrastée pour être lue (texte, icône)
+  /// posée sur [background].
+  ///
+  /// Les couleurs de la palette sont pensées comme des aplats : utilisées
+  /// telles quelles pour du texte, certaines deviennent illisibles (vert
+  /// forêt, améthyste ou rouge sang sur le fond nuit, ambre sur le
+  /// parchemin du jour...). On garde la teinte mais on l'éclaircit (fond
+  /// sombre) ou on l'assombrit (fond clair) jusqu'à atteindre
+  /// [minContrast] — 4.5 pour du texte (WCAG AA), 3 suffit pour une icône.
+  static Color readableOn(Color accent, Color background,
+      {double minContrast = 4.5}) {
+    if (contrast(accent, background) >= minContrast) return accent;
+    final hsl = HSLColor.fromColor(accent);
+    final lighten = background.computeLuminance() < 0.5;
+    var lightness = hsl.lightness;
+    while (lighten ? lightness < 1 : lightness > 0) {
+      lightness = (lighten ? lightness + 0.02 : lightness - 0.02).clamp(0.0, 1.0);
+      final candidate = hsl.withLightness(lightness).toColor();
+      if (contrast(candidate, background) >= minContrast) return candidate;
+    }
+    return lighten ? Colors.white : Colors.black;
+  }
+
+  /// Couleur de texte/icône à poser sur un aplat de couleur [fill]
+  /// (bouton plein, pastille...).
+  static Color onFill(Color fill) =>
+      ThemeData.estimateBrightnessForColor(fill) == Brightness.dark
+          ? Colors.white
+          : night;
+}
+
+/// Raccourcis pour obtenir une couleur d'accent lisible sur le fond de
+/// l'écran courant, qu'il soit en thème nuit ou en thème jour.
+extension ReadableColors on BuildContext {
+  Color readable(Color accent, {double minContrast = 4.5}) =>
+      AppColors.readableOn(accent, Theme.of(this).scaffoldBackgroundColor,
+          minContrast: minContrast);
+
+  /// Comme [readable], avec le seuil plus souple des icônes et éléments
+  /// graphiques (WCAG : 3:1, un peu relevé car l'icône est souvent posée
+  /// sur une carte légèrement plus claire que le fond de l'écran).
+  Color readableIcon(Color accent) => readable(accent, minContrast: 3.5);
 }
 
 class AppTheme {
@@ -65,9 +117,13 @@ class AppTheme {
       seedColor: AppColors.lantern,
       brightness: Brightness.dark,
       surface: AppColors.nightAlt,
+      onSurface: AppColors.moonlight,
       primary: AppColors.lantern,
+      onPrimary: AppColors.night,
       secondary: AppColors.amethyst,
-      error: AppColors.blood,
+      onSecondary: Colors.white,
+      error: AppColors.readableOn(AppColors.blood, AppColors.nightAlt),
+      onError: AppColors.night,
     );
     return ThemeData(
       useMaterial3: true,
@@ -122,9 +178,13 @@ class AppTheme {
       seedColor: AppColors.forest,
       brightness: Brightness.light,
       surface: AppColors.parchmentAlt,
+      onSurface: AppColors.ink,
       primary: AppColors.forest,
+      onPrimary: AppColors.parchment,
       secondary: AppColors.lantern,
+      onSecondary: AppColors.ink,
       error: AppColors.blood,
+      onError: Colors.white,
     );
     return ThemeData(
       useMaterial3: true,
@@ -150,6 +210,16 @@ class AppTheme {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
       ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.ink,
+          side: BorderSide(
+              color: AppColors.ink.withValues(alpha: 0.35), width: 1.4),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        ),
+      ),
       cardTheme: CardThemeData(
         color: Colors.white.withValues(alpha: 0.55),
         elevation: 0,
@@ -158,6 +228,7 @@ class AppTheme {
           side: BorderSide(color: AppColors.ink.withValues(alpha: 0.15)),
         ),
       ),
+      dividerColor: AppColors.ink.withValues(alpha: 0.15),
     );
   }
 }

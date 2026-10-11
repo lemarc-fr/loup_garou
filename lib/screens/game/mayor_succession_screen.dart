@@ -29,8 +29,8 @@ class MayorSuccessionScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Icon(Icons.emoji_events_outlined,
-                  size: 56, color: AppColors.lantern),
+              Icon(Icons.emoji_events_outlined,
+                  size: 56, color: context.readableIcon(AppColors.lantern)),
               const SizedBox(height: 16),
               Text(
                 loc.mayorSuccessionInstruction,

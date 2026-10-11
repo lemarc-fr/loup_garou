@@ -123,7 +123,7 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
                     _NameError.empty => loc.playerNamesErrorEmpty,
                     _NameError.duplicate => loc.playerNamesErrorDuplicate,
                   },
-                  style: const TextStyle(color: AppColors.blood),
+                  style: TextStyle(color: context.readable(AppColors.blood)),
                 ),
               ),
             Padding(

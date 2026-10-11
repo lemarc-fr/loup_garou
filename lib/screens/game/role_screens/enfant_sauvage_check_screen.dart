@@ -5,6 +5,7 @@ import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
 import '../../../widgets/pass_device_gate.dart';
 import 'role_screen_chrome.dart';
+import '../../../theme/app_theme.dart';
 
 class EnfantSauvageCheckScreen extends StatelessWidget {
   const EnfantSauvageCheckScreen({super.key});
@@ -42,7 +43,8 @@ class _EnfantSauvageCheckContent extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           RoleSectionCard(
-            child: Icon(info.fallbackIcon, size: 64, color: info.accent),
+            child: Icon(info.fallbackIcon,
+                size: 64, color: context.readableIcon(info.accent)),
           ),
           const SizedBox(height: 28),
           SizedBox(

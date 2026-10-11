@@ -59,6 +59,10 @@ class GameProgressButton extends StatelessWidget {
 }
 
 /// Ouvre le résumé complet de la partie dans une ModalBottomSheet.
+///
+/// La feuille a toujours un fond "nuit" : on force donc le thème nuit,
+/// sinon, ouverte en journée, elle hériterait du texte encre du thème jour
+/// (illisible sur ce fond sombre).
 void showGameProgressSheet(BuildContext context) {
   showModalBottomSheet(
     context: context,
@@ -67,7 +71,8 @@ void showGameProgressSheet(BuildContext context) {
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
-    builder: (_) => const GameProgressSheet(),
+    builder: (_) =>
+        Theme(data: AppTheme.night, child: const GameProgressSheet()),
   );
 }
 
@@ -257,14 +262,22 @@ class _StatusIcon extends StatelessWidget {
   Widget _iconFor(StepStatus status) {
     switch (status) {
       case StepStatus.pending:
-        return const Icon(Icons.radio_button_unchecked,
-            key: ValueKey('pending'), color: AppColors.nightLine, size: 22);
+        return Icon(Icons.radio_button_unchecked,
+            key: const ValueKey('pending'),
+            color: AppColors.moonlight.withValues(alpha: 0.35),
+            size: 22);
       case StepStatus.done:
-        return const Icon(Icons.check_circle,
-            key: ValueKey('done'), color: AppColors.forest, size: 22);
+        return Icon(Icons.check_circle,
+            key: const ValueKey('done'),
+            color: AppColors.readableOn(AppColors.forest, AppColors.nightAlt,
+                minContrast: 3),
+            size: 22);
       case StepStatus.skipped:
-        return const Icon(Icons.cancel,
-            key: ValueKey('skipped'), color: AppColors.blood, size: 22);
+        return Icon(Icons.cancel,
+            key: const ValueKey('skipped'),
+            color: AppColors.readableOn(AppColors.blood, AppColors.nightAlt,
+                minContrast: 3),
+            size: 22);
       case StepStatus.current:
         return const SizedBox(
           key: ValueKey('current'),

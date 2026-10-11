@@ -112,16 +112,13 @@ class _PowerLossPrivateScreen extends StatelessWidget {
           padding: const EdgeInsets.all(24),
           child: Column(
             children: [
-              LinearProgressIndicator(
-                value: (index + 1) / total,
-                backgroundColor: AppColors.nightAlt,
-              ),
+              LinearProgressIndicator(value: (index + 1) / total),
               const SizedBox(height: 8),
               Text(loc.powerLossPlayerCount(index + 1, total),
                   style: theme.textTheme.bodyMedium),
               const Spacer(),
-              const Icon(Icons.auto_awesome_outlined,
-                  size: 56, color: AppColors.blood),
+              Icon(Icons.auto_awesome_outlined,
+                  size: 56, color: context.readableIcon(AppColors.blood)),
               const SizedBox(height: 16),
               Text(
                 loc.powerLossAncienHangedHeadline,
@@ -141,7 +138,7 @@ class _PowerLossPrivateScreen extends StatelessWidget {
                 Text(
                   loc.roleName(lostRole!),
                   style: theme.textTheme.displayMedium
-                      ?.copyWith(color: lostRole!.info.accent),
+                      ?.copyWith(color: context.readable(lostRole!.info.accent)),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
@@ -158,12 +155,12 @@ class _PowerLossPrivateScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Icon(Icons.bedtime,
-                    size: 96, color: AppColors.moonlight.withValues(alpha: 0.6)),
+                    size: 96,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                 const SizedBox(height: 12),
                 Text(
                   loc.powerLossFakeGiftName,
-                  style: theme.textTheme.displayMedium
-                      ?.copyWith(color: AppColors.moonlight),
+                  style: theme.textTheme.displayMedium,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
@@ -223,8 +220,8 @@ class _PublicPowerLossAnnouncement extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.auto_awesome_outlined,
-                  size: 64, color: AppColors.blood),
+              Icon(Icons.auto_awesome_outlined,
+                  size: 64, color: context.readableIcon(AppColors.blood)),
               const SizedBox(height: 20),
               Text(
                 loc.powerLossAncienHangedHeadline,

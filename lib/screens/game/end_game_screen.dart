@@ -64,8 +64,8 @@ class _EndGameScreenState extends State<EndGameScreen> {
           child: Column(
             children: [
               const SizedBox(height: 12),
-              const Icon(Icons.emoji_events,
-                  size: 72, color: AppColors.lantern),
+              Icon(Icons.emoji_events,
+                  size: 72, color: context.readableIcon(AppColors.lantern)),
               const SizedBox(height: 20),
               Text(
                 _winnerLabel(loc, result.winner),
@@ -83,12 +83,15 @@ class _EndGameScreenState extends State<EndGameScreen> {
                           title: Text(p.name),
                           subtitle: Text(loc.roleName(p.role)),
                           trailing: winners.contains(p)
-                              ? const Icon(Icons.star, color: AppColors.lantern)
+                              ? Icon(Icons.star,
+                                  color: context.readableIcon(AppColors.lantern))
                               : (p.alive
-                                  ? const Icon(Icons.favorite,
-                                      color: AppColors.forest)
-                                  : const Icon(Icons.close,
-                                      color: AppColors.blood)),
+                                  ? Icon(Icons.favorite,
+                                      color:
+                                          context.readableIcon(AppColors.forest))
+                                  : Icon(Icons.close,
+                                      color:
+                                          context.readableIcon(AppColors.blood))),
                         ),
                       ),
                   ],

@@ -2,6 +2,15 @@ import 'package:flutter/material.dart';
 
 import '../../../theme/app_theme.dart';
 
+/// Fond des cartes posées sur un écran de rôle. Suit le thème courant :
+/// ces écrans s'affichent la nuit (thème sombre) mais aussi le jour pour
+/// les suites d'une mort (Chasseur, Servante, Bouc Émissaire...), en thème
+/// parchemin — des couleurs "nuit" en dur y rendaient le texte illisible.
+Color _cardColor(ThemeData theme, {double alpha = 0.9}) =>
+    theme.brightness == Brightness.dark
+        ? AppColors.nightAlt.withValues(alpha: alpha)
+        : Colors.white.withValues(alpha: 0.6);
+
 class RoleScreenFrame extends StatelessWidget {
   final String title;
   final Color accent;
@@ -16,6 +25,7 @@ class RoleScreenFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final background = Theme.of(context).scaffoldBackgroundColor;
     return Scaffold(
       appBar: AppBar(title: Text(title), centerTitle: true),
       body: Container(
@@ -24,9 +34,9 @@ class RoleScreenFrame extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              accent.withValues(alpha: 0.12),
-              AppColors.night,
-              AppColors.night,
+              Color.alphaBlend(accent.withValues(alpha: 0.12), background),
+              background,
+              background,
             ],
             stops: const [0, 0.35, 1],
           ),
@@ -59,14 +69,14 @@ class RoleInstructionCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: AppColors.nightAlt.withValues(alpha: 0.9),
+        color: _cardColor(theme),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: accent.withValues(alpha: 0.45)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.auto_awesome, color: accent),
+          Icon(Icons.auto_awesome, color: context.readableIcon(accent)),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -93,13 +103,14 @@ class RoleSectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       width: double.infinity,
       padding: padding,
       decoration: BoxDecoration(
-        color: AppColors.nightAlt.withValues(alpha: 0.78),
+        color: _cardColor(theme, alpha: 0.78),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.nightLine),
+        border: Border.all(color: theme.dividerColor),
       ),
       child: child,
     );

@@ -46,7 +46,7 @@ class _PetiteFilleContent extends StatelessWidget {
             child: Text(
               loc.petiteFilleWarning,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.blood),
+              style: TextStyle(color: context.readable(AppColors.blood)),
             ),
           ),
           const SizedBox(height: 28),

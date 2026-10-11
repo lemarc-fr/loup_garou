@@ -55,7 +55,7 @@ class _EnfantSauvageMutationContent extends StatelessWidget {
                 Text(
                   loc.roleName(RoleId.loupGarou),
                   style: theme.textTheme.displayMedium
-                      ?.copyWith(color: AppColors.blood),
+                      ?.copyWith(color: context.readable(AppColors.blood)),
                   textAlign: TextAlign.center,
                 ),
               ],
