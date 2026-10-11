@@ -554,6 +554,12 @@ abstract class AppLocalizations {
   /// **'Corbeau'**
   String get roleCorbeauShortName;
 
+  /// Rôle d'un joueur ayant muté en cours de partie, ex. Loup-Garou (anciennement Enfant Sauvage)
+  ///
+  /// In fr, this message translates to:
+  /// **'{role} (anciennement {formerRole})'**
+  String roleWithFormerRole(String role, String formerRole);
+
   /// Description du rôle Corbeau
   ///
   /// In fr, this message translates to:

@@ -845,6 +845,7 @@ class GameEngine {
       if (enfant != null &&
           enfant.alive &&
           enfant.role == RoleId.enfantSauvage) {
+        enfant.formerRole = RoleId.enfantSauvage;
         enfant.role = RoleId.loupGarou;
         if (s.settings.enfantSauvagePublicReveal) {
           s.enfantSauvagePreviousRole = RoleId.enfantSauvage;

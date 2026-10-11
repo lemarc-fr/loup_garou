@@ -81,7 +81,7 @@ class _EndGameScreenState extends State<EndGameScreen> {
                         child: ListTile(
                           leading: RoleImage(role: p.role, size: 44),
                           title: Text(p.name),
-                          subtitle: Text(loc.roleName(p.role)),
+                          subtitle: Text(loc.playerRoleLabel(p)),
                           trailing: winners.contains(p)
                               ? Icon(Icons.star,
                                   color: context.readableIcon(AppColors.lantern))

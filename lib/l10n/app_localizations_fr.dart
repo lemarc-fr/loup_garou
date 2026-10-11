@@ -257,6 +257,11 @@ class AppLocalizationsFr extends AppLocalizations {
   String get roleCorbeauShortName => 'Corbeau';
 
   @override
+  String roleWithFormerRole(String role, String formerRole) {
+    return '$role (anciennement $formerRole)';
+  }
+
+  @override
   String get roleCorbeauDescription =>
       'Chaque nuit, il désigne un joueur qui aura deux voix de plus contre lui lors du prochain vote du village.';
 

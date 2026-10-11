@@ -1,3 +1,4 @@
+import '../models/player.dart';
 import '../models/role.dart';
 import 'app_localizations.dart';
 
@@ -80,6 +81,15 @@ extension RoleLocalizations on AppLocalizations {
         RoleId.montreurDours => roleMontreurDoursDescription,
         RoleId.renard => roleRenardDescription,
       };
+
+  /// Rôle d'un joueur tel qu'annoncé à sa mort ou en fin de partie. Si le
+  /// joueur a muté en cours de partie, on rappelle son rôle d'origine :
+  /// "Loup-Garou (anciennement Enfant Sauvage)".
+  String playerRoleLabel(Player player) {
+    final former = player.formerRole;
+    if (former == null || former == player.role) return roleName(player.role);
+    return roleWithFormerRole(roleName(player.role), roleShortName(former));
+  }
 
   /// Libellé du camp tel qu'annoncé au joueur lors de la découverte de
   /// son rôle.

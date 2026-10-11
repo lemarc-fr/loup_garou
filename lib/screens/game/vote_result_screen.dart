@@ -45,7 +45,7 @@ class VoteResultScreen extends StatelessWidget {
                         child: ListTile(
                           leading: RoleImage(role: p.role, size: 48),
                           title: Text(p.name),
-                          subtitle: Text(loc.roleName(p.role)),
+                          subtitle: Text(loc.playerRoleLabel(p)),
                         ),
                       ),
                   ],

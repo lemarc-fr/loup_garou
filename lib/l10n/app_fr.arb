@@ -305,7 +305,19 @@
   "@roleCorbeauShortName": {
     "description": "Nom court du rôle Corbeau"
   },
-  "roleCorbeauDescription": "Chaque nuit, il désigne un joueur qui aura deux voix de plus contre lui lors du prochain vote du village.",
+  "roleWithFormerRole": "{role} (anciennement {formerRole})",
+  "@roleWithFormerRole": {
+    "description": "Rôle d'un joueur ayant muté en cours de partie, ex. Loup-Garou (anciennement Enfant Sauvage)",
+    "placeholders": {
+      "role": {
+        "type": "String"
+      },
+      "formerRole": {
+        "type": "String"
+      }
+    }
+  },
+  "roleCorbeauDescription":"Chaque nuit, il désigne un joueur qui aura deux voix de plus contre lui lors du prochain vote du village.",
   "@roleCorbeauDescription": {
     "description": "Description du rôle Corbeau"
   },

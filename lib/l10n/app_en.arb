@@ -77,7 +77,8 @@
   "roleRenardDescription": "At night, he points at a player: that player and their two living neighbors form a group of three. The narrator tells him whether at least one Werewolf is among them.",
   "roleCorbeauName": "The Raven",
   "roleCorbeauShortName": "Raven",
-  "roleCorbeauDescription": "Each night, he designates a player who will have two extra votes against them at the next village vote.",
+  "roleWithFormerRole": "{role} (formerly {formerRole})",
+  "roleCorbeauDescription":"Each night, he designates a player who will have two extra votes against them at the next village vote.",
 
   "passDeviceToPlural": "Pass the phone to the",
   "passDeviceToSingular": "Pass the phone to",

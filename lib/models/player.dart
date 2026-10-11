@@ -8,6 +8,9 @@ class Player {
   bool isMayor;
   String? loverId; // id de l'autre Amoureux, si Cupidon est passé
   String? mentorOf; // id de l'Enfant Sauvage dont il est le mentor, si Enfant Sauvage est passé
+  /// Rôle d'origine si le joueur a muté en cours de partie (Enfant Sauvage
+  /// devenu Loup-Garou), pour le rappeler à l'annonce de sa mort.
+  RoleId? formerRole;
   DeathCause? deathCause;
   int? deathAtNight; // numéro de nuit du décès (null si mort le jour ou vivant)
   int? deathAtDay; // numéro de jour du décès (null si mort la nuit ou vivant)
@@ -26,6 +29,7 @@ class Player {
     ..alive = alive
     ..isMayor = isMayor
     ..loverId = loverId
+    ..formerRole = formerRole
     ..deathCause = deathCause
     ..deathAtNight = deathAtNight
     ..deathAtDay = deathAtDay;
@@ -37,6 +41,7 @@ class Player {
         'alive': alive,
         'isMayor': isMayor,
         'loverId': loverId,
+        'formerRole': formerRole?.name,
         'deathCause': deathCause?.name,
         'deathAtNight': deathAtNight,
         'deathAtDay': deathAtDay,
@@ -51,6 +56,8 @@ class Player {
     p.alive = json['alive'] as bool;
     p.isMayor = json['isMayor'] as bool;
     p.loverId = json['loverId'] as String?;
+    final fr = json['formerRole'] as String?;
+    p.formerRole = fr == null ? null : RoleId.values.byName(fr);
     final dc = json['deathCause'] as String?;
     p.deathCause = dc == null ? null : DeathCause.values.byName(dc);
     p.deathAtNight = json['deathAtNight'] as int?;

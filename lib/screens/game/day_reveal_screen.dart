@@ -49,7 +49,7 @@ class DayRevealScreen extends StatelessWidget {
                           leading: RoleImage(role: p.role, size: 48),
                           title: Text(p.name),
                           subtitle: Text(
-                              '${loc.roleName(p.role)} — ${_causeLabel(loc, p.deathCause)}'),
+                              '${loc.playerRoleLabel(p)} — ${_causeLabel(loc, p.deathCause)}'),
                         ),
                       ),
                   ],

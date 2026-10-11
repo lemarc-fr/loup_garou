@@ -257,6 +257,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get roleCorbeauShortName => 'Raven';
 
   @override
+  String roleWithFormerRole(String role, String formerRole) {
+    return '$role (formerly $formerRole)';
+  }
+
+  @override
   String get roleCorbeauDescription =>
       'Each night, he designates a player who will have two extra votes against them at the next village vote.';
 
