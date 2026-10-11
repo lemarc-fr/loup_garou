@@ -1143,6 +1143,66 @@
   "@gameSettingsTitle": {
     "description": "Titre de l'écran des options de jeu"
   },
+  "settingsAppSectionTitle": "Application",
+  "@settingsAppSectionTitle": {
+    "description": "Titre de la section des réglages de l'application"
+  },
+  "settingsGameRulesSectionTitle": "Règles de la partie",
+  "@settingsGameRulesSectionTitle": {
+    "description": "Titre de la section des options de règles du jeu"
+  },
+  "settingsLanguageLabel": "Langue",
+  "@settingsLanguageLabel": {
+    "description": "Libellé du choix de la langue de l'application"
+  },
+  "settingsLanguageDescription": "Langue utilisée dans toute l'application.",
+  "@settingsLanguageDescription": {
+    "description": "Description du choix de la langue de l'application"
+  },
+  "settingsLanguageSystem": "Système",
+  "@settingsLanguageSystem": {
+    "description": "Option de langue : suivre la langue du téléphone"
+  },
+  "settingAllowWerewolfToKillThemselvesLabel": "Les Loups peuvent se dévorer entre eux",
+  "@settingAllowWerewolfToKillThemselvesLabel": {
+    "description": "Libellé de l'option allowWerewolfToKillThemselves"
+  },
+  "settingAllowWerewolfToKillThemselvesDescription": "Si activé, un Loup-Garou peut être désigné comme victime par ses coéquipiers pendant la phase des Loups.",
+  "@settingAllowWerewolfToKillThemselvesDescription": {
+    "description": "Description de l'option allowWerewolfToKillThemselves"
+  },
+  "settingAllowHunterToShootAfterWitchDeathCauseLabel": "Le Chasseur peut tirer s'il est tué par la Sorcière",
+  "@settingAllowHunterToShootAfterWitchDeathCauseLabel": {
+    "description": "Libellé de l'option allowHunterToShootAfterWitchDeathCause"
+  },
+  "settingAllowHunterToShootAfterWitchDeathCauseDescription": "Si activé, le Chasseur peut utiliser son pouvoir de tir après avoir été empoisonné par la Sorcière.",
+  "@settingAllowHunterToShootAfterWitchDeathCauseDescription": {
+    "description": "Description de l'option allowHunterToShootAfterWitchDeathCause"
+  },
+  "settingAllowWitchToPlayIfWerewolfDeathCauseLabel": "La Sorcière joue même si elle est visée par les Loups",
+  "@settingAllowWitchToPlayIfWerewolfDeathCauseLabel": {
+    "description": "Libellé de l'option allowWitchToPlayIfWerewolfDeathCause"
+  },
+  "settingAllowWitchToPlayIfWerewolfDeathCauseDescription": "Si activé, la Sorcière est quand même réveillée pour son tour même si elle est la victime désignée par les Loups-Garous cette nuit-là. Si désactivé, elle ne joue pas et succombe directement, sans utiliser ses potions.",
+  "@settingAllowWitchToPlayIfWerewolfDeathCauseDescription": {
+    "description": "Description de l'option allowWitchToPlayIfWerewolfDeathCause"
+  },
+  "settingAllowWitchToSaveHerselfLabel": "La Sorcière peut se sauver elle-même",
+  "@settingAllowWitchToSaveHerselfLabel": {
+    "description": "Libellé de l'option allowWitchToSaveHerself"
+  },
+  "settingAllowWitchToSaveHerselfDescription": "Si activé, la Sorcière peut utiliser sa potion de vie sur elle-même lorsqu'elle est la victime désignée par les Loups-Garous.",
+  "@settingAllowWitchToSaveHerselfDescription": {
+    "description": "Description de l'option allowWitchToSaveHerself"
+  },
+  "settingEnfantSauvagePublicRevealLabel": "Mutation de l'Enfant Sauvage annoncée à tous",
+  "@settingEnfantSauvagePublicRevealLabel": {
+    "description": "Libellé de l'option enfantSauvagePublicReveal"
+  },
+  "settingEnfantSauvagePublicRevealDescription": "Si activé, la mutation de l'Enfant Sauvage est révélée publiquement dès la mort de son modèle (pas d'écran de nuit). Si désactivé, rien n'est annoncé : l'Enfant Sauvage est prévenu en secret au début de la nuit suivante.",
+  "@settingEnfantSauvagePublicRevealDescription": {
+    "description": "Description de l'option enfantSauvagePublicReveal"
+  },
 
   "statsTitle": "Statistiques",
   "@statsTitle": {

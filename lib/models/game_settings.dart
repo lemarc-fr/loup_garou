@@ -1,8 +1,8 @@
 /// Identifiant unique de chaque option de jeu. Pour ajouter une nouvelle
-/// option : ajoute une valeur ici, puis une entrée dans
-/// [kGameSettingDefinitions] juste en dessous. C'est tout — l'écran
-/// d'options, la persistance et l'accès via SettingsProvider suivent
-/// automatiquement.
+/// option : ajoute une valeur ici, une entrée dans [kGameSettingDefinitions]
+/// juste en dessous, puis son libellé et sa description dans les fichiers
+/// .arb (voir l10n/setting_localizations.dart). L'écran d'options, la
+/// persistance et l'accès via SettingsProvider suivent automatiquement.
 enum SettingId {
   allowWerewolfToKillThemselves,
   allowHunterToShootAfterWitchDeathCause,
@@ -11,17 +11,14 @@ enum SettingId {
   enfantSauvagePublicReveal,
 }
 
-/// Décrit une option pour l'affichage dans l'écran de réglages.
+/// Décrit une option pour l'affichage dans l'écran de réglages. Les textes
+/// (libellé, description) sont traduits : voir l10n/setting_localizations.dart.
 class GameSettingDefinition {
   final SettingId id;
-  final String label;
-  final String description;
   final bool defaultValue;
 
   const GameSettingDefinition({
     required this.id,
-    required this.label,
-    required this.description,
     this.defaultValue = false,
   });
 }
@@ -31,45 +28,22 @@ class GameSettingDefinition {
 const List<GameSettingDefinition> kGameSettingDefinitions = [
   GameSettingDefinition(
     id: SettingId.allowWerewolfToKillThemselves,
-    label: 'Les Loups peuvent se dévorer entre eux',
-    description:
-    'Si activé, un Loup-Garou peut être désigné comme victime par ses '
-        'coéquipiers pendant la phase des Loups.',
     defaultValue: true,
   ),
   GameSettingDefinition(
     id: SettingId.allowHunterToShootAfterWitchDeathCause,
-    label: 'Le Chasseur peut tirer si il est tué par la sorcière',
-    description:
-        'Si activé, le Chasseur peut utiliser son pouvoir de tir après que la Sorcière l\'ait tué.',
     defaultValue: true,
   ),
   GameSettingDefinition(
     id: SettingId.allowWitchToPlayIfWerewolfDeathCause,
-    label: 'La Sorcière joue même si elle est visée par les Loups',
-    description:
-    'Si activé, la Sorcière est quand même réveillée pour son tour '
-        'même si elle est la victime désignée par les Loups-Garous cette '
-        'nuit-là. Si désactivé (par défaut), elle ne joue pas et succombe '
-        'directement, sans utiliser ses potions.',
     defaultValue: true,
   ),
   GameSettingDefinition(
     id: SettingId.allowWitchToSaveHerself,
-    label: 'La Sorcière peut se sauver elle-même',
-    description:
-    'Si activé, la Sorcière peut utiliser sa potion de vie sur '
-        'elle-même lorsqu\'elle est la victime désignée par les Loups-Garous.',
     defaultValue: true,
   ),
   GameSettingDefinition(
     id: SettingId.enfantSauvagePublicReveal,
-    label: "Mutation de l'Enfant Sauvage annoncée à tous",
-    description:
-    "Si activé, la mutation de l'Enfant Sauvage est révélée publiquement "
-        "dès la mort de son modèle (pas d'écran de nuit). Si désactivé, rien "
-        "n'est annoncé : l'Enfant Sauvage est prévenu en secret au début de "
-        "la nuit suivante.",
     defaultValue: true,
   ),
 ];

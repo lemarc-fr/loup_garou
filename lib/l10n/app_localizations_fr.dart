@@ -901,6 +901,62 @@ class AppLocalizationsFr extends AppLocalizations {
   String get gameSettingsTitle => 'Options de jeu';
 
   @override
+  String get settingsAppSectionTitle => 'Application';
+
+  @override
+  String get settingsGameRulesSectionTitle => 'Règles de la partie';
+
+  @override
+  String get settingsLanguageLabel => 'Langue';
+
+  @override
+  String get settingsLanguageDescription =>
+      'Langue utilisée dans toute l\'application.';
+
+  @override
+  String get settingsLanguageSystem => 'Système';
+
+  @override
+  String get settingAllowWerewolfToKillThemselvesLabel =>
+      'Les Loups peuvent se dévorer entre eux';
+
+  @override
+  String get settingAllowWerewolfToKillThemselvesDescription =>
+      'Si activé, un Loup-Garou peut être désigné comme victime par ses coéquipiers pendant la phase des Loups.';
+
+  @override
+  String get settingAllowHunterToShootAfterWitchDeathCauseLabel =>
+      'Le Chasseur peut tirer s\'il est tué par la Sorcière';
+
+  @override
+  String get settingAllowHunterToShootAfterWitchDeathCauseDescription =>
+      'Si activé, le Chasseur peut utiliser son pouvoir de tir après avoir été empoisonné par la Sorcière.';
+
+  @override
+  String get settingAllowWitchToPlayIfWerewolfDeathCauseLabel =>
+      'La Sorcière joue même si elle est visée par les Loups';
+
+  @override
+  String get settingAllowWitchToPlayIfWerewolfDeathCauseDescription =>
+      'Si activé, la Sorcière est quand même réveillée pour son tour même si elle est la victime désignée par les Loups-Garous cette nuit-là. Si désactivé, elle ne joue pas et succombe directement, sans utiliser ses potions.';
+
+  @override
+  String get settingAllowWitchToSaveHerselfLabel =>
+      'La Sorcière peut se sauver elle-même';
+
+  @override
+  String get settingAllowWitchToSaveHerselfDescription =>
+      'Si activé, la Sorcière peut utiliser sa potion de vie sur elle-même lorsqu\'elle est la victime désignée par les Loups-Garous.';
+
+  @override
+  String get settingEnfantSauvagePublicRevealLabel =>
+      'Mutation de l\'Enfant Sauvage annoncée à tous';
+
+  @override
+  String get settingEnfantSauvagePublicRevealDescription =>
+      'Si activé, la mutation de l\'Enfant Sauvage est révélée publiquement dès la mort de son modèle (pas d\'écran de nuit). Si désactivé, rien n\'est annoncé : l\'Enfant Sauvage est prévenu en secret au début de la nuit suivante.';
+
+  @override
   String get statsTitle => 'Statistiques';
 
   @override

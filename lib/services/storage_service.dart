@@ -11,6 +11,7 @@ import '../models/game_settings.dart';
 class StorageService {
   static const _statsKey = 'thiercelieux.player_stats.v1';
   static const _settingsKey = 'thiercelieux.game_settings.v1';
+  static const _localeKey = 'thiercelieux.locale.v1';
 
 
   Future<List<PlayerStats>> loadAllStats() async {
@@ -51,5 +52,21 @@ class StorageService {
   Future<void> saveSettings(GameSettings settings) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_settingsKey, jsonEncode(settings.toJson()));
+  }
+
+  /// Code de la langue choisie par l'utilisateur ('fr', 'en'...), ou null
+  /// pour suivre la langue du téléphone.
+  Future<String?> loadLocaleCode() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_localeKey);
+  }
+
+  Future<void> saveLocaleCode(String? code) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (code == null) {
+      await prefs.remove(_localeKey);
+    } else {
+      await prefs.setString(_localeKey, code);
+    }
   }
 }

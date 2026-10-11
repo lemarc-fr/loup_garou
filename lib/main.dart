@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart' show MaterialApp, StatelessWidget, BuildContext, runApp, Widget;
+import 'package:flutter/material.dart' show MaterialApp, StatelessWidget, BuildContext, runApp, Widget, Locale;
 import 'package:thiercelieux/l10n/app_localizations.dart';
-import 'package:provider/provider.dart' show MultiProvider, ChangeNotifierProvider;
+import 'package:provider/provider.dart' show MultiProvider, ChangeNotifierProvider, Selector;
 import 'package:thiercelieux/providers/settings_provider.dart' show SettingsProvider;
 import 'providers/game_provider.dart' show GameProvider;
 import 'providers/stats_provider.dart' show StatsProvider;
@@ -22,13 +22,18 @@ class ThiercelieuxApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => StatsProvider()..load()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()..load()),
       ],
-      child: MaterialApp(
-        title: 'Thiercelieux',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.night,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: const HomeScreen(),
+      // La langue choisie dans les réglages (null = celle du téléphone).
+      child: Selector<SettingsProvider, Locale?>(
+        selector: (_, sp) => sp.locale,
+        builder: (_, locale, __) => MaterialApp(
+          title: 'Thiercelieux',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.night,
+          locale: locale,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const HomeScreen(),
+        ),
       ),
     );
   }

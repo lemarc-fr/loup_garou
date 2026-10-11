@@ -1622,6 +1622,96 @@ abstract class AppLocalizations {
   /// **'Options de jeu'**
   String get gameSettingsTitle;
 
+  /// Titre de la section des réglages de l'application
+  ///
+  /// In fr, this message translates to:
+  /// **'Application'**
+  String get settingsAppSectionTitle;
+
+  /// Titre de la section des options de règles du jeu
+  ///
+  /// In fr, this message translates to:
+  /// **'Règles de la partie'**
+  String get settingsGameRulesSectionTitle;
+
+  /// Libellé du choix de la langue de l'application
+  ///
+  /// In fr, this message translates to:
+  /// **'Langue'**
+  String get settingsLanguageLabel;
+
+  /// Description du choix de la langue de l'application
+  ///
+  /// In fr, this message translates to:
+  /// **'Langue utilisée dans toute l\'application.'**
+  String get settingsLanguageDescription;
+
+  /// Option de langue : suivre la langue du téléphone
+  ///
+  /// In fr, this message translates to:
+  /// **'Système'**
+  String get settingsLanguageSystem;
+
+  /// Libellé de l'option allowWerewolfToKillThemselves
+  ///
+  /// In fr, this message translates to:
+  /// **'Les Loups peuvent se dévorer entre eux'**
+  String get settingAllowWerewolfToKillThemselvesLabel;
+
+  /// Description de l'option allowWerewolfToKillThemselves
+  ///
+  /// In fr, this message translates to:
+  /// **'Si activé, un Loup-Garou peut être désigné comme victime par ses coéquipiers pendant la phase des Loups.'**
+  String get settingAllowWerewolfToKillThemselvesDescription;
+
+  /// Libellé de l'option allowHunterToShootAfterWitchDeathCause
+  ///
+  /// In fr, this message translates to:
+  /// **'Le Chasseur peut tirer s\'il est tué par la Sorcière'**
+  String get settingAllowHunterToShootAfterWitchDeathCauseLabel;
+
+  /// Description de l'option allowHunterToShootAfterWitchDeathCause
+  ///
+  /// In fr, this message translates to:
+  /// **'Si activé, le Chasseur peut utiliser son pouvoir de tir après avoir été empoisonné par la Sorcière.'**
+  String get settingAllowHunterToShootAfterWitchDeathCauseDescription;
+
+  /// Libellé de l'option allowWitchToPlayIfWerewolfDeathCause
+  ///
+  /// In fr, this message translates to:
+  /// **'La Sorcière joue même si elle est visée par les Loups'**
+  String get settingAllowWitchToPlayIfWerewolfDeathCauseLabel;
+
+  /// Description de l'option allowWitchToPlayIfWerewolfDeathCause
+  ///
+  /// In fr, this message translates to:
+  /// **'Si activé, la Sorcière est quand même réveillée pour son tour même si elle est la victime désignée par les Loups-Garous cette nuit-là. Si désactivé, elle ne joue pas et succombe directement, sans utiliser ses potions.'**
+  String get settingAllowWitchToPlayIfWerewolfDeathCauseDescription;
+
+  /// Libellé de l'option allowWitchToSaveHerself
+  ///
+  /// In fr, this message translates to:
+  /// **'La Sorcière peut se sauver elle-même'**
+  String get settingAllowWitchToSaveHerselfLabel;
+
+  /// Description de l'option allowWitchToSaveHerself
+  ///
+  /// In fr, this message translates to:
+  /// **'Si activé, la Sorcière peut utiliser sa potion de vie sur elle-même lorsqu\'elle est la victime désignée par les Loups-Garous.'**
+  String get settingAllowWitchToSaveHerselfDescription;
+
+  /// Libellé de l'option enfantSauvagePublicReveal
+  ///
+  /// In fr, this message translates to:
+  /// **'Mutation de l\'Enfant Sauvage annoncée à tous'**
+  String get settingEnfantSauvagePublicRevealLabel;
+
+  /// Description de l'option enfantSauvagePublicReveal
+  ///
+  /// In fr, this message translates to:
+  /// **'Si activé, la mutation de l\'Enfant Sauvage est révélée publiquement dès la mort de son modèle (pas d\'écran de nuit). Si désactivé, rien n\'est annoncé : l\'Enfant Sauvage est prévenu en secret au début de la nuit suivante.'**
+  String get settingEnfantSauvagePublicRevealDescription;
+
   /// Titre de l'écran des statistiques
   ///
   /// In fr, this message translates to:

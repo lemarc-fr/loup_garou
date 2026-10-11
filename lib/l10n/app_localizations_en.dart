@@ -895,6 +895,61 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gameSettingsTitle => 'Game settings';
 
   @override
+  String get settingsAppSectionTitle => 'Application';
+
+  @override
+  String get settingsGameRulesSectionTitle => 'Game rules';
+
+  @override
+  String get settingsLanguageLabel => 'Language';
+
+  @override
+  String get settingsLanguageDescription => 'Language used throughout the app.';
+
+  @override
+  String get settingsLanguageSystem => 'System';
+
+  @override
+  String get settingAllowWerewolfToKillThemselvesLabel =>
+      'Werewolves can devour each other';
+
+  @override
+  String get settingAllowWerewolfToKillThemselvesDescription =>
+      'If enabled, a Werewolf can be chosen as the victim by their teammates during the Werewolves\' turn.';
+
+  @override
+  String get settingAllowHunterToShootAfterWitchDeathCauseLabel =>
+      'The Hunter can shoot if killed by the Witch';
+
+  @override
+  String get settingAllowHunterToShootAfterWitchDeathCauseDescription =>
+      'If enabled, the Hunter can still use his shot after being poisoned by the Witch.';
+
+  @override
+  String get settingAllowWitchToPlayIfWerewolfDeathCauseLabel =>
+      'The Witch plays even if targeted by the Werewolves';
+
+  @override
+  String get settingAllowWitchToPlayIfWerewolfDeathCauseDescription =>
+      'If enabled, the Witch is still woken up for her turn even when she is the Werewolves\' victim that night. If disabled, she does not play and dies directly, without using her potions.';
+
+  @override
+  String get settingAllowWitchToSaveHerselfLabel =>
+      'The Witch can save herself';
+
+  @override
+  String get settingAllowWitchToSaveHerselfDescription =>
+      'If enabled, the Witch can use her life potion on herself when she is the Werewolves\' victim.';
+
+  @override
+  String get settingEnfantSauvagePublicRevealLabel =>
+      'Wild Child\'s transformation announced to everyone';
+
+  @override
+  String get settingEnfantSauvagePublicRevealDescription =>
+      'If enabled, the Wild Child\'s transformation is revealed publicly as soon as their role model dies (no night screen). If disabled, nothing is announced: the Wild Child is told secretly at the start of the next night.';
+
+  @override
   String get statsTitle => 'Statistics';
 
   @override
