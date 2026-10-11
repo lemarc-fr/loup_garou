@@ -139,6 +139,9 @@
   "enfantSauvagePassTo": "the Wild Child",
   "enfantSauvageCheckSubtitle": "It is the Wild Child's turn. Wake up.",
   "enfantSauvageModelAliveInstruction": "Your role model is still alive: you remain a simple villager without any special power.",
+  "enfantSauvageRevealOverline": "Village announcement",
+  "enfantSauvageRevealTitle": "The Wild Child has joined the pack",
+  "enfantSauvageRevealBody": "Their role model has just died. Now a Werewolf, the Wild Child will wake up with the other wolves from the next night on. Their identity remains secret.",
   "enfantSauvageMutationTitle": "Transformation",
   "enfantSauvageMutationInstruction": "Their role model has died: the Wild Child now joins the pack.",
 

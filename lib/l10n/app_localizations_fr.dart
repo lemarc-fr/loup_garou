@@ -454,6 +454,16 @@ class AppLocalizationsFr extends AppLocalizations {
       'Ton modèle est toujours vivant : tu restes un simple villageois sans pouvoir particulier.';
 
   @override
+  String get enfantSauvageRevealOverline => 'Annonce au village';
+
+  @override
+  String get enfantSauvageRevealTitle => 'L\'Enfant Sauvage a rejoint la meute';
+
+  @override
+  String get enfantSauvageRevealBody =>
+      'Son modèle vient de mourir. Désormais Loup-Garou, l\'Enfant Sauvage se réveillera avec les autres loups dès la nuit prochaine. Son identité reste secrète.';
+
+  @override
   String get enfantSauvageMutationTitle => 'Mutation';
 
   @override

@@ -860,6 +860,24 @@ abstract class AppLocalizations {
   /// **'Ton modèle est toujours vivant : tu restes un simple villageois sans pouvoir particulier.'**
   String get enfantSauvageModelAliveInstruction;
 
+  /// Surtitre de l'annonce publique de la mutation de l'Enfant Sauvage
+  ///
+  /// In fr, this message translates to:
+  /// **'Annonce au village'**
+  String get enfantSauvageRevealOverline;
+
+  /// Titre de l'annonce publique de la mutation de l'Enfant Sauvage
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'Enfant Sauvage a rejoint la meute'**
+  String get enfantSauvageRevealTitle;
+
+  /// Texte de l'annonce publique de la mutation de l'Enfant Sauvage (sans nommer le joueur)
+  ///
+  /// In fr, this message translates to:
+  /// **'Son modèle vient de mourir. Désormais Loup-Garou, l\'Enfant Sauvage se réveillera avec les autres loups dès la nuit prochaine. Son identité reste secrète.'**
+  String get enfantSauvageRevealBody;
+
   /// Titre de la révélation de mutation de l'Enfant Sauvage
   ///
   /// In fr, this message translates to:

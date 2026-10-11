@@ -564,6 +564,18 @@
   "@enfantSauvageModelAliveInstruction": {
     "description": "Message indiquant que le modèle de l'Enfant Sauvage est vivant"
   },
+  "enfantSauvageRevealOverline": "Annonce au village",
+  "@enfantSauvageRevealOverline": {
+    "description": "Surtitre de l'annonce publique de la mutation de l'Enfant Sauvage"
+  },
+  "enfantSauvageRevealTitle": "L'Enfant Sauvage a rejoint la meute",
+  "@enfantSauvageRevealTitle": {
+    "description": "Titre de l'annonce publique de la mutation de l'Enfant Sauvage"
+  },
+  "enfantSauvageRevealBody": "Son modèle vient de mourir. Désormais Loup-Garou, l'Enfant Sauvage se réveillera avec les autres loups dès la nuit prochaine. Son identité reste secrète.",
+  "@enfantSauvageRevealBody": {
+    "description": "Texte de l'annonce publique de la mutation de l'Enfant Sauvage (sans nommer le joueur)"
+  },
   "enfantSauvageMutationTitle": "Mutation",
   "@enfantSauvageMutationTitle": {
     "description": "Titre de la révélation de mutation de l'Enfant Sauvage"

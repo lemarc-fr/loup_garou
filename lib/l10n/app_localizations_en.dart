@@ -454,6 +454,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your role model is still alive: you remain a simple villager without any special power.';
 
   @override
+  String get enfantSauvageRevealOverline => 'Village announcement';
+
+  @override
+  String get enfantSauvageRevealTitle => 'The Wild Child has joined the pack';
+
+  @override
+  String get enfantSauvageRevealBody =>
+      'Their role model has just died. Now a Werewolf, the Wild Child will wake up with the other wolves from the next night on. Their identity remains secret.';
+
+  @override
   String get enfantSauvageMutationTitle => 'Transformation';
 
   @override
