@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:thiercelieux/l10n/app_localizations.dart';
+import 'package:thiercelieux/l10n/role_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../models/role.dart';
 import '../../providers/game_provider.dart';
@@ -138,7 +139,7 @@ class _PowerLossPrivateScreen extends StatelessWidget {
                 RoleImage(role: lostRole!, size: 96),
                 const SizedBox(height: 12),
                 Text(
-                  lostRole!.info.name,
+                  loc.roleName(lostRole!),
                   style: theme.textTheme.displayMedium
                       ?.copyWith(color: lostRole!.info.accent),
                   textAlign: TextAlign.center,

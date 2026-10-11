@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:thiercelieux/l10n/app_localizations.dart';
+import 'package:thiercelieux/l10n/role_localizations.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/role.dart';
@@ -36,7 +37,7 @@ class IdiotDuVillageRevealScreen extends StatelessWidget {
                 RoleImage(role: idiot.role, size: 120),
                 const SizedBox(height: 16),
                 Text(
-                  info.name,
+                  loc.roleName(idiot.role),
                   style:
                       theme.textTheme.displayMedium?.copyWith(color: info.accent),
                   textAlign: TextAlign.center,

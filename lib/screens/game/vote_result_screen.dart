@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:thiercelieux/l10n/app_localizations.dart';
+import 'package:thiercelieux/l10n/role_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/role_image.dart';
-import '../../models/role.dart';
 
 class VoteResultScreen extends StatelessWidget {
   const VoteResultScreen({super.key});
@@ -42,7 +42,7 @@ class VoteResultScreen extends StatelessWidget {
                         child: ListTile(
                           leading: RoleImage(role: p.role, size: 48),
                           title: Text(p.name),
-                          subtitle: Text(p.role.info.name),
+                          subtitle: Text(loc.roleName(p.role)),
                         ),
                       ),
                   ],

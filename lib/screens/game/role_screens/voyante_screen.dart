@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:thiercelieux/l10n/app_localizations.dart';
+import 'package:thiercelieux/l10n/role_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
@@ -15,7 +16,7 @@ class VoyanteScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: RoleId.voyante.info.name,
+      toName: loc.roleName(RoleId.voyante),
       subtitle: loc.voyanteSubtitle,
       accent: RoleId.voyante.info.accent,
       contentBuilder: (_) => const _VoyanteContent(),
@@ -64,7 +65,7 @@ class _VoyanteContentState extends State<_VoyanteContent> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    info.name,
+                    loc.roleName(target.role),
                     style: theme.textTheme.displayMedium
                         ?.copyWith(color: info.accent),
                     textAlign: TextAlign.center,

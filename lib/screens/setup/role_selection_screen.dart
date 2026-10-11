@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:thiercelieux/l10n/app_localizations.dart';
+import 'package:thiercelieux/l10n/role_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../models/role.dart';
 import '../../providers/game_provider.dart';
@@ -115,11 +116,11 @@ class RoleSelectionScreen extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(info.name,
+                                Text(loc.roleName(role),
                                     style: theme.textTheme.titleLarge),
                                 const SizedBox(height: 2),
                                 Text(
-                                  info.description,
+                                  loc.roleDescription(role),
                                   style: theme.textTheme.bodyMedium?.copyWith(
                                       color: AppColors.moonlight
                                           .withValues(alpha: 0.65)),

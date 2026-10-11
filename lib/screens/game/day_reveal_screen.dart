@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:thiercelieux/l10n/app_localizations.dart';
+import 'package:thiercelieux/l10n/role_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../models/role.dart';
 import '../../providers/game_provider.dart';
@@ -45,7 +46,7 @@ class DayRevealScreen extends StatelessWidget {
                           leading: RoleImage(role: p.role, size: 48),
                           title: Text(p.name),
                           subtitle: Text(
-                              '${p.role.info.name} — ${_causeLabel(loc, p.deathCause)}'),
+                              '${loc.roleName(p.role)} — ${_causeLabel(loc, p.deathCause)}'),
                         ),
                       ),
                   ],

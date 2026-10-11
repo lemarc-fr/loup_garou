@@ -40,6 +40,267 @@
   "@campVillagers": {
     "description": "Libellé du camp des villageois"
   },
+  "campSolo": "Seul contre tous",
+  "@campSolo": {
+    "description": "Libellé du camp d'un rôle solitaire (Loup-Garou Blanc)"
+  },
+
+  "roleLoupGarouName": "Loup-Garou",
+  "@roleLoupGarouName": {
+    "description": "Nom du rôle Loup-Garou"
+  },
+  "roleLoupGarouShortName": "Loup",
+  "@roleLoupGarouShortName": {
+    "description": "Nom court du rôle Loup-Garou"
+  },
+  "roleLoupGarouPlural": "Loups-Garous",
+  "@roleLoupGarouPlural": {
+    "description": "Nom du rôle Loup-Garou au pluriel (passage du téléphone à la meute)"
+  },
+  "roleLoupGarouDescription": "Chaque nuit, les Loups-Garous se réunissent pour dévorer un villageois. Le jour, ils se fondent dans la foule et bluffent pour ne pas être démasqués.",
+  "@roleLoupGarouDescription": {
+    "description": "Description du rôle Loup-Garou"
+  },
+  "roleGrandMechantLoupName": "Grand Méchant Loup",
+  "@roleGrandMechantLoupName": {
+    "description": "Nom du rôle Grand Méchant Loup"
+  },
+  "roleGrandMechantLoupShortName": "Grand Méchant Loup",
+  "@roleGrandMechantLoupShortName": {
+    "description": "Nom court du rôle Grand Méchant Loup"
+  },
+  "roleGrandMechantLoupDescription": "Il agit avec les autres Loups-Garous et peut, tant qu'aucun Loup-Garou n'est mort, dévorer une seconde victime chaque nuit.",
+  "@roleGrandMechantLoupDescription": {
+    "description": "Description du rôle Grand Méchant Loup"
+  },
+  "roleInfectPereDesLoupsName": "Infect Père des Loups",
+  "@roleInfectPereDesLoupsName": {
+    "description": "Nom du rôle Infect Père des Loups"
+  },
+  "roleInfectPereDesLoupsShortName": "Infect",
+  "@roleInfectPereDesLoupsShortName": {
+    "description": "Nom court du rôle Infect Père des Loups"
+  },
+  "roleInfectPereDesLoupsDescription": "Il est un Loup-Garou. Une fois par partie, il peut infecter la victime des loups afin de la transformer en Loup-Garou au lieu de la tuer.",
+  "@roleInfectPereDesLoupsDescription": {
+    "description": "Description du rôle Infect Père des Loups"
+  },
+  "roleLoupBlancName": "Loup-Garou Blanc",
+  "@roleLoupBlancName": {
+    "description": "Nom du rôle Loup-Garou Blanc"
+  },
+  "roleLoupBlancShortName": "Loup Blanc",
+  "@roleLoupBlancShortName": {
+    "description": "Nom court du rôle Loup-Garou Blanc"
+  },
+  "roleLoupBlancDescription": "Il est considéré comme un Loup-Garou par les autres loups, mais son objectif est de rester le dernier survivant. Une nuit sur deux, il peut éliminer secrètement un autre Loup-Garou.",
+  "@roleLoupBlancDescription": {
+    "description": "Description du rôle Loup-Garou Blanc"
+  },
+  "roleVoyanteName": "La Voyante",
+  "@roleVoyanteName": {
+    "description": "Nom du rôle Voyante"
+  },
+  "roleVoyanteShortName": "Voyante",
+  "@roleVoyanteShortName": {
+    "description": "Nom court du rôle Voyante"
+  },
+  "roleVoyanteDescription": "Chaque nuit, elle découvre en secret la véritable identité d'un joueur de son choix.",
+  "@roleVoyanteDescription": {
+    "description": "Description du rôle Voyante"
+  },
+  "roleSorciereName": "La Sorcière",
+  "@roleSorciereName": {
+    "description": "Nom du rôle Sorcière"
+  },
+  "roleSorciereShortName": "Sorcière",
+  "@roleSorciereShortName": {
+    "description": "Nom court du rôle Sorcière"
+  },
+  "roleSorciereDescription": "Elle possède deux potions à usage unique : une potion de vie pour sauver la victime des loups, et une potion de mort pour éliminer un joueur de son choix.",
+  "@roleSorciereDescription": {
+    "description": "Description du rôle Sorcière"
+  },
+  "roleChasseurName": "Le Chasseur",
+  "@roleChasseurName": {
+    "description": "Nom du rôle Chasseur"
+  },
+  "roleChasseurShortName": "Chasseur",
+  "@roleChasseurShortName": {
+    "description": "Nom court du rôle Chasseur"
+  },
+  "roleChasseurDescription": "S'il meurt, de nuit comme de jour, il réplique aussitôt en abattant un autre joueur de son choix.",
+  "@roleChasseurDescription": {
+    "description": "Description du rôle Chasseur"
+  },
+  "roleCupidonName": "Cupidon",
+  "@roleCupidonName": {
+    "description": "Nom du rôle Cupidon"
+  },
+  "roleCupidonShortName": "Cupidon",
+  "@roleCupidonShortName": {
+    "description": "Nom court du rôle Cupidon"
+  },
+  "roleCupidonDescription": "La première nuit seulement, il désigne deux joueurs qui tombent amoureux. Si l'un meurt, l'autre meurt aussitôt de chagrin.",
+  "@roleCupidonDescription": {
+    "description": "Description du rôle Cupidon"
+  },
+  "rolePetiteFilleName": "La Petite Fille",
+  "@rolePetiteFilleName": {
+    "description": "Nom du rôle Petite Fille"
+  },
+  "rolePetiteFilleShortName": "Petite Fille",
+  "@rolePetiteFilleShortName": {
+    "description": "Nom court du rôle Petite Fille"
+  },
+  "rolePetiteFilleDescription": "Pendant le tour des loups, elle peut entrouvrir les yeux pour espionner.",
+  "@rolePetiteFilleDescription": {
+    "description": "Description du rôle Petite Fille"
+  },
+  "roleVoleurName": "Le Voleur",
+  "@roleVoleurName": {
+    "description": "Nom du rôle Voleur"
+  },
+  "roleVoleurShortName": "Voleur",
+  "@roleVoleurShortName": {
+    "description": "Nom court du rôle Voleur"
+  },
+  "roleVoleurDescription": "La première nuit, il regarde deux cartes restées sur la table et peut échanger son rôle contre l'une d'elles.",
+  "@roleVoleurDescription": {
+    "description": "Description du rôle Voleur"
+  },
+  "roleSimpleVillageoisName": "Simple Villageois",
+  "@roleSimpleVillageoisName": {
+    "description": "Nom du rôle Simple Villageois"
+  },
+  "roleSimpleVillageoisShortName": "Villageois",
+  "@roleSimpleVillageoisShortName": {
+    "description": "Nom court du rôle Simple Villageois"
+  },
+  "roleSimpleVillageoisDescription": "Aucun pouvoir particulier. Son arme : l'observation, l'écoute, et le vote le jour venu.",
+  "@roleSimpleVillageoisDescription": {
+    "description": "Description du rôle Simple Villageois"
+  },
+  "roleAncienName": "L'Ancien",
+  "@roleAncienName": {
+    "description": "Nom du rôle Ancien"
+  },
+  "roleAncienShortName": "Ancien",
+  "@roleAncienShortName": {
+    "description": "Nom court du rôle Ancien"
+  },
+  "roleAncienDescription": "Grâce à sa sagesse, il résiste à une première attaque des Loups-Garous. S'il est tué par le village, les villageois à pouvoir perdent leurs capacités.",
+  "@roleAncienDescription": {
+    "description": "Description du rôle Ancien"
+  },
+  "roleBoucEmissaireName": "Le Bouc Émissaire",
+  "@roleBoucEmissaireName": {
+    "description": "Nom du rôle Bouc Émissaire"
+  },
+  "roleBoucEmissaireShortName": "Bouc Émissaire",
+  "@roleBoucEmissaireShortName": {
+    "description": "Nom court du rôle Bouc Émissaire"
+  },
+  "roleBoucEmissaireDescription": "S'il est éliminé par le vote du village, il peut désigner un joueur qui ne se réveillera pas lors de la nuit suivante.",
+  "@roleBoucEmissaireDescription": {
+    "description": "Description du rôle Bouc Émissaire"
+  },
+  "roleIdiotDuVillageName": "L'Idiot du Village",
+  "@roleIdiotDuVillageName": {
+    "description": "Nom du rôle Idiot du Village"
+  },
+  "roleIdiotDuVillageShortName": "Idiot",
+  "@roleIdiotDuVillageShortName": {
+    "description": "Nom court du rôle Idiot du Village"
+  },
+  "roleIdiotDuVillageDescription": "S'il est condamné par le vote du village, il révèle son rôle et reste en vie, mais perd définitivement son droit de vote.",
+  "@roleIdiotDuVillageDescription": {
+    "description": "Description du rôle Idiot du Village"
+  },
+  "roleSalvateurName": "Le Salvateur",
+  "@roleSalvateurName": {
+    "description": "Nom du rôle Salvateur"
+  },
+  "roleSalvateurShortName": "Salvateur",
+  "@roleSalvateurShortName": {
+    "description": "Nom court du rôle Salvateur"
+  },
+  "roleSalvateurDescription": "Chaque nuit, il protège un joueur contre les Loups-Garous. Il ne peut pas protéger le même joueur deux nuits consécutives.",
+  "@roleSalvateurDescription": {
+    "description": "Description du rôle Salvateur"
+  },
+  "roleEnfantSauvageName": "L'Enfant Sauvage",
+  "@roleEnfantSauvageName": {
+    "description": "Nom du rôle Enfant Sauvage"
+  },
+  "roleEnfantSauvageShortName": "Enfant Sauvage",
+  "@roleEnfantSauvageShortName": {
+    "description": "Nom court du rôle Enfant Sauvage"
+  },
+  "roleEnfantSauvageDescription": "Au début de la partie, il choisit un modèle parmi les autres joueurs. Si son modèle meurt, il devient Loup-Garou.",
+  "@roleEnfantSauvageDescription": {
+    "description": "Description du rôle Enfant Sauvage"
+  },
+  "roleJugeBegueName": "Le Juge Bègue",
+  "@roleJugeBegueName": {
+    "description": "Nom du rôle Juge Bègue"
+  },
+  "roleJugeBegueShortName": "Juge Bègue",
+  "@roleJugeBegueShortName": {
+    "description": "Nom court du rôle Juge Bègue"
+  },
+  "roleJugeBegueDescription": "Une fois par partie, il peut décider secrètement que le vote du village sera rejoué immédiatement.",
+  "@roleJugeBegueDescription": {
+    "description": "Description du rôle Juge Bègue"
+  },
+  "roleServanteDevoueeName": "La Servante Dévouée",
+  "@roleServanteDevoueeName": {
+    "description": "Nom du rôle Servante Dévouée"
+  },
+  "roleServanteDevoueeShortName": "Servante",
+  "@roleServanteDevoueeShortName": {
+    "description": "Nom court du rôle Servante Dévouée"
+  },
+  "roleServanteDevoueeDescription": "Lorsqu'un joueur est éliminé par le vote, elle peut révéler son rôle et prendre immédiatement sa carte.",
+  "@roleServanteDevoueeDescription": {
+    "description": "Description du rôle Servante Dévouée"
+  },
+  "roleMontreurDoursName": "Le Montreur d'Ours",
+  "@roleMontreurDoursName": {
+    "description": "Nom du rôle Montreur d'Ours"
+  },
+  "roleMontreurDoursShortName": "Montreur d'Ours",
+  "@roleMontreurDoursShortName": {
+    "description": "Nom court du rôle Montreur d'Ours"
+  },
+  "roleMontreurDoursDescription": "Chaque matin, si un Loup-Garou se trouve parmi ses voisins encore vivants, l'ours grogne.",
+  "@roleMontreurDoursDescription": {
+    "description": "Description du rôle Montreur d'Ours"
+  },
+  "roleRenardName": "Le Renard",
+  "@roleRenardName": {
+    "description": "Nom du rôle Renard"
+  },
+  "roleRenardShortName": "Renard",
+  "@roleRenardShortName": {
+    "description": "Nom court du rôle Renard"
+  },
+  "roleRenardDescription": "La nuit, il désigne un joueur : celui-ci et ses deux voisins vivants forment un groupe de trois. Le meneur lui indique si au moins un Loup-Garou s'y trouve.",
+  "@roleRenardDescription": {
+    "description": "Description du rôle Renard"
+  },
+  "roleCorbeauName": "Le Corbeau",
+  "@roleCorbeauName": {
+    "description": "Nom du rôle Corbeau"
+  },
+  "roleCorbeauShortName": "Corbeau",
+  "@roleCorbeauShortName": {
+    "description": "Nom court du rôle Corbeau"
+  },
+  "roleCorbeauDescription": "Chaque nuit, il désigne un joueur qui aura deux voix de plus contre lui lors du prochain vote du village.",
+  "@roleCorbeauDescription": {
+    "description": "Description du rôle Corbeau"
+  },
 
   "passDeviceToPlural": "Passe le téléphone aux",
   "@passDeviceToPlural": {
@@ -422,7 +683,11 @@
   "@petiteFilleTitle": {
     "description": "Titre de l'écran de la Petite Fille"
   },
-  "petiteFilleWarning": "Attention : si les Loups-Garous te surprennent, tu prendras la place de leur victime.",
+  "petiteFilleInstruction": "Tu peux tenter d'espionner les Loups-Garous. Reste discrète...",
+  "@petiteFilleInstruction": {
+    "description": "Instruction d'action pour la Petite Fille"
+  },
+  "petiteFilleWarning":"Attention : si les Loups-Garous te surprennent, tu prendras la place de leur victime.",
   "@petiteFilleWarning": {
     "description": "Avertissement pour la Petite Fille"
   },
@@ -455,7 +720,10 @@
       }
     }
   },
-  "renardInstructionCenter": "Pick a player: they and their two living neighbors will be sniffed.",
+  "renardInstructionCenter": "Désigne un joueur : lui et ses deux voisins vivants seront flairés.",
+  "@renardInstructionCenter": {
+    "description": "Instruction pour le Renard : choix du joueur central du trio"
+  },
   "renardResultWolfFound": "Il y a au moins un Loup-Garou parmi ces trois joueurs ! Vous conservez votre flair et pourrez le réutiliser la nuit prochaine.",
   "renardResultNoWolf": "Aucun Loup-Garou parmi ces trois joueurs : ils sont tous innocents ! Mais vous perdez définitivement votre pouvoir.",
   "renardResultTrioLabel": "Le joueur désigné et ses deux voisins :",
@@ -566,7 +834,11 @@
   "@voleurTitle": {
     "description": "Titre de l'écran du Voleur"
   },
-  "voleurBothWolvesWarning": "Les deux cartes sont des Loups-Garous : tu es obligé d’en prendre une !",
+  "voleurInstruction": "Regarde les deux cartes restantes et choisis d'échanger ou non.",
+  "@voleurInstruction": {
+    "description": "Instruction d'action pour le Voleur"
+  },
+  "voleurBothWolvesWarning":"Les deux cartes sont des Loups-Garous : tu es obligé d’en prendre une !",
   "@voleurBothWolvesWarning": {
     "description": "Avertissement si les deux cartes au centre sont des loups"
   },

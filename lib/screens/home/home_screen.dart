@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:thiercelieux/l10n/app_localizations.dart';
+import 'package:thiercelieux/l10n/role_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../models/role.dart';
 import '../../providers/game_provider.dart';
@@ -147,13 +148,13 @@ class HomeScreen extends StatelessWidget {
             Text(loc.gameRulesRolesTitle, style: Theme.of(ctx).textTheme.headlineMedium),
             const SizedBox(height: 16),
             for (final role in RoleId.values) ...[
-              Text(role.info.name,
+              Text(loc.roleName(role),
                   style: Theme.of(ctx)
                       .textTheme
                       .titleLarge
                       ?.copyWith(color: role.info.accent)),
               const SizedBox(height: 4),
-              Text(role.info.description,
+              Text(loc.roleDescription(role),
                   style: Theme.of(ctx).textTheme.bodyMedium),
               const SizedBox(height: 18),
             ],

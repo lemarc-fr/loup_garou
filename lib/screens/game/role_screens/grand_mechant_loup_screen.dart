@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:thiercelieux/l10n/app_localizations.dart';
+import 'package:thiercelieux/l10n/role_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
@@ -15,7 +16,7 @@ class GrandMechantLoupScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: RoleId.grandMechantLoup.info.name,
+      toName: loc.roleName(RoleId.grandMechantLoup),
       subtitle: loc.grandMechantLoupSubtitle,
       accent: AppColors.blood,
       contentBuilder: (_) => const _GrandMechantLoupContent(),

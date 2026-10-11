@@ -158,6 +158,396 @@ abstract class AppLocalizations {
   /// **'Camp des Villageois'**
   String get campVillagers;
 
+  /// Libellé du camp d'un rôle solitaire (Loup-Garou Blanc)
+  ///
+  /// In fr, this message translates to:
+  /// **'Seul contre tous'**
+  String get campSolo;
+
+  /// Nom du rôle Loup-Garou
+  ///
+  /// In fr, this message translates to:
+  /// **'Loup-Garou'**
+  String get roleLoupGarouName;
+
+  /// Nom court du rôle Loup-Garou
+  ///
+  /// In fr, this message translates to:
+  /// **'Loup'**
+  String get roleLoupGarouShortName;
+
+  /// Nom du rôle Loup-Garou au pluriel (passage du téléphone à la meute)
+  ///
+  /// In fr, this message translates to:
+  /// **'Loups-Garous'**
+  String get roleLoupGarouPlural;
+
+  /// Description du rôle Loup-Garou
+  ///
+  /// In fr, this message translates to:
+  /// **'Chaque nuit, les Loups-Garous se réunissent pour dévorer un villageois. Le jour, ils se fondent dans la foule et bluffent pour ne pas être démasqués.'**
+  String get roleLoupGarouDescription;
+
+  /// Nom du rôle Grand Méchant Loup
+  ///
+  /// In fr, this message translates to:
+  /// **'Grand Méchant Loup'**
+  String get roleGrandMechantLoupName;
+
+  /// Nom court du rôle Grand Méchant Loup
+  ///
+  /// In fr, this message translates to:
+  /// **'Grand Méchant Loup'**
+  String get roleGrandMechantLoupShortName;
+
+  /// Description du rôle Grand Méchant Loup
+  ///
+  /// In fr, this message translates to:
+  /// **'Il agit avec les autres Loups-Garous et peut, tant qu\'aucun Loup-Garou n\'est mort, dévorer une seconde victime chaque nuit.'**
+  String get roleGrandMechantLoupDescription;
+
+  /// Nom du rôle Infect Père des Loups
+  ///
+  /// In fr, this message translates to:
+  /// **'Infect Père des Loups'**
+  String get roleInfectPereDesLoupsName;
+
+  /// Nom court du rôle Infect Père des Loups
+  ///
+  /// In fr, this message translates to:
+  /// **'Infect'**
+  String get roleInfectPereDesLoupsShortName;
+
+  /// Description du rôle Infect Père des Loups
+  ///
+  /// In fr, this message translates to:
+  /// **'Il est un Loup-Garou. Une fois par partie, il peut infecter la victime des loups afin de la transformer en Loup-Garou au lieu de la tuer.'**
+  String get roleInfectPereDesLoupsDescription;
+
+  /// Nom du rôle Loup-Garou Blanc
+  ///
+  /// In fr, this message translates to:
+  /// **'Loup-Garou Blanc'**
+  String get roleLoupBlancName;
+
+  /// Nom court du rôle Loup-Garou Blanc
+  ///
+  /// In fr, this message translates to:
+  /// **'Loup Blanc'**
+  String get roleLoupBlancShortName;
+
+  /// Description du rôle Loup-Garou Blanc
+  ///
+  /// In fr, this message translates to:
+  /// **'Il est considéré comme un Loup-Garou par les autres loups, mais son objectif est de rester le dernier survivant. Une nuit sur deux, il peut éliminer secrètement un autre Loup-Garou.'**
+  String get roleLoupBlancDescription;
+
+  /// Nom du rôle Voyante
+  ///
+  /// In fr, this message translates to:
+  /// **'La Voyante'**
+  String get roleVoyanteName;
+
+  /// Nom court du rôle Voyante
+  ///
+  /// In fr, this message translates to:
+  /// **'Voyante'**
+  String get roleVoyanteShortName;
+
+  /// Description du rôle Voyante
+  ///
+  /// In fr, this message translates to:
+  /// **'Chaque nuit, elle découvre en secret la véritable identité d\'un joueur de son choix.'**
+  String get roleVoyanteDescription;
+
+  /// Nom du rôle Sorcière
+  ///
+  /// In fr, this message translates to:
+  /// **'La Sorcière'**
+  String get roleSorciereName;
+
+  /// Nom court du rôle Sorcière
+  ///
+  /// In fr, this message translates to:
+  /// **'Sorcière'**
+  String get roleSorciereShortName;
+
+  /// Description du rôle Sorcière
+  ///
+  /// In fr, this message translates to:
+  /// **'Elle possède deux potions à usage unique : une potion de vie pour sauver la victime des loups, et une potion de mort pour éliminer un joueur de son choix.'**
+  String get roleSorciereDescription;
+
+  /// Nom du rôle Chasseur
+  ///
+  /// In fr, this message translates to:
+  /// **'Le Chasseur'**
+  String get roleChasseurName;
+
+  /// Nom court du rôle Chasseur
+  ///
+  /// In fr, this message translates to:
+  /// **'Chasseur'**
+  String get roleChasseurShortName;
+
+  /// Description du rôle Chasseur
+  ///
+  /// In fr, this message translates to:
+  /// **'S\'il meurt, de nuit comme de jour, il réplique aussitôt en abattant un autre joueur de son choix.'**
+  String get roleChasseurDescription;
+
+  /// Nom du rôle Cupidon
+  ///
+  /// In fr, this message translates to:
+  /// **'Cupidon'**
+  String get roleCupidonName;
+
+  /// Nom court du rôle Cupidon
+  ///
+  /// In fr, this message translates to:
+  /// **'Cupidon'**
+  String get roleCupidonShortName;
+
+  /// Description du rôle Cupidon
+  ///
+  /// In fr, this message translates to:
+  /// **'La première nuit seulement, il désigne deux joueurs qui tombent amoureux. Si l\'un meurt, l\'autre meurt aussitôt de chagrin.'**
+  String get roleCupidonDescription;
+
+  /// Nom du rôle Petite Fille
+  ///
+  /// In fr, this message translates to:
+  /// **'La Petite Fille'**
+  String get rolePetiteFilleName;
+
+  /// Nom court du rôle Petite Fille
+  ///
+  /// In fr, this message translates to:
+  /// **'Petite Fille'**
+  String get rolePetiteFilleShortName;
+
+  /// Description du rôle Petite Fille
+  ///
+  /// In fr, this message translates to:
+  /// **'Pendant le tour des loups, elle peut entrouvrir les yeux pour espionner.'**
+  String get rolePetiteFilleDescription;
+
+  /// Nom du rôle Voleur
+  ///
+  /// In fr, this message translates to:
+  /// **'Le Voleur'**
+  String get roleVoleurName;
+
+  /// Nom court du rôle Voleur
+  ///
+  /// In fr, this message translates to:
+  /// **'Voleur'**
+  String get roleVoleurShortName;
+
+  /// Description du rôle Voleur
+  ///
+  /// In fr, this message translates to:
+  /// **'La première nuit, il regarde deux cartes restées sur la table et peut échanger son rôle contre l\'une d\'elles.'**
+  String get roleVoleurDescription;
+
+  /// Nom du rôle Simple Villageois
+  ///
+  /// In fr, this message translates to:
+  /// **'Simple Villageois'**
+  String get roleSimpleVillageoisName;
+
+  /// Nom court du rôle Simple Villageois
+  ///
+  /// In fr, this message translates to:
+  /// **'Villageois'**
+  String get roleSimpleVillageoisShortName;
+
+  /// Description du rôle Simple Villageois
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun pouvoir particulier. Son arme : l\'observation, l\'écoute, et le vote le jour venu.'**
+  String get roleSimpleVillageoisDescription;
+
+  /// Nom du rôle Ancien
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'Ancien'**
+  String get roleAncienName;
+
+  /// Nom court du rôle Ancien
+  ///
+  /// In fr, this message translates to:
+  /// **'Ancien'**
+  String get roleAncienShortName;
+
+  /// Description du rôle Ancien
+  ///
+  /// In fr, this message translates to:
+  /// **'Grâce à sa sagesse, il résiste à une première attaque des Loups-Garous. S\'il est tué par le village, les villageois à pouvoir perdent leurs capacités.'**
+  String get roleAncienDescription;
+
+  /// Nom du rôle Bouc Émissaire
+  ///
+  /// In fr, this message translates to:
+  /// **'Le Bouc Émissaire'**
+  String get roleBoucEmissaireName;
+
+  /// Nom court du rôle Bouc Émissaire
+  ///
+  /// In fr, this message translates to:
+  /// **'Bouc Émissaire'**
+  String get roleBoucEmissaireShortName;
+
+  /// Description du rôle Bouc Émissaire
+  ///
+  /// In fr, this message translates to:
+  /// **'S\'il est éliminé par le vote du village, il peut désigner un joueur qui ne se réveillera pas lors de la nuit suivante.'**
+  String get roleBoucEmissaireDescription;
+
+  /// Nom du rôle Idiot du Village
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'Idiot du Village'**
+  String get roleIdiotDuVillageName;
+
+  /// Nom court du rôle Idiot du Village
+  ///
+  /// In fr, this message translates to:
+  /// **'Idiot'**
+  String get roleIdiotDuVillageShortName;
+
+  /// Description du rôle Idiot du Village
+  ///
+  /// In fr, this message translates to:
+  /// **'S\'il est condamné par le vote du village, il révèle son rôle et reste en vie, mais perd définitivement son droit de vote.'**
+  String get roleIdiotDuVillageDescription;
+
+  /// Nom du rôle Salvateur
+  ///
+  /// In fr, this message translates to:
+  /// **'Le Salvateur'**
+  String get roleSalvateurName;
+
+  /// Nom court du rôle Salvateur
+  ///
+  /// In fr, this message translates to:
+  /// **'Salvateur'**
+  String get roleSalvateurShortName;
+
+  /// Description du rôle Salvateur
+  ///
+  /// In fr, this message translates to:
+  /// **'Chaque nuit, il protège un joueur contre les Loups-Garous. Il ne peut pas protéger le même joueur deux nuits consécutives.'**
+  String get roleSalvateurDescription;
+
+  /// Nom du rôle Enfant Sauvage
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'Enfant Sauvage'**
+  String get roleEnfantSauvageName;
+
+  /// Nom court du rôle Enfant Sauvage
+  ///
+  /// In fr, this message translates to:
+  /// **'Enfant Sauvage'**
+  String get roleEnfantSauvageShortName;
+
+  /// Description du rôle Enfant Sauvage
+  ///
+  /// In fr, this message translates to:
+  /// **'Au début de la partie, il choisit un modèle parmi les autres joueurs. Si son modèle meurt, il devient Loup-Garou.'**
+  String get roleEnfantSauvageDescription;
+
+  /// Nom du rôle Juge Bègue
+  ///
+  /// In fr, this message translates to:
+  /// **'Le Juge Bègue'**
+  String get roleJugeBegueName;
+
+  /// Nom court du rôle Juge Bègue
+  ///
+  /// In fr, this message translates to:
+  /// **'Juge Bègue'**
+  String get roleJugeBegueShortName;
+
+  /// Description du rôle Juge Bègue
+  ///
+  /// In fr, this message translates to:
+  /// **'Une fois par partie, il peut décider secrètement que le vote du village sera rejoué immédiatement.'**
+  String get roleJugeBegueDescription;
+
+  /// Nom du rôle Servante Dévouée
+  ///
+  /// In fr, this message translates to:
+  /// **'La Servante Dévouée'**
+  String get roleServanteDevoueeName;
+
+  /// Nom court du rôle Servante Dévouée
+  ///
+  /// In fr, this message translates to:
+  /// **'Servante'**
+  String get roleServanteDevoueeShortName;
+
+  /// Description du rôle Servante Dévouée
+  ///
+  /// In fr, this message translates to:
+  /// **'Lorsqu\'un joueur est éliminé par le vote, elle peut révéler son rôle et prendre immédiatement sa carte.'**
+  String get roleServanteDevoueeDescription;
+
+  /// Nom du rôle Montreur d'Ours
+  ///
+  /// In fr, this message translates to:
+  /// **'Le Montreur d\'Ours'**
+  String get roleMontreurDoursName;
+
+  /// Nom court du rôle Montreur d'Ours
+  ///
+  /// In fr, this message translates to:
+  /// **'Montreur d\'Ours'**
+  String get roleMontreurDoursShortName;
+
+  /// Description du rôle Montreur d'Ours
+  ///
+  /// In fr, this message translates to:
+  /// **'Chaque matin, si un Loup-Garou se trouve parmi ses voisins encore vivants, l\'ours grogne.'**
+  String get roleMontreurDoursDescription;
+
+  /// Nom du rôle Renard
+  ///
+  /// In fr, this message translates to:
+  /// **'Le Renard'**
+  String get roleRenardName;
+
+  /// Nom court du rôle Renard
+  ///
+  /// In fr, this message translates to:
+  /// **'Renard'**
+  String get roleRenardShortName;
+
+  /// Description du rôle Renard
+  ///
+  /// In fr, this message translates to:
+  /// **'La nuit, il désigne un joueur : celui-ci et ses deux voisins vivants forment un groupe de trois. Le meneur lui indique si au moins un Loup-Garou s\'y trouve.'**
+  String get roleRenardDescription;
+
+  /// Nom du rôle Corbeau
+  ///
+  /// In fr, this message translates to:
+  /// **'Le Corbeau'**
+  String get roleCorbeauName;
+
+  /// Nom court du rôle Corbeau
+  ///
+  /// In fr, this message translates to:
+  /// **'Corbeau'**
+  String get roleCorbeauShortName;
+
+  /// Description du rôle Corbeau
+  ///
+  /// In fr, this message translates to:
+  /// **'Chaque nuit, il désigne un joueur qui aura deux voix de plus contre lui lors du prochain vote du village.'**
+  String get roleCorbeauDescription;
+
   /// Texte d'invite pour passer le téléphone à plusieurs personnes
   ///
   /// In fr, this message translates to:
@@ -620,6 +1010,12 @@ abstract class AppLocalizations {
   /// **'La Petite Fille'**
   String get petiteFilleTitle;
 
+  /// Instruction d'action pour la Petite Fille
+  ///
+  /// In fr, this message translates to:
+  /// **'Tu peux tenter d\'espionner les Loups-Garous. Reste discrète...'**
+  String get petiteFilleInstruction;
+
   /// Avertissement pour la Petite Fille
   ///
   /// In fr, this message translates to:
@@ -656,10 +1052,10 @@ abstract class AppLocalizations {
   /// **'Choisis trois joueurs voisins ({count}/{max}).'**
   String renardInstruction(int count, int max);
 
-  /// No description provided for @renardInstructionCenter.
+  /// Instruction pour le Renard : choix du joueur central du trio
   ///
   /// In fr, this message translates to:
-  /// **'Pick a player: they and their two living neighbors will be sniffed.'**
+  /// **'Désigne un joueur : lui et ses deux voisins vivants seront flairés.'**
   String get renardInstructionCenter;
 
   /// No description provided for @renardResultWolfFound.
@@ -811,6 +1207,12 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Le Voleur'**
   String get voleurTitle;
+
+  /// Instruction d'action pour le Voleur
+  ///
+  /// In fr, this message translates to:
+  /// **'Regarde les deux cartes restantes et choisis d\'échanger ou non.'**
+  String get voleurInstruction;
 
   /// Avertissement si les deux cartes au centre sont des loups
   ///

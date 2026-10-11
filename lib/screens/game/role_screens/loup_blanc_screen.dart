@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:thiercelieux/l10n/app_localizations.dart';
+import 'package:thiercelieux/l10n/role_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
@@ -15,7 +16,7 @@ class LoupBlancScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: RoleId.loupBlanc.info.name,
+      toName: loc.roleName(RoleId.loupBlanc),
       pluralToName: false,
       subtitle: loc.loupBlancSubtitle,
       accent: AppColors.blood,

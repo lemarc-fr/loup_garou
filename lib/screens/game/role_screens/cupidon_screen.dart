@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:thiercelieux/l10n/app_localizations.dart';
+import 'package:thiercelieux/l10n/role_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
@@ -14,7 +15,7 @@ class CupidonScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: RoleId.cupidon.info.name,
+      toName: loc.roleName(RoleId.cupidon),
       subtitle: loc.cupidonSubtitle,
       accent: RoleId.cupidon.info.accent,
       contentBuilder: (_) => const _CupidonContent(),

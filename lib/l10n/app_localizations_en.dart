@@ -39,6 +39,222 @@ class AppLocalizationsEn extends AppLocalizations {
   String get campVillagers => 'Villager Team';
 
   @override
+  String get campSolo => 'Alone against all';
+
+  @override
+  String get roleLoupGarouName => 'Werewolf';
+
+  @override
+  String get roleLoupGarouShortName => 'Werewolf';
+
+  @override
+  String get roleLoupGarouPlural => 'Werewolves';
+
+  @override
+  String get roleLoupGarouDescription =>
+      'Each night, the Werewolves gather to devour a villager. During the day, they blend into the crowd and bluff to avoid being unmasked.';
+
+  @override
+  String get roleGrandMechantLoupName => 'Big Bad Wolf';
+
+  @override
+  String get roleGrandMechantLoupShortName => 'Big Bad Wolf';
+
+  @override
+  String get roleGrandMechantLoupDescription =>
+      'He acts with the other Werewolves and, as long as no Werewolf has died, can devour a second victim each night.';
+
+  @override
+  String get roleInfectPereDesLoupsName => 'Vile Father of Wolves';
+
+  @override
+  String get roleInfectPereDesLoupsShortName => 'Wolf-Father';
+
+  @override
+  String get roleInfectPereDesLoupsDescription =>
+      'He is a Werewolf. Once per game, he can infect the Werewolves\' victim to turn them into a Werewolf instead of killing them.';
+
+  @override
+  String get roleLoupBlancName => 'White Werewolf';
+
+  @override
+  String get roleLoupBlancShortName => 'White Wolf';
+
+  @override
+  String get roleLoupBlancDescription =>
+      'The other Werewolves believe he is one of them, but his goal is to be the last survivor. Every other night, he can secretly eliminate another Werewolf.';
+
+  @override
+  String get roleVoyanteName => 'The Seer';
+
+  @override
+  String get roleVoyanteShortName => 'Seer';
+
+  @override
+  String get roleVoyanteDescription =>
+      'Each night, she secretly discovers the true identity of a player of her choice.';
+
+  @override
+  String get roleSorciereName => 'The Witch';
+
+  @override
+  String get roleSorciereShortName => 'Witch';
+
+  @override
+  String get roleSorciereDescription =>
+      'She has two single-use potions: a life potion to save the Werewolves\' victim, and a death potion to eliminate a player of her choice.';
+
+  @override
+  String get roleChasseurName => 'The Hunter';
+
+  @override
+  String get roleChasseurShortName => 'Hunter';
+
+  @override
+  String get roleChasseurDescription =>
+      'If he dies, by night or by day, he immediately retaliates by shooting another player of his choice.';
+
+  @override
+  String get roleCupidonName => 'Cupid';
+
+  @override
+  String get roleCupidonShortName => 'Cupid';
+
+  @override
+  String get roleCupidonDescription =>
+      'On the first night only, he designates two players who fall in love. If one of them dies, the other immediately dies of grief.';
+
+  @override
+  String get rolePetiteFilleName => 'The Little Girl';
+
+  @override
+  String get rolePetiteFilleShortName => 'Little Girl';
+
+  @override
+  String get rolePetiteFilleDescription =>
+      'During the Werewolves\' turn, she can open her eyes slightly to spy on them.';
+
+  @override
+  String get roleVoleurName => 'The Thief';
+
+  @override
+  String get roleVoleurShortName => 'Thief';
+
+  @override
+  String get roleVoleurDescription =>
+      'On the first night, he looks at the two cards left on the table and may swap his role for one of them.';
+
+  @override
+  String get roleSimpleVillageoisName => 'Simple Villager';
+
+  @override
+  String get roleSimpleVillageoisShortName => 'Villager';
+
+  @override
+  String get roleSimpleVillageoisDescription =>
+      'No special power. Their weapons: observation, listening, and the vote when day comes.';
+
+  @override
+  String get roleAncienName => 'The Elder';
+
+  @override
+  String get roleAncienShortName => 'Elder';
+
+  @override
+  String get roleAncienDescription =>
+      'Thanks to his wisdom, he survives a first Werewolf attack. If he is killed by the village, the villagers with powers lose their abilities.';
+
+  @override
+  String get roleBoucEmissaireName => 'The Scapegoat';
+
+  @override
+  String get roleBoucEmissaireShortName => 'Scapegoat';
+
+  @override
+  String get roleBoucEmissaireDescription =>
+      'If he is eliminated by the village vote, he can designate a player who will not wake up during the following night.';
+
+  @override
+  String get roleIdiotDuVillageName => 'The Village Idiot';
+
+  @override
+  String get roleIdiotDuVillageShortName => 'Idiot';
+
+  @override
+  String get roleIdiotDuVillageDescription =>
+      'If he is condemned by the village vote, he reveals his role and stays alive, but permanently loses his right to vote.';
+
+  @override
+  String get roleSalvateurName => 'The Bodyguard';
+
+  @override
+  String get roleSalvateurShortName => 'Bodyguard';
+
+  @override
+  String get roleSalvateurDescription =>
+      'Each night, he protects a player from the Werewolves. He cannot protect the same player two nights in a row.';
+
+  @override
+  String get roleEnfantSauvageName => 'The Wild Child';
+
+  @override
+  String get roleEnfantSauvageShortName => 'Wild Child';
+
+  @override
+  String get roleEnfantSauvageDescription =>
+      'At the start of the game, he chooses a role model among the other players. If the role model dies, he becomes a Werewolf.';
+
+  @override
+  String get roleJugeBegueName => 'The Stuttering Judge';
+
+  @override
+  String get roleJugeBegueShortName => 'Judge';
+
+  @override
+  String get roleJugeBegueDescription =>
+      'Once per game, he can secretly decide that the village vote will be replayed immediately.';
+
+  @override
+  String get roleServanteDevoueeName => 'The Devoted Servant';
+
+  @override
+  String get roleServanteDevoueeShortName => 'Servant';
+
+  @override
+  String get roleServanteDevoueeDescription =>
+      'When a player is eliminated by the vote, she can reveal her role and immediately take their card.';
+
+  @override
+  String get roleMontreurDoursName => 'The Bear Tamer';
+
+  @override
+  String get roleMontreurDoursShortName => 'Bear Tamer';
+
+  @override
+  String get roleMontreurDoursDescription =>
+      'Each morning, if a Werewolf is among his living neighbors, the bear growls.';
+
+  @override
+  String get roleRenardName => 'The Fox';
+
+  @override
+  String get roleRenardShortName => 'Fox';
+
+  @override
+  String get roleRenardDescription =>
+      'At night, he points at a player: that player and their two living neighbors form a group of three. The narrator tells him whether at least one Werewolf is among them.';
+
+  @override
+  String get roleCorbeauName => 'The Raven';
+
+  @override
+  String get roleCorbeauShortName => 'Raven';
+
+  @override
+  String get roleCorbeauDescription =>
+      'Each night, he designates a player who will have two extra votes against them at the next village vote.';
+
+  @override
   String get passDeviceToPlural => 'Pass the phone to the';
 
   @override
@@ -327,6 +543,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get petiteFilleTitle => 'The Little Girl';
 
   @override
+  String get petiteFilleInstruction =>
+      'You can try to spy on the Werewolves. Stay discreet...';
+
+  @override
   String get petiteFilleWarning =>
       'Warning: if the Werewolves catch you, you will take the place of their victim.';
 
@@ -439,6 +659,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get voleurTitle => 'The Thief';
+
+  @override
+  String get voleurInstruction =>
+      'Look at the two remaining cards and choose whether to swap your role.';
 
   @override
   String get voleurBothWolvesWarning =>

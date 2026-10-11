@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:thiercelieux/l10n/app_localizations.dart';
+import 'package:thiercelieux/l10n/role_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
 import '../../providers/stats_provider.dart';
@@ -80,7 +81,7 @@ class _EndGameScreenState extends State<EndGameScreen> {
                         child: ListTile(
                           leading: RoleImage(role: p.role, size: 44),
                           title: Text(p.name),
-                          subtitle: Text(p.role.info.name),
+                          subtitle: Text(loc.roleName(p.role)),
                           trailing: winners.contains(p)
                               ? const Icon(Icons.star, color: AppColors.lantern)
                               : (p.alive

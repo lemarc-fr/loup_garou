@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:thiercelieux/l10n/app_localizations.dart';
+import 'package:thiercelieux/l10n/role_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
@@ -73,7 +74,7 @@ class _RevealContent extends StatelessWidget {
               ] else ...[
                 RoleImage(role: player.role, size: 140),
                 const SizedBox(height: 20),
-                Text(info.name,
+                Text(loc.roleName(player.role),
                     style: theme.textTheme.displayMedium
                         ?.copyWith(color: info.accent),
                     textAlign: TextAlign.center),
@@ -86,15 +87,13 @@ class _RevealContent extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    info.camp.name == 'loups'
-                        ? loc.campWolves
-                        : loc.campVillagers,
+                    loc.campLabel(info.camp),
                     style: theme.textTheme.labelLarge
                         ?.copyWith(color: info.accent),
                   ),
                 ),
                 const SizedBox(height: 20),
-                Text(info.description,
+                Text(loc.roleDescription(player.role),
                     style: theme.textTheme.bodyLarge,
                     textAlign: TextAlign.center),
               ],

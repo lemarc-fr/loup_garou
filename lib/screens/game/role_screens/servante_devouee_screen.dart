@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:thiercelieux/l10n/app_localizations.dart';
+import 'package:thiercelieux/l10n/role_localizations.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/role.dart';
@@ -15,7 +16,7 @@ class ServanteDevoueeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: RoleId.servanteDevouee.info.name,
+      toName: loc.roleName(RoleId.servanteDevouee),
       subtitle: loc.servanteDevoueeSubtitle,
       accent: RoleId.servanteDevouee.info.accent,
       contentBuilder: (_) => const _ServanteDevoueeContent(),
@@ -70,7 +71,7 @@ class _ServanteDevoueeContent extends StatelessWidget {
                 RoleImage(role: offered.role, size: 100),
                 const SizedBox(height: 16),
                 Text(
-                  info.name,
+                  loc.roleName(offered.role),
                   style: theme.textTheme.displayMedium
                       ?.copyWith(color: info.accent),
                   textAlign: TextAlign.center,

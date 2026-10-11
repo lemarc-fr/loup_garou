@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:thiercelieux/l10n/app_localizations.dart';
+import 'package:thiercelieux/l10n/role_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
@@ -15,7 +16,7 @@ class VoleurScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: RoleId.voleur.info.name,
+      toName: loc.roleName(RoleId.voleur),
       subtitle: loc.voleurSubtitle,
       accent: RoleId.voleur.info.accent,
       contentBuilder: (_) => const _VoleurContent(),
@@ -47,7 +48,7 @@ class _VoleurContentState extends State<_VoleurContent> {
       child: Column(
         children: [
           RoleInstructionCard(
-            text: RoleId.voleur.info.nightInstruction,
+            text: loc.voleurInstruction,
             accent: RoleId.voleur.info.accent,
           ),
           if (forced) ...[
@@ -123,7 +124,7 @@ class _CardChoice extends StatelessWidget {
           children: [
             RoleImage(role: role, size: 84),
             const SizedBox(height: 8),
-            Text(role.info.name, style: Theme.of(context).textTheme.bodyMedium),
+            Text(AppLocalizations.of(context)!.roleName(role), style: Theme.of(context).textTheme.bodyMedium),
           ],
         ),
       ),

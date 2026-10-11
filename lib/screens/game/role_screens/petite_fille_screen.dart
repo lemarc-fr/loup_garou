@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:thiercelieux/l10n/app_localizations.dart';
+import 'package:thiercelieux/l10n/role_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
@@ -14,7 +15,7 @@ class PetiteFilleScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     return PassDeviceGate(
-      toName: RoleId.petiteFille.info.name,
+      toName: loc.roleName(RoleId.petiteFille),
       subtitle: loc.petiteFilleSubtitle,
       accent: RoleId.petiteFille.info.accent,
       contentBuilder: (_) => const _PetiteFilleContent(),
@@ -37,7 +38,7 @@ class _PetiteFilleContent extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           RoleInstructionCard(
-            text: RoleId.petiteFille.info.nightInstruction,
+            text: loc.petiteFilleInstruction,
             accent: RoleId.petiteFille.info.accent,
           ),
           const SizedBox(height: 14),

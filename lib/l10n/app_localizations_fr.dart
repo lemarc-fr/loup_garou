@@ -39,6 +39,222 @@ class AppLocalizationsFr extends AppLocalizations {
   String get campVillagers => 'Camp des Villageois';
 
   @override
+  String get campSolo => 'Seul contre tous';
+
+  @override
+  String get roleLoupGarouName => 'Loup-Garou';
+
+  @override
+  String get roleLoupGarouShortName => 'Loup';
+
+  @override
+  String get roleLoupGarouPlural => 'Loups-Garous';
+
+  @override
+  String get roleLoupGarouDescription =>
+      'Chaque nuit, les Loups-Garous se réunissent pour dévorer un villageois. Le jour, ils se fondent dans la foule et bluffent pour ne pas être démasqués.';
+
+  @override
+  String get roleGrandMechantLoupName => 'Grand Méchant Loup';
+
+  @override
+  String get roleGrandMechantLoupShortName => 'Grand Méchant Loup';
+
+  @override
+  String get roleGrandMechantLoupDescription =>
+      'Il agit avec les autres Loups-Garous et peut, tant qu\'aucun Loup-Garou n\'est mort, dévorer une seconde victime chaque nuit.';
+
+  @override
+  String get roleInfectPereDesLoupsName => 'Infect Père des Loups';
+
+  @override
+  String get roleInfectPereDesLoupsShortName => 'Infect';
+
+  @override
+  String get roleInfectPereDesLoupsDescription =>
+      'Il est un Loup-Garou. Une fois par partie, il peut infecter la victime des loups afin de la transformer en Loup-Garou au lieu de la tuer.';
+
+  @override
+  String get roleLoupBlancName => 'Loup-Garou Blanc';
+
+  @override
+  String get roleLoupBlancShortName => 'Loup Blanc';
+
+  @override
+  String get roleLoupBlancDescription =>
+      'Il est considéré comme un Loup-Garou par les autres loups, mais son objectif est de rester le dernier survivant. Une nuit sur deux, il peut éliminer secrètement un autre Loup-Garou.';
+
+  @override
+  String get roleVoyanteName => 'La Voyante';
+
+  @override
+  String get roleVoyanteShortName => 'Voyante';
+
+  @override
+  String get roleVoyanteDescription =>
+      'Chaque nuit, elle découvre en secret la véritable identité d\'un joueur de son choix.';
+
+  @override
+  String get roleSorciereName => 'La Sorcière';
+
+  @override
+  String get roleSorciereShortName => 'Sorcière';
+
+  @override
+  String get roleSorciereDescription =>
+      'Elle possède deux potions à usage unique : une potion de vie pour sauver la victime des loups, et une potion de mort pour éliminer un joueur de son choix.';
+
+  @override
+  String get roleChasseurName => 'Le Chasseur';
+
+  @override
+  String get roleChasseurShortName => 'Chasseur';
+
+  @override
+  String get roleChasseurDescription =>
+      'S\'il meurt, de nuit comme de jour, il réplique aussitôt en abattant un autre joueur de son choix.';
+
+  @override
+  String get roleCupidonName => 'Cupidon';
+
+  @override
+  String get roleCupidonShortName => 'Cupidon';
+
+  @override
+  String get roleCupidonDescription =>
+      'La première nuit seulement, il désigne deux joueurs qui tombent amoureux. Si l\'un meurt, l\'autre meurt aussitôt de chagrin.';
+
+  @override
+  String get rolePetiteFilleName => 'La Petite Fille';
+
+  @override
+  String get rolePetiteFilleShortName => 'Petite Fille';
+
+  @override
+  String get rolePetiteFilleDescription =>
+      'Pendant le tour des loups, elle peut entrouvrir les yeux pour espionner.';
+
+  @override
+  String get roleVoleurName => 'Le Voleur';
+
+  @override
+  String get roleVoleurShortName => 'Voleur';
+
+  @override
+  String get roleVoleurDescription =>
+      'La première nuit, il regarde deux cartes restées sur la table et peut échanger son rôle contre l\'une d\'elles.';
+
+  @override
+  String get roleSimpleVillageoisName => 'Simple Villageois';
+
+  @override
+  String get roleSimpleVillageoisShortName => 'Villageois';
+
+  @override
+  String get roleSimpleVillageoisDescription =>
+      'Aucun pouvoir particulier. Son arme : l\'observation, l\'écoute, et le vote le jour venu.';
+
+  @override
+  String get roleAncienName => 'L\'Ancien';
+
+  @override
+  String get roleAncienShortName => 'Ancien';
+
+  @override
+  String get roleAncienDescription =>
+      'Grâce à sa sagesse, il résiste à une première attaque des Loups-Garous. S\'il est tué par le village, les villageois à pouvoir perdent leurs capacités.';
+
+  @override
+  String get roleBoucEmissaireName => 'Le Bouc Émissaire';
+
+  @override
+  String get roleBoucEmissaireShortName => 'Bouc Émissaire';
+
+  @override
+  String get roleBoucEmissaireDescription =>
+      'S\'il est éliminé par le vote du village, il peut désigner un joueur qui ne se réveillera pas lors de la nuit suivante.';
+
+  @override
+  String get roleIdiotDuVillageName => 'L\'Idiot du Village';
+
+  @override
+  String get roleIdiotDuVillageShortName => 'Idiot';
+
+  @override
+  String get roleIdiotDuVillageDescription =>
+      'S\'il est condamné par le vote du village, il révèle son rôle et reste en vie, mais perd définitivement son droit de vote.';
+
+  @override
+  String get roleSalvateurName => 'Le Salvateur';
+
+  @override
+  String get roleSalvateurShortName => 'Salvateur';
+
+  @override
+  String get roleSalvateurDescription =>
+      'Chaque nuit, il protège un joueur contre les Loups-Garous. Il ne peut pas protéger le même joueur deux nuits consécutives.';
+
+  @override
+  String get roleEnfantSauvageName => 'L\'Enfant Sauvage';
+
+  @override
+  String get roleEnfantSauvageShortName => 'Enfant Sauvage';
+
+  @override
+  String get roleEnfantSauvageDescription =>
+      'Au début de la partie, il choisit un modèle parmi les autres joueurs. Si son modèle meurt, il devient Loup-Garou.';
+
+  @override
+  String get roleJugeBegueName => 'Le Juge Bègue';
+
+  @override
+  String get roleJugeBegueShortName => 'Juge Bègue';
+
+  @override
+  String get roleJugeBegueDescription =>
+      'Une fois par partie, il peut décider secrètement que le vote du village sera rejoué immédiatement.';
+
+  @override
+  String get roleServanteDevoueeName => 'La Servante Dévouée';
+
+  @override
+  String get roleServanteDevoueeShortName => 'Servante';
+
+  @override
+  String get roleServanteDevoueeDescription =>
+      'Lorsqu\'un joueur est éliminé par le vote, elle peut révéler son rôle et prendre immédiatement sa carte.';
+
+  @override
+  String get roleMontreurDoursName => 'Le Montreur d\'Ours';
+
+  @override
+  String get roleMontreurDoursShortName => 'Montreur d\'Ours';
+
+  @override
+  String get roleMontreurDoursDescription =>
+      'Chaque matin, si un Loup-Garou se trouve parmi ses voisins encore vivants, l\'ours grogne.';
+
+  @override
+  String get roleRenardName => 'Le Renard';
+
+  @override
+  String get roleRenardShortName => 'Renard';
+
+  @override
+  String get roleRenardDescription =>
+      'La nuit, il désigne un joueur : celui-ci et ses deux voisins vivants forment un groupe de trois. Le meneur lui indique si au moins un Loup-Garou s\'y trouve.';
+
+  @override
+  String get roleCorbeauName => 'Le Corbeau';
+
+  @override
+  String get roleCorbeauShortName => 'Corbeau';
+
+  @override
+  String get roleCorbeauDescription =>
+      'Chaque nuit, il désigne un joueur qui aura deux voix de plus contre lui lors du prochain vote du village.';
+
+  @override
   String get passDeviceToPlural => 'Passe le téléphone aux';
 
   @override
@@ -331,6 +547,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get petiteFilleTitle => 'La Petite Fille';
 
   @override
+  String get petiteFilleInstruction =>
+      'Tu peux tenter d\'espionner les Loups-Garous. Reste discrète...';
+
+  @override
   String get petiteFilleWarning =>
       'Attention : si les Loups-Garous te surprennent, tu prendras la place de leur victime.';
 
@@ -353,7 +573,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get renardInstructionCenter =>
-      'Pick a player: they and their two living neighbors will be sniffed.';
+      'Désigne un joueur : lui et ses deux voisins vivants seront flairés.';
 
   @override
   String get renardResultWolfFound =>
@@ -442,6 +662,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get voleurTitle => 'Le Voleur';
+
+  @override
+  String get voleurInstruction =>
+      'Regarde les deux cartes restantes et choisis d\'échanger ou non.';
 
   @override
   String get voleurBothWolvesWarning =>

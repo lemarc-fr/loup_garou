@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:thiercelieux/l10n/app_localizations.dart';
+import 'package:thiercelieux/l10n/role_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../models/role.dart';
 import '../../../providers/game_provider.dart';
@@ -52,7 +53,7 @@ class _EnfantSauvageMutationContent extends StatelessWidget {
                 const RoleImage(role: RoleId.loupGarou, size: 120),
                 const SizedBox(height: 16),
                 Text(
-                  RoleId.loupGarou.info.name,
+                  loc.roleName(RoleId.loupGarou),
                   style: theme.textTheme.displayMedium
                       ?.copyWith(color: AppColors.blood),
                   textAlign: TextAlign.center,

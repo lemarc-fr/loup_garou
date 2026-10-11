@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:thiercelieux/l10n/app_localizations.dart';
+import 'package:thiercelieux/l10n/role_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../models/player_stats.dart';
 import '../../providers/stats_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/confirm.dart';
 import '../../widgets/role_image.dart';
-import '../../models/role.dart';
 
 class StatsScreen extends StatelessWidget {
   const StatsScreen({super.key});
@@ -95,7 +95,7 @@ class _PlayerStatsCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     '${loc.statsCardSummary(stats.gamesPlayed, (stats.winRate * 100).round())}'
-                    '${favorite != null ? loc.statsFavoriteSuffix(favorite.info.nameShort) : ''}',
+                    '${favorite != null ? loc.statsFavoriteSuffix(loc.roleShortName(favorite)) : ''}',
                     style: theme.textTheme.bodyMedium?.copyWith(
                         color: AppColors.moonlight.withValues(alpha: 0.7)),
                   ),
