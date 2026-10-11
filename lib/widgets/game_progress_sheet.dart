@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:thiercelieux/l10n/app_localizations.dart';
 
 import '../models/game_progress.dart';
 import '../models/game_state.dart';
@@ -20,7 +21,10 @@ class GameProgressButton extends StatelessWidget {
 
     final theme = Theme.of(context);
     final isNight = state.currentWave == 'night';
-    final label = isNight ? 'Nuit ${state.night}' : 'Jour ${state.day}';
+    final loc = AppLocalizations.of(context)!;
+    final label = isNight
+        ? loc.gameProgressNightCounter(state.night)
+        : loc.gameProgressDayCounter(state.day);
 
     return Padding(
       padding: const EdgeInsets.only(top: 6, right: 6),
@@ -75,6 +79,7 @@ class GameProgressSheet extends StatelessWidget {
     final gp = context.watch<GameProvider>();
     final state = gp.state!;
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
     // Le plus récent (donc le round en cours) en premier.
     final rounds = state.rounds.reversed.toList();
 
@@ -93,7 +98,7 @@ class GameProgressSheet extends StatelessWidget {
                 const Icon(Icons.checklist_rtl, color: AppColors.lantern),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: Text('Résumé de la partie',
+                  child: Text(loc.gameProgressSheetTitle,
                       style: theme.textTheme.titleLarge),
                 ),
               ],
@@ -104,10 +109,12 @@ class GameProgressSheet extends StatelessWidget {
             child: Row(
               children: [
                 _CounterChip(
-                    icon: Icons.dark_mode, label: 'Nuit', value: state.night),
+                    icon: Icons.dark_mode,
+                    label: loc.gameProgressNightCounter(state.night)),
                 const SizedBox(width: 10),
                 _CounterChip(
-                    icon: Icons.wb_sunny, label: 'Jour', value: state.day),
+                    icon: Icons.wb_sunny,
+                    label: loc.gameProgressDayCounter(state.day)),
               ],
             ),
           ),
@@ -115,7 +122,7 @@ class GameProgressSheet extends StatelessWidget {
           Expanded(
             child: rounds.isEmpty
                 ? Center(
-                    child: Text('La partie commence...',
+                    child: Text(loc.gameProgressStarting,
                         style: theme.textTheme.bodyMedium),
                   )
                 : ListView.builder(
@@ -135,10 +142,8 @@ class GameProgressSheet extends StatelessWidget {
 class _CounterChip extends StatelessWidget {
   final IconData icon;
   final String label;
-  final int value;
 
-  const _CounterChip(
-      {required this.icon, required this.label, required this.value});
+  const _CounterChip({required this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -155,7 +160,7 @@ class _CounterChip extends StatelessWidget {
         children: [
           Icon(icon, size: 18, color: AppColors.lantern),
           const SizedBox(width: 8),
-          Text('$label $value', style: theme.textTheme.bodyMedium),
+          Text(label, style: theme.textTheme.bodyMedium),
         ],
       ),
     );
@@ -171,7 +176,10 @@ class _RoundTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isNight = round.wave == 'night';
-    final title = isNight ? 'Nuit ${round.number}' : 'Jour ${round.number}';
+    final loc = AppLocalizations.of(context)!;
+    final title = isNight
+        ? loc.gameProgressNightTitle(round.number)
+        : loc.gameProgressDayTitle(round.number);
 
     return Card(
       key: ValueKey('${round.wave}-${round.number}'),
@@ -190,7 +198,8 @@ class _RoundTile extends StatelessWidget {
             color: AppColors.lantern),
         title: Text(title, style: theme.textTheme.titleMedium),
         subtitle: isLatest
-            ? const Text('En cours', style: TextStyle(color: AppColors.lantern))
+            ? Text(loc.gameProgressInProgress,
+                style: const TextStyle(color: AppColors.lantern))
             : null,
         childrenPadding: const EdgeInsets.only(bottom: 8),
         children: round.steps.isEmpty
@@ -198,7 +207,8 @@ class _RoundTile extends StatelessWidget {
                 Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Text('En cours...', style: theme.textTheme.bodyMedium),
+                  child: Text(loc.gameProgressInProgressDots,
+                      style: theme.textTheme.bodyMedium),
                 ),
               ]
             : [for (final step in round.steps) _StepTile(step: step)],
@@ -219,7 +229,7 @@ class _StepTile extends StatelessWidget {
       dense: true,
       leading: _StatusIcon(status: step.status),
       title: Text(
-        gamePhaseLabel(step.phase),
+        gamePhaseLabel(AppLocalizations.of(context)!, step.phase),
         style: theme.textTheme.bodyMedium?.copyWith(
           color: dimmed ? AppColors.moonlight.withValues(alpha: 0.45) : null,
         ),
@@ -271,68 +281,68 @@ class _StatusIcon extends StatelessWidget {
 }
 
 /// Libellé affiché pour chaque étape dans le résumé de la partie.
-String gamePhaseLabel(GamePhase phase) {
+String gamePhaseLabel(AppLocalizations loc, GamePhase phase) {
   switch (phase) {
     case GamePhase.nightVoleur:
-      return 'Le Voleur';
+      return loc.phaseNightVoleur;
     case GamePhase.nightCupidon:
-      return 'Cupidon';
+      return loc.phaseNightCupidon;
     case GamePhase.nightEnfantSauvage:
-      return "L'Enfant Sauvage — choix du modèle";
+      return loc.phaseNightEnfantSauvage;
     case GamePhase.nightSalvateur:
-      return 'Le Salvateur';
+      return loc.phaseNightSalvateur;
     case GamePhase.nightVoyante:
-      return 'La Voyante';
+      return loc.phaseNightVoyante;
     case GamePhase.nightLoups:
-      return 'Les Loups-Garous';
+      return loc.phaseNightLoups;
     case GamePhase.nightPetiteFille:
-      return 'La Petite Fille';
+      return loc.phaseNightPetiteFille;
     case GamePhase.nightLoupBlanc:
-      return 'Le Loup Blanc';
+      return loc.phaseNightLoupBlanc;
     case GamePhase.nightGrandMechantLoup:
-      return 'Le Grand Méchant Loup';
+      return loc.phaseNightGrandMechantLoup;
     case GamePhase.nightEnfantSauvageCheck:
-      return "L'Enfant Sauvage";
+      return loc.phaseNightEnfantSauvageCheck;
     case GamePhase.nightInfectPereDesLoups:
-      return 'Infect Père des Loups';
+      return loc.phaseNightInfectPereDesLoups;
     case GamePhase.nightRenard:
-      return 'Le Renard';
+      return loc.phaseNightRenard;
     case GamePhase.nightCorbeau:
-      return 'Le Corbeau';
+      return loc.phaseNightCorbeau;
     case GamePhase.nightSorciere:
-      return 'La Sorcière';
+      return loc.phaseNightSorciere;
     case GamePhase.chasseurRevange:
-      return 'Riposte du Chasseur';
+      return loc.phaseChasseurRevange;
     case GamePhase.successionMaire:
-      return 'Succession du Maire';
+      return loc.phaseSuccessionMaire;
     case GamePhase.enfantsauvageReveal:
-      return "Mutation de l'Enfant Sauvage";
+      return loc.phaseEnfantsauvageReveal;
     case GamePhase.dayReveal:
-      return 'Réveil du village';
+      return loc.phaseDayReveal;
     case GamePhase.mayorElectionExplain:
-      return 'Élection du maire';
+      return loc.phaseMayorElectionExplain;
     case GamePhase.mayorElection:
-      return 'Vote pour le maire';
+      return loc.phaseMayorElection;
     case GamePhase.mayorReveal:
-      return "Résultat de l'élection";
+      return loc.phaseMayorReveal;
     case GamePhase.debate:
-      return 'Débat';
+      return loc.phaseDebate;
     case GamePhase.jugeBegueDecision:
-      return 'Le Juge Bègue';
+      return loc.phaseJugeBegueDecision;
     case GamePhase.villageVote:
-      return 'Vote du village';
+      return loc.phaseVillageVote;
     case GamePhase.voteResult:
-      return 'Résultat du vote';
+      return loc.phaseVoteResult;
     case GamePhase.villagePowerLoss:
-      return 'Perte des pouvoirs';
+      return loc.phaseVillagePowerLoss;
     case GamePhase.servanteDevouee:
-      return 'La Servante Dévouée';
+      return loc.phaseServanteDevouee;
     case GamePhase.boucEmissaire:
-      return 'Le Bouc Émissaire';
+      return loc.phaseBoucEmissaire;
     case GamePhase.idiotduvillageCivicRightLoss:
-      return "L'Idiot du Village";
+      return loc.phaseIdiotduvillageCivicRightLoss;
     case GamePhase.endGame:
-      return 'Fin de la partie';
+      return loc.phaseEndGame;
     default:
       return phase.name;
   }
