@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:thiercelieux/l10n/app_localizations.dart';
+import '../../models/game_state.dart';
+import 'package:thiercelieux/l10n/upcoming_step_localizations.dart';
 import 'package:thiercelieux/l10n/role_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
@@ -53,7 +55,11 @@ class VoteResultScreen extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: gp.confirmVoteResult,
-                  child: Text(loc.nightFallsAgainButton),
+                  // Pas de "La nuit tombe à nouveau" si le vote vient de
+                  // terminer la partie, ou si une suite (Chasseur, maire...)
+                  // doit encore être jouée.
+                  child: Text(loc.upcomingStepButton(
+                      gp.upcomingStep(origin: FollowUpOrigin.voteDeaths))),
                 ),
               ),
             ],

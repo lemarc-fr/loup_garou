@@ -14,6 +14,29 @@ class VoteTally {
   bool get isTie => winner == null && tiedCandidates.length > 1;
 }
 
+/// Ce qui se passera quand le groupe validera un écran qui déclenche la
+/// résolution des suites d'une mort (récapitulatif de la nuit, résultat du
+/// vote, perte des pouvoirs...). Sert à libeller le bouton de cet écran :
+/// "La nuit tombe à nouveau" n'a aucun sens si la partie vient de se
+/// terminer, ou si le Chasseur doit encore tirer.
+enum UpcomingStep {
+  /// Une condition de victoire est remplie : la partie se termine.
+  gameOver,
+
+  /// Une conséquence d'une mort doit encore être jouée (riposte du
+  /// Chasseur, succession du maire, Servante Dévouée...).
+  followUp,
+
+  /// Le Juge Bègue a demandé que le vote soit rejoué.
+  revote,
+
+  /// Fin du vote : la nuit suivante commence.
+  nightFalls,
+
+  /// Fin du récapitulatif de la nuit : la journée commence.
+  dayStarts,
+}
+
 /// Toute la logique de partie vit ici, séparée de l'UI et du provider.
 /// Chaque méthode mute le [GameState] passé en paramètre ; c'est au
 /// GameProvider d'appeler notifyListeners() ensuite.
@@ -594,32 +617,9 @@ class GameEngine {
       _goToPhase(s, GamePhase.endGame);
       return;
     }
-    if (s.chasseurRevengeTargetId != null) {
-      _goToPhase(s, GamePhase.chasseurRevange);
-      return;
-    }
-    if (s.mayorSuccessionNeededFor != null) {
-      _goToPhase(s, GamePhase.successionMaire);
-      return;
-    }
-    if (s.enfantSauvageTransformedId != null) {
-      _goToPhase(s, GamePhase.enfantsauvageReveal);
-      return;
-    }
-    if (s.powerLossThisWave.isNotEmpty) {
-      _goToPhase(s, GamePhase.villagePowerLoss);
-      return;
-    }
-    if (s.servanteDevoueeOfferId != null) {
-      _goToPhase(s, GamePhase.servanteDevouee);
-      return;
-    }
-    if (s.boucEmissaireChoiceNeededId != null) {
-      _goToPhase(s, GamePhase.boucEmissaire);
-      return;
-    }
-    if (s.idiotDuVillageRevealId != null) {
-      _goToPhase(s, GamePhase.idiotduvillageCivicRightLoss);
+    final followUp = _pendingFollowUpPhase(s);
+    if (followUp != null) {
+      _goToPhase(s, followUp);
       return;
     }
 
@@ -632,6 +632,44 @@ class GameEngine {
         break;
       case null:
         break;
+    }
+  }
+
+  /// Première suite d'une mort encore en attente, dans l'ordre fixe de
+  /// résolution, ou null s'il n'y en a plus. [except] permet d'ignorer la
+  /// suite en cours d'affichage (son flag n'est levé qu'à sa validation).
+  GamePhase? _pendingFollowUpPhase(GameState s, {GamePhase? except}) {
+    final pending = <GamePhase, bool>{
+      GamePhase.chasseurRevange: s.chasseurRevengeTargetId != null,
+      GamePhase.successionMaire: s.mayorSuccessionNeededFor != null,
+      GamePhase.enfantsauvageReveal: s.enfantSauvageTransformedId != null,
+      GamePhase.villagePowerLoss: s.powerLossThisWave.isNotEmpty,
+      GamePhase.servanteDevouee: s.servanteDevoueeOfferId != null,
+      GamePhase.boucEmissaire: s.boucEmissaireChoiceNeededId != null,
+      GamePhase.idiotduvillageCivicRightLoss: s.idiotDuVillageRevealId != null,
+    };
+    for (final entry in pending.entries) {
+      if (entry.value && entry.key != except) return entry.key;
+    }
+    return null;
+  }
+
+  /// Ce qui suivra la validation de l'écran courant (voir [UpcomingStep]),
+  /// sans rien modifier à l'état. [origin] : d'où viennent les morts en
+  /// cours de résolution — par défaut [GameState.followUpOrigin].
+  UpcomingStep upcomingStep(GameState s, {FollowUpOrigin? origin}) {
+    if (checkWinCondition(s) != null) return UpcomingStep.gameOver;
+    if (_pendingFollowUpPhase(s, except: s.phase) != null) {
+      return UpcomingStep.followUp;
+    }
+    switch (origin ?? s.followUpOrigin) {
+      case FollowUpOrigin.nightDeaths:
+        return UpcomingStep.dayStarts;
+      case FollowUpOrigin.voteDeaths:
+      case null:
+        return s.voteReplayPending
+            ? UpcomingStep.revote
+            : UpcomingStep.nightFalls;
     }
   }
 

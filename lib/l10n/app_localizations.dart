@@ -134,6 +134,18 @@ abstract class AppLocalizations {
   /// **'La nuit tombe à nouveau'**
   String get nightFallsAgainButton;
 
+  /// Bouton affiché quand la partie vient de se terminer (victoire d'un camp)
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir le résultat de la partie'**
+  String get seeGameResultButton;
+
+  /// Bouton affiché quand le Juge Bègue a demandé que le vote soit rejoué
+  ///
+  /// In fr, this message translates to:
+  /// **'Rejouer le vote'**
+  String get replayVoteButton;
+
   /// Bouton pour utiliser un pouvoir de rôle
   ///
   /// In fr, this message translates to:
@@ -1579,12 +1591,6 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Privés de sa sagesse, certains villageois ont senti leur don s\'éteindre... mais eux seuls savent lesquels.'**
   String get powerLossPublicExplanation;
-
-  /// Bouton pour clore l'annonce publique de perte de pouvoirs
-  ///
-  /// In fr, this message translates to:
-  /// **'La nuit tombe à nouveau'**
-  String get powerLossNightFallsAgainButton;
 
   /// Titre de l'écran du vote du village
   ///

@@ -6,6 +6,8 @@
   "cancelButtonLabel": "Cancel",
   "goBackToSleepButton": "Go back to sleep",
   "nightFallsAgainButton": "Night falls again",
+  "seeGameResultButton": "See the game result",
+  "replayVoteButton": "Replay the vote",
   "usePowerButton": "Use my power",
   "doNotUsePowerButton": "Do not use my power",
   "campWolves": "Werewolf Team",
@@ -278,7 +280,6 @@
   "powerLossKeepSecretWarning": "Keep it to yourself: nobody else at the table should know what was shown on this screen.",
   "powerLossUnderstoodButton": "Understood, hide",
   "powerLossPublicExplanation": "Deprived of their wisdom, some villagers felt their gift fade... but only they know who.",
-  "powerLossNightFallsAgainButton": "Night falls again",
 
   "villageVoteTitle": "Village vote",
   "villageVoteInstruction": "Each player designates the suspect to eliminate.",

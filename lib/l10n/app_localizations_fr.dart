@@ -27,6 +27,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get nightFallsAgainButton => 'La nuit tombe à nouveau';
 
   @override
+  String get seeGameResultButton => 'Voir le résultat de la partie';
+
+  @override
+  String get replayVoteButton => 'Rejouer le vote';
+
+  @override
   String get usePowerButton => 'Utiliser mon pouvoir';
 
   @override
@@ -877,9 +883,6 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get powerLossPublicExplanation =>
       'Privés de sa sagesse, certains villageois ont senti leur don s\'éteindre... mais eux seuls savent lesquels.';
-
-  @override
-  String get powerLossNightFallsAgainButton => 'La nuit tombe à nouveau';
 
   @override
   String get villageVoteTitle => 'Vote du village';

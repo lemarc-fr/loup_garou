@@ -373,6 +373,11 @@ class GameProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Ce qui suivra la validation de l'écran courant, pour libeller son
+  /// bouton (voir [UpcomingStep]).
+  UpcomingStep upcomingStep({FollowUpOrigin? origin}) =>
+      engine.upcomingStep(state!, origin: origin);
+
   void confirmVoteResult() {
     engine.confirmVoteResult(state!);
     notifyListeners();

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:thiercelieux/l10n/app_localizations.dart';
+import 'package:thiercelieux/l10n/upcoming_step_localizations.dart';
 import 'package:thiercelieux/l10n/role_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../models/role.dart';
@@ -76,6 +77,7 @@ class _VillagePowerLossScreenState extends State<VillagePowerLossScreen> {
     // Tout le monde est passé par le même rituel : on peut informer la
     // table, sans citer aucun nom ni aucun rôle.
     return _PublicPowerLossAnnouncement(
+      continueLabel: loc.upcomingStepButton(gp.upcomingStep()),
       onContinue: gp.confirmPowerLossReveal,
     );
   }
@@ -204,8 +206,10 @@ class _PowerLossPrivateScreen extends StatelessWidget {
 /// Vu par toute la table : volontairement neutre, aucun nom ni rôle n'y
 /// figure.
 class _PublicPowerLossAnnouncement extends StatelessWidget {
+  final String continueLabel;
   final VoidCallback onContinue;
-  const _PublicPowerLossAnnouncement({required this.onContinue});
+  const _PublicPowerLossAnnouncement(
+      {required this.continueLabel, required this.onContinue});
 
   @override
   Widget build(BuildContext context) {
@@ -239,7 +243,7 @@ class _PublicPowerLossAnnouncement extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: onContinue,
-                  child: Text(loc.powerLossNightFallsAgainButton),
+                  child: Text(continueLabel),
                 ),
               ),
             ],

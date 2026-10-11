@@ -24,6 +24,14 @@
   "@nightFallsAgainButton": {
     "description": "Bouton pour faire retomber la nuit"
   },
+  "seeGameResultButton": "Voir le résultat de la partie",
+  "@seeGameResultButton": {
+    "description": "Bouton affiché quand la partie vient de se terminer (victoire d'un camp)"
+  },
+  "replayVoteButton": "Rejouer le vote",
+  "@replayVoteButton": {
+    "description": "Bouton affiché quand le Juge Bègue a demandé que le vote soit rejoué"
+  },
   "usePowerButton": "Utiliser mon pouvoir",
   "@usePowerButton": {
     "description": "Bouton pour utiliser un pouvoir de rôle"
@@ -1112,10 +1120,6 @@
   "powerLossPublicExplanation": "Privés de sa sagesse, certains villageois ont senti leur don s'éteindre... mais eux seuls savent lesquels.",
   "@powerLossPublicExplanation": {
     "description": "Explication publique lors de la mort de l'Ancien"
-  },
-  "powerLossNightFallsAgainButton": "La nuit tombe à nouveau",
-  "@powerLossNightFallsAgainButton": {
-    "description": "Bouton pour clore l'annonce publique de perte de pouvoirs"
   },
 
   "villageVoteTitle": "Vote du village",
