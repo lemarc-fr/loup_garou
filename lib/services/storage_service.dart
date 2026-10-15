@@ -12,6 +12,8 @@ class StorageService {
   static const _statsKey = 'thiercelieux.player_stats.v1';
   static const _settingsKey = 'thiercelieux.game_settings.v1';
   static const _localeKey = 'thiercelieux.locale.v1';
+  static const _narrationKey = 'thiercelieux.sound.narration.v1';
+  static const _musicKey = 'thiercelieux.sound.music.v1';
 
 
   Future<List<PlayerStats>> loadAllStats() async {
@@ -68,5 +70,24 @@ class StorageService {
     } else {
       await prefs.setString(_localeKey, code);
     }
+  }
+
+  /// Réglages du son (voix du narrateur, musique d'ambiance), activés par
+  /// défaut.
+  Future<({bool narration, bool music})> loadSoundSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    return (
+      narration: prefs.getBool(_narrationKey) ?? true,
+      music: prefs.getBool(_musicKey) ?? true,
+    );
+  }
+
+  Future<void> saveSoundSettings({
+    required bool narration,
+    required bool music,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_narrationKey, narration);
+    await prefs.setBool(_musicKey, music);
   }
 }

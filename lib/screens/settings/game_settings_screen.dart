@@ -36,6 +36,8 @@ class GameSettingsScreen extends StatelessWidget {
                 children: [
                   _SectionTitle(loc.settingsAppSectionTitle),
                   const _LanguageCard(),
+                  const SizedBox(height: 10),
+                  const _SoundCard(),
                   const SizedBox(height: 24),
                   _SectionTitle(loc.settingsGameRulesSectionTitle),
                   for (final def in kGameSettingDefinitions) ...[
@@ -139,6 +141,58 @@ class _LanguageCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Son de la nuit : voix du narrateur et musique d'ambiance (voir
+/// NarrationHost).
+class _SoundCard extends StatelessWidget {
+  const _SoundCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final sp = context.watch<SettingsProvider>();
+    final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
+
+    Widget toggle({
+      required IconData icon,
+      required bool value,
+      required ValueChanged<bool> onChanged,
+      required String label,
+      required String description,
+    }) =>
+        SwitchListTile(
+          value: value,
+          onChanged: onChanged,
+          secondary: Icon(icon, color: AppColors.lantern),
+          title: Text(label, style: theme.textTheme.titleMedium),
+          subtitle: Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(description, style: theme.textTheme.bodyMedium),
+          ),
+        );
+
+    return Card(
+      child: Column(
+        children: [
+          toggle(
+            icon: Icons.record_voice_over,
+            value: sp.narrationEnabled,
+            onChanged: sp.setNarrationEnabled,
+            label: loc.settingsSoundNarrationLabel,
+            description: loc.settingsSoundNarrationDescription,
+          ),
+          toggle(
+            icon: Icons.music_note,
+            value: sp.musicEnabled,
+            onChanged: sp.setMusicEnabled,
+            label: loc.settingsSoundMusicLabel,
+            description: loc.settingsSoundMusicDescription,
+          ),
+        ],
       ),
     );
   }

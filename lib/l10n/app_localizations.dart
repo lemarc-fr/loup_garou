@@ -1742,6 +1742,30 @@ abstract class AppLocalizations {
   /// **'Système'**
   String get settingsLanguageSystem;
 
+  /// Libellé de l'option de narration audio
+  ///
+  /// In fr, this message translates to:
+  /// **'Voix du narrateur'**
+  String get settingsSoundNarrationLabel;
+
+  /// Description de l'option de narration audio
+  ///
+  /// In fr, this message translates to:
+  /// **'Pendant la nuit, une voix annonce quel rôle se réveille ou se rendort, pour que personne n\'ait à lire l\'écran.'**
+  String get settingsSoundNarrationDescription;
+
+  /// Libellé de l'option de musique d'ambiance
+  ///
+  /// In fr, this message translates to:
+  /// **'Musique d\'ambiance'**
+  String get settingsSoundMusicLabel;
+
+  /// Description de l'option de musique d'ambiance
+  ///
+  /// In fr, this message translates to:
+  /// **'Une musique douce tourne en boucle pendant la nuit et couvre les bruits de ceux qui jouent.'**
+  String get settingsSoundMusicDescription;
+
   /// Libellé de l'option allowWerewolfToKillThemselves
   ///
   /// In fr, this message translates to:
@@ -2179,6 +2203,168 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Confirmer : {name} est éliminé(e)'**
   String collectiveVoteConfirmEliminationButton(String name);
+
+  /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/nightFalls.mp3, sinon synthèse vocale du téléphone). Début de chaque nuit. Ton grave et posé.
+  ///
+  /// In fr, this message translates to:
+  /// **'La nuit tombe sur Thiercelieux. Tout le village s\'endort. Fermez les yeux.'**
+  String get narrationNightFalls;
+
+  /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/dayBreaks.mp3, sinon synthèse vocale du téléphone). Fin de la nuit, avant l'annonce des morts. Ton plus clair.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le jour se lève sur Thiercelieux. Tout le village se réveille. Ouvrez les yeux.'**
+  String get narrationDayBreaks;
+
+  /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/loversReveal.mp3, sinon synthèse vocale du téléphone). Juste après Cupidon : le téléphone passe chez chaque joueur.
+  ///
+  /// In fr, this message translates to:
+  /// **'Les Amoureux vont se découvrir. Le téléphone va faire le tour de la table : quand il arrive entre vos mains, ouvrez les yeux, lisez votre message secret, donnez le téléphone au joueur indiqué, puis rendormez-vous.'**
+  String get narrationLoversReveal;
+
+  /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeVoleur.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se réveille.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le Voleur se réveille.'**
+  String get narrationWakeVoleur;
+
+  /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepVoleur.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se rendort.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le Voleur se rendort.'**
+  String get narrationSleepVoleur;
+
+  /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeCupidon.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se réveille.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cupidon se réveille.'**
+  String get narrationWakeCupidon;
+
+  /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepCupidon.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se rendort.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cupidon se rendort.'**
+  String get narrationSleepCupidon;
+
+  /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeEnfantSauvage.mp3, sinon synthèse vocale du téléphone). Dite aussi quand l'Enfant Sauvage apprend en secret qu'il est devenu Loup-Garou.
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'Enfant Sauvage se réveille.'**
+  String get narrationWakeEnfantSauvage;
+
+  /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepEnfantSauvage.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se rendort.
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'Enfant Sauvage se rendort.'**
+  String get narrationSleepEnfantSauvage;
+
+  /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeSalvateur.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se réveille.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le Salvateur se réveille.'**
+  String get narrationWakeSalvateur;
+
+  /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepSalvateur.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se rendort.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le Salvateur se rendort.'**
+  String get narrationSleepSalvateur;
+
+  /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeVoyante.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se réveille.
+  ///
+  /// In fr, this message translates to:
+  /// **'La Voyante se réveille.'**
+  String get narrationWakeVoyante;
+
+  /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepVoyante.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se rendort.
+  ///
+  /// In fr, this message translates to:
+  /// **'La Voyante se rendort.'**
+  String get narrationSleepVoyante;
+
+  /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeLoups.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se réveille.
+  ///
+  /// In fr, this message translates to:
+  /// **'Les Loups-Garous se réveillent.'**
+  String get narrationWakeLoups;
+
+  /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepLoups.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se rendort.
+  ///
+  /// In fr, this message translates to:
+  /// **'Les Loups-Garous se rendorment.'**
+  String get narrationSleepLoups;
+
+  /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeLoupBlanc.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se réveille.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le Loup-Garou Blanc se réveille.'**
+  String get narrationWakeLoupBlanc;
+
+  /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepLoupBlanc.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se rendort.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le Loup-Garou Blanc se rendort.'**
+  String get narrationSleepLoupBlanc;
+
+  /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeGrandMechantLoup.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se réveille.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le Grand Méchant Loup se réveille.'**
+  String get narrationWakeGrandMechantLoup;
+
+  /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepGrandMechantLoup.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se rendort.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le Grand Méchant Loup se rendort.'**
+  String get narrationSleepGrandMechantLoup;
+
+  /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeInfectPereDesLoups.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se réveille.
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'Infect Père des Loups se réveille.'**
+  String get narrationWakeInfectPereDesLoups;
+
+  /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepInfectPereDesLoups.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se rendort.
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'Infect Père des Loups se rendort.'**
+  String get narrationSleepInfectPereDesLoups;
+
+  /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeRenard.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se réveille.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le Renard se réveille.'**
+  String get narrationWakeRenard;
+
+  /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepRenard.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se rendort.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le Renard se rendort.'**
+  String get narrationSleepRenard;
+
+  /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeCorbeau.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se réveille.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le Corbeau se réveille.'**
+  String get narrationWakeCorbeau;
+
+  /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepCorbeau.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se rendort.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le Corbeau se rendort.'**
+  String get narrationSleepCorbeau;
+
+  /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeSorciere.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se réveille.
+  ///
+  /// In fr, this message translates to:
+  /// **'La Sorcière se réveille.'**
+  String get narrationWakeSorciere;
+
+  /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepSorciere.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se rendort.
+  ///
+  /// In fr, this message translates to:
+  /// **'La Sorcière se rendort.'**
+  String get narrationSleepSorciere;
 }
 
 class _AppLocalizationsDelegate

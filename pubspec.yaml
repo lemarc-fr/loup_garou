@@ -32,6 +32,11 @@ dependencies:
   # Micro-animations sobres pour les transitions de nuit/jour
   flutter_animate: ^4.5.0
 
+  # Son de la nuit : fichiers audio (voix, musique d'ambiance) et synthèse
+  # vocale de secours quand une phrase n'a pas encore son fichier
+  audioplayers: ^6.8.1
+  flutter_tts: ^4.2.5
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -53,6 +58,13 @@ flutter:
   assets:
     - assets/images/roles/
     - assets/images/wolf_howling.svg
+    # Son de la nuit (voir tool/audio/README.md). Tous facultatifs : sans
+    # fichier, les phrases sont lues par la synthèse vocale du téléphone et
+    # la musique / les bruitages sont simplement absents.
+    - assets/audio/voice/fr/
+    - assets/audio/voice/en/
+    - assets/audio/music/
+    - assets/audio/sfx/
 
 flutter_launcher_icons:
   android: true
