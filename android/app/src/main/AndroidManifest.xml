@@ -41,5 +41,11 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- Synthèse vocale du narrateur (flutter_tts) : sans cette
+             déclaration, Android 11+ ne laisse pas l'app trouver le moteur
+             de synthèse vocale du téléphone. -->
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE"/>
+        </intent>
     </queries>
 </manifest>

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/game_provider.dart';
+import '../widgets/narration_host.dart';
 import 'game/game_main_screen.dart';
 import 'setup/player_count_screen.dart';
 import 'setup/player_names_screen.dart';
@@ -14,6 +15,9 @@ import 'setup/role_selection_screen.dart';
 /// Pendant l'assistant de création, le retour arrière (flèche de l'AppBar
 /// ou bouton système) revient à l'étape précédente au lieu de quitter
 /// directement vers l'accueil.
+///
+/// [NarrationHost] fait parler le téléphone pendant la nuit, tant que cet
+/// écran est affiché.
 class GameFlowScreen extends StatelessWidget {
   const GameFlowScreen({super.key});
 
@@ -26,7 +30,7 @@ class GameFlowScreen extends StatelessWidget {
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) gp.backInSetup();
       },
-      child: _currentScreen(gp),
+      child: NarrationHost(child: _currentScreen(gp)),
     );
   }
 

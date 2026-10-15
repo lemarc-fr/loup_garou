@@ -973,6 +973,20 @@ class AppLocalizationsFr extends AppLocalizations {
   String get settingsLanguageSystem => 'Système';
 
   @override
+  String get settingsSoundNarrationLabel => 'Voix du narrateur';
+
+  @override
+  String get settingsSoundNarrationDescription =>
+      'Pendant la nuit, une voix annonce quel rôle se réveille ou se rendort, pour que personne n\'ait à lire l\'écran.';
+
+  @override
+  String get settingsSoundMusicLabel => 'Musique d\'ambiance';
+
+  @override
+  String get settingsSoundMusicDescription =>
+      'Une musique douce tourne en boucle pendant la nuit et couvre les bruits de ceux qui jouent.';
+
+  @override
   String get settingAllowWerewolfToKillThemselvesLabel =>
       'Les Loups peuvent se dévorer entre eux';
 
@@ -1239,4 +1253,92 @@ class AppLocalizationsFr extends AppLocalizations {
   String collectiveVoteConfirmEliminationButton(String name) {
     return 'Confirmer : $name est éliminé(e)';
   }
+
+  @override
+  String get narrationNightFalls =>
+      'La nuit tombe sur Thiercelieux. Tout le village s\'endort. Fermez les yeux.';
+
+  @override
+  String get narrationDayBreaks =>
+      'Le jour se lève sur Thiercelieux. Tout le village se réveille. Ouvrez les yeux.';
+
+  @override
+  String get narrationLoversReveal =>
+      'Les Amoureux vont se découvrir. Le téléphone va faire le tour de la table : quand il arrive entre vos mains, ouvrez les yeux, lisez votre message secret, donnez le téléphone au joueur indiqué, puis rendormez-vous.';
+
+  @override
+  String get narrationWakeVoleur => 'Le Voleur se réveille.';
+
+  @override
+  String get narrationSleepVoleur => 'Le Voleur se rendort.';
+
+  @override
+  String get narrationWakeCupidon => 'Cupidon se réveille.';
+
+  @override
+  String get narrationSleepCupidon => 'Cupidon se rendort.';
+
+  @override
+  String get narrationWakeEnfantSauvage => 'L\'Enfant Sauvage se réveille.';
+
+  @override
+  String get narrationSleepEnfantSauvage => 'L\'Enfant Sauvage se rendort.';
+
+  @override
+  String get narrationWakeSalvateur => 'Le Salvateur se réveille.';
+
+  @override
+  String get narrationSleepSalvateur => 'Le Salvateur se rendort.';
+
+  @override
+  String get narrationWakeVoyante => 'La Voyante se réveille.';
+
+  @override
+  String get narrationSleepVoyante => 'La Voyante se rendort.';
+
+  @override
+  String get narrationWakeLoups => 'Les Loups-Garous se réveillent.';
+
+  @override
+  String get narrationSleepLoups => 'Les Loups-Garous se rendorment.';
+
+  @override
+  String get narrationWakeLoupBlanc => 'Le Loup-Garou Blanc se réveille.';
+
+  @override
+  String get narrationSleepLoupBlanc => 'Le Loup-Garou Blanc se rendort.';
+
+  @override
+  String get narrationWakeGrandMechantLoup =>
+      'Le Grand Méchant Loup se réveille.';
+
+  @override
+  String get narrationSleepGrandMechantLoup =>
+      'Le Grand Méchant Loup se rendort.';
+
+  @override
+  String get narrationWakeInfectPereDesLoups =>
+      'L\'Infect Père des Loups se réveille.';
+
+  @override
+  String get narrationSleepInfectPereDesLoups =>
+      'L\'Infect Père des Loups se rendort.';
+
+  @override
+  String get narrationWakeRenard => 'Le Renard se réveille.';
+
+  @override
+  String get narrationSleepRenard => 'Le Renard se rendort.';
+
+  @override
+  String get narrationWakeCorbeau => 'Le Corbeau se réveille.';
+
+  @override
+  String get narrationSleepCorbeau => 'Le Corbeau se rendort.';
+
+  @override
+  String get narrationWakeSorciere => 'La Sorcière se réveille.';
+
+  @override
+  String get narrationSleepSorciere => 'La Sorcière se rendort.';
 }
