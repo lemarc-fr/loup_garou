@@ -14,3 +14,5 @@ le texte du message apres le debat est toujours la nuit tombe a nouveau (si il y
 
 page nouvelle partie ne reprend pas forcément aux nombres de joueurs mais à la sélection des rôles si on s'est arrêté dans ce process
 
+Un rôle qui n'est plus appelé s'entend. C'est le cas de la Sorcière sans potion, du Renard sans flair ou de l'Infect Père une fois son pouvoir utilisé. Un vrai meneur continue de les appeler « pour rien ». La piste serait des « faux tours » de quelques secondes.
+
