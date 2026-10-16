@@ -38,6 +38,11 @@ class _NightSceneState extends State<NightScene>
     super.dispose();
   }
 
+  /// Plan immobile (crêtes, sapins, loup) : dessiné une fois puis réutilisé
+  /// tel quel, seul son décalage change d'une image à l'autre.
+  Widget _staticLayer(double depth, Widget child) =>
+      _layer(depth, RepaintBoundary(child: child));
+
   /// depth : 0 = très loin (bouge peu), 1 = premier plan (bouge beaucoup)
   Widget _layer(double depth, Widget child) {
     final sway = math.sin(_c.value * 2 * math.pi * 2); // léger balancement
@@ -62,7 +67,10 @@ class _NightSceneState extends State<NightScene>
       final bumpH = size.height * 0.035;
       const fg = Color(0xFF05060C);
 
-      return GestureDetector(
+      // Redessinée à chaque image : la frontière évite d'entraîner avec elle
+      // le reste de l'écran d'accueil (titre, boutons).
+      return RepaintBoundary(
+          child: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onPanUpdate: (d) => _updateTilt(d.localPosition, size),
         onPanEnd: (_) => _target = Offset.zero,
@@ -89,16 +97,16 @@ class _NightSceneState extends State<NightScene>
                   _layer(0.15, CustomPaint(painter: _MoonPainter(t))),
                   _layer(0.25, CustomPaint(painter: _FogPainter(t, 0.50, 1, 0.10))),
                   // Montagnes lointaines
-                  _layer(0.35, CustomPaint(painter: _RidgePainter(
+                  _staticLayer(0.35, CustomPaint(painter: _RidgePainter(
                       color: const Color(0xFF1F2547), base: 0.50, amp: 50, seed: 3))),
                   // Forêt de sapins (2 plans)
-                  _layer(0.55, CustomPaint(painter: _RidgePainter(
+                  _staticLayer(0.55, CustomPaint(painter: _RidgePainter(
                       color: const Color(0xFF121631), base: 0.56, amp: 30, seed: 8, trees: true))),
-                  _layer(0.75, CustomPaint(painter: _RidgePainter(
+                  _staticLayer(0.75, CustomPaint(painter: _RidgePainter(
                       color: const Color(0xFF0A0C1E), base: 0.60, amp: 22, seed: 21, trees: true))),
                   _layer(0.85, CustomPaint(painter: _FogPainter(t, 0.60, 2, 0.12))),
                   // Premier plan : rocher + loup
-                  _layer(
+                  _staticLayer(
                     1.0,
                     Stack(children: [
                       Positioned.fill(
@@ -145,7 +153,7 @@ class _NightSceneState extends State<NightScene>
             },
           ),
         ),
-      );
+      ));
     });
   }
 }

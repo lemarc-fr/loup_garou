@@ -39,6 +39,7 @@ import 'vote_result_screen.dart';
 import 'role_screens/enfant_sauvage_mutation_screen.dart';
 
 import '../../widgets/game_progress_sheet.dart';
+import '../../widgets/phase_entrance.dart';
 
 /// Point d'entrée de la partie une fois la distribution des rôles terminée.
 /// Regarde `GameState.phase` et affiche l'écran correspondant.
@@ -96,9 +97,26 @@ class GameMainScreen extends StatelessWidget {
       _ => const SizedBox.shrink(),
     };
 
+    // Tombée de la nuit et lever du jour : transition plus lente.
+    final waveStart =
+        phase == GamePhase.nightIntro || phase == GamePhase.dayReveal;
+
     final content = Stack(
       children: [
-        screen,
+        // Fond sous l'écran entrant pendant son fondu.
+        Positioned.fill(
+          child: ColoredBox(
+            color: (state.currentWave == 'day' ? AppTheme.day : AppTheme.night)
+                .scaffoldBackgroundColor,
+          ),
+        ),
+        PhaseEntrance(
+          // Une nouvelle entrée à chaque étape, y compris deux écrans
+          // « rendors-toi » d'affilée.
+          key: ValueKey((phase, state.night, state.day, state.phaseIndex)),
+          duration: Duration(milliseconds: waveStart ? 650 : 280),
+          child: screen,
+        ),
         const Align(
           alignment: Alignment.topRight,
           child: SafeArea(child: GameProgressButton()),

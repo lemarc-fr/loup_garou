@@ -136,7 +136,13 @@ class AppTheme {
   }
 
   /// Thème "nuit" — utilisé pour l'accueil, le setup, les écrans de rôles nocturnes.
-  static ThemeData get night {
+  ///
+  /// Les deux thèmes sont construits une seule fois : GameMainScreen applique
+  /// [day] à chaque reconstruction de l'écran de jeu, et un ColorScheme.fromSeed
+  /// + une vingtaine de styles Google Fonts à chaque fois coûtent cher.
+  static final ThemeData night = _buildNight();
+
+  static ThemeData _buildNight() {
     final base = ColorScheme.fromSeed(
       seedColor: AppColors.lantern,
       brightness: Brightness.dark,
@@ -197,7 +203,9 @@ class AppTheme {
   }
 
   /// Thème "jour" — parchemin, pour le débat, le vote, l'élection du maire.
-  static ThemeData get day {
+  static final ThemeData day = _buildDay();
+
+  static ThemeData _buildDay() {
     final base = ColorScheme.fromSeed(
       seedColor: AppColors.forest,
       brightness: Brightness.light,
