@@ -2,8 +2,8 @@ import '../models/game_state.dart';
 
 /// Phrases lues à voix haute pendant la nuit, quand plus personne ne peut
 /// lire l'écran. Le texte de chaque phrase est traduit dans les fichiers
-/// .arb (clé `narration<Nom>`, voir l10n/narration_localizations.dart) et
-/// le fichier audio correspondant, s'il existe, s'appelle
+/// .arb (clé `narration<Nom>`, script du générateur) et le fichier audio
+/// correspondant s'appelle
 /// `assets/audio/voice/<langue>/<nom>.mp3` (ex : `fr/wakeVoyante.mp3`).
 /// Voir tool/audio/README.md pour générer ces fichiers.
 enum NarrationCue {

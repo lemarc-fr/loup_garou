@@ -5,19 +5,17 @@ import 'dart:math' show max;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 
 import 'narration_script.dart';
 
 /// Joue la bande-son décidée par [NarrationScript] : phrases du narrateur,
 /// bruitages et musique d'ambiance de la nuit.
 ///
-/// Chaque phrase est lue depuis son fichier audio s'il existe
-/// (`assets/audio/voice/<langue>/<nom>.mp3`), sinon par la synthèse vocale
-/// du téléphone : l'app parle donc dès maintenant, et les fichiers générés
-/// (voir tool/audio/README.md) remplacent la voix du téléphone au fur et à
-/// mesure qu'on les ajoute. Musique et bruitages, eux, sont simplement
-/// absents tant que leur fichier n'existe pas.
+/// Chaque phrase est lue depuis son fichier audio
+/// (`assets/audio/voice/<langue>/<nom>.mp3`, voir tool/audio/README.md ;
+/// test/services/voice_assets_test.dart vérifie qu'aucun ne manque).
+/// Un fichier absent est simplement passé sous silence, comme la musique
+/// et les bruitages.
 ///
 /// Les étapes sont jouées une par une, dans l'ordre : une phrase ne coupe
 /// jamais la précédente. Pendant qu'une phrase est lue, la musique baisse.
@@ -30,14 +28,13 @@ class SoundService {
   /// mp3 en priorité ; pas d'ogg, illisible sur iOS.
   static const _extensions = ['mp3', 'm4a', 'wav'];
 
-  /// Filet de sécurité : un fichier ou une synthèse qui ne signale jamais
+  /// Filet de sécurité : un fichier qui ne signale jamais
   /// sa fin ne doit pas bloquer la suite de la nuit.
   static const _clipTimeout = Duration(seconds: 30);
 
   bool _voiceEnabled = true;
   bool _musicEnabled = true;
   String _languageCode = 'fr';
-  String Function(NarrationCue cue)? _textFor;
 
   final _queue = Queue<SoundAction>();
   bool _running = false;
@@ -60,8 +57,6 @@ class SoundService {
 
   AudioPlayer? _voicePlayer;
   AudioPlayer? _musicPlayer;
-  FlutterTts? _tts;
-  String? _ttsLanguageCode;
   Set<String>? _audioAssets;
   bool _disposed = false;
 
@@ -72,12 +67,9 @@ class SoundService {
     _updateMusic();
   }
 
-  /// [textFor] : texte de chaque phrase dans la langue [languageCode], pour
-  /// la synthèse vocale de secours.
-  void setLanguage(
-      String languageCode, String Function(NarrationCue cue) textFor) {
+  /// Langue des phrases du narrateur (dossier `assets/audio/voice/<langue>/`).
+  void setLanguage(String languageCode) {
     _languageCode = languageCode;
-    _textFor = textFor;
   }
 
   /// Ajoute [actions] à la suite de ce qui reste à jouer.
@@ -115,7 +107,6 @@ class SoundService {
     _fadeTimer?.cancel();
     _ignoreErrors(_voicePlayer?.dispose());
     _ignoreErrors(_musicPlayer?.dispose());
-    _ignoreErrors(_tts?.stop());
   }
 
   // -------------------------------------------------------------------------
@@ -158,14 +149,7 @@ class SoundService {
         if (!_voiceEnabled) return;
         final asset =
             await _findAsset('assets/audio/voice/$_languageCode/${cue.name}');
-        final text = _textFor?.call(cue);
-        await _withMusicDucked(() async {
-          if (asset != null) {
-            await _playClip(asset);
-          } else if (text != null) {
-            await _speak(text);
-          }
-        });
+        if (asset != null) await _withMusicDucked(() => _playClip(asset));
     }
   }
 
@@ -176,7 +160,6 @@ class SoundService {
     _interrupt.complete();
     _interrupt = Completer<void>();
     _ignoreErrors(_voicePlayer?.stop());
-    _ignoreErrors(_tts?.stop());
   }
 
   // -------------------------------------------------------------------------
@@ -212,8 +195,8 @@ class SoundService {
 
   Future<AudioPlayer> _createPlayer(ReleaseMode releaseMode) async {
     final player = AudioPlayer();
-    // Sans prise du "focus audio" : la voix et la musique de l'app (et la
-    // synthèse vocale) se mélangent au lieu de s'interrompre.
+    // Sans prise du "focus audio" : la voix et la musique de l'app se
+    // mélangent au lieu de s'interrompre.
     await player.setAudioContext(
       AudioContextConfig(focus: AudioContextConfigFocus.mixWithOthers).build(),
     );
@@ -233,44 +216,6 @@ class SoundService {
     await player.play(_source(assetKey));
     await _interruptible(completed);
   }
-
-  // -------------------------------------------------------------------------
-  // Synthèse vocale du téléphone (quand le fichier d'une phrase manque)
-  // -------------------------------------------------------------------------
-
-  Future<void> _speak(String text) async {
-    final tts = _tts ??= await _createTts();
-    if (_ttsLanguageCode != _languageCode) {
-      await tts.setLanguage(_ttsLocale(_languageCode));
-      _ttsLanguageCode = _languageCode;
-    }
-    await _interruptible(
-      tts.speak(text).timeout(_clipTimeout, onTimeout: () => null),
-    );
-  }
-
-  static Future<FlutterTts> _createTts() async {
-    final tts = FlutterTts();
-    await tts.awaitSpeakCompletion(true);
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
-      await tts.setSharedInstance(true);
-      await tts.setIosAudioCategory(
-        IosTextToSpeechAudioCategory.playback,
-        [IosTextToSpeechAudioCategoryOptions.mixWithOthers],
-      );
-    }
-    // Un peu plus lent et plus grave que la normale : on raconte une
-    // histoire (vitesse normale : 0,5 sur mobile, 1 sur le web).
-    await tts.setSpeechRate(kIsWeb ? 0.85 : 0.43);
-    await tts.setPitch(0.9);
-    return tts;
-  }
-
-  static String _ttsLocale(String languageCode) => switch (languageCode) {
-        'fr' => 'fr-FR',
-        'en' => 'en-US',
-        _ => languageCode,
-      };
 
   // -------------------------------------------------------------------------
   // Musique d'ambiance

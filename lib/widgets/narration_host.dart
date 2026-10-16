@@ -2,7 +2,6 @@ import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
-import '../l10n/narration_localizations.dart';
 import '../models/game_state.dart';
 import '../providers/game_provider.dart';
 import '../providers/settings_provider.dart';
@@ -55,8 +54,7 @@ class _NarrationHostState extends State<NarrationHost>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final loc = AppLocalizations.of(context)!;
-    _sound.setLanguage(loc.localeName, loc.narrationText);
+    _sound.setLanguage(AppLocalizations.of(context)!.localeName);
     // Première annonce une fois la langue connue (retour dans une partie
     // en cours depuis l'accueil).
     _onGameChanged();

@@ -6,44 +6,38 @@ version: 2.0.0+1
 environment:
   sdk: '>=3.4.0 <4.0.0'
 
+# Pourquoi chaque package : voir README.md.
 dependencies:
   flutter:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  cupertino_icons: ^1.0.8
-  flutter_svg: ^2.0.10
+  flutter_svg: ^2.3.0
 
   # State management — simple et robuste pour une machine à états de partie
-  provider: ^6.1.2
+  provider: ^6.1.5+1
 
   # Persistance locale des statistiques joueurs (léger, pas besoin de SQL)
-  shared_preferences: ^2.3.2
+  shared_preferences: ^2.5.6
 
   # Typographie (thème "veillée nocturne")
-  google_fonts: ^6.2.1
+  google_fonts: ^9.0.0
 
   # Identifiants uniques pour joueurs / parties
-  uuid: ^4.4.2
+  uuid: ^4.6.0
 
-  # Formatage de dates pour l'historique des stats
-  intl: ^0.20.2
+  # Requis par le code de traduction généré (lib/l10n)
+  intl: ^0.20.3
 
-  # Micro-animations sobres pour les transitions de nuit/jour
-  flutter_animate: ^4.5.0
-
-  # Son de la nuit : fichiers audio (voix, musique d'ambiance) et synthèse
-  # vocale de secours quand une phrase n'a pas encore son fichier
+  # Son de la nuit : fichiers audio (voix, musique d'ambiance, bruitages)
   audioplayers: ^6.8.1
-  flutter_tts: ^4.2.5
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
+  flutter_lints: ^6.0.0
   integration_test:
     sdk: flutter
-  mocktail: ^1.0.4
   flutter_launcher_icons: ^0.14.4
 
 flutter:
@@ -58,9 +52,10 @@ flutter:
   assets:
     - assets/images/roles/
     - assets/images/wolf_howling.svg
-    # Son de la nuit (voir tool/audio/README.md). Tous facultatifs : sans
-    # fichier, les phrases sont lues par la synthèse vocale du téléphone et
-    # la musique / les bruitages sont simplement absents.
+    # Son de la nuit (voir tool/audio/README.md). Chaque phrase doit avoir
+    # son fichier dans chaque langue (vérifié par
+    # test/services/voice_assets_test.dart) ; sans fichier, la musique et
+    # les bruitages sont simplement absents.
     - assets/audio/voice/fr/
     - assets/audio/voice/en/
     - assets/audio/music/

@@ -82,10 +82,34 @@ extension ReadableColors on BuildContext {
 class AppTheme {
   AppTheme._();
 
+  /// Équivalent de `GoogleFonts.workSansTextTheme()`, qui depuis
+  /// google_fonts 9 renvoie le TextTheme du package material_ui, et non
+  /// celui de Flutter (incompatibles).
+  static TextTheme _workSansTextTheme() {
+    final t = ThemeData.light().textTheme;
+    TextStyle ws(TextStyle? style) => GoogleFonts.workSans(textStyle: style);
+    return TextTheme(
+      displayLarge: ws(t.displayLarge),
+      displayMedium: ws(t.displayMedium),
+      displaySmall: ws(t.displaySmall),
+      headlineLarge: ws(t.headlineLarge),
+      headlineMedium: ws(t.headlineMedium),
+      headlineSmall: ws(t.headlineSmall),
+      titleLarge: ws(t.titleLarge),
+      titleMedium: ws(t.titleMedium),
+      titleSmall: ws(t.titleSmall),
+      bodyLarge: ws(t.bodyLarge),
+      bodyMedium: ws(t.bodyMedium),
+      bodySmall: ws(t.bodySmall),
+      labelLarge: ws(t.labelLarge),
+      labelMedium: ws(t.labelMedium),
+      labelSmall: ws(t.labelSmall),
+    );
+  }
+
   static TextTheme _textTheme(Color base) {
     GoogleFonts.cinzelTextTheme();
-    final body = GoogleFonts.workSansTextTheme();
-    return body
+    return _workSansTextTheme()
         .copyWith(
           displayLarge: GoogleFonts.cinzel(
               fontSize: 40,

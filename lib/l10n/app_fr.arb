@@ -1580,110 +1580,110 @@
   },
   "narrationNightFalls": "La nuit tombe sur Thiercelieux. Tout le village s'endort. Fermez les yeux.",
   "@narrationNightFalls": {
-    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/nightFalls.mp3, sinon synthèse vocale du téléphone). Début de chaque nuit. Ton grave et posé."
+    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/nightFalls.mp3). Début de chaque nuit. Ton grave et posé."
   },
   "narrationDayBreaks": "Le jour se lève sur Thiercelieux. Tout le village se réveille. Ouvrez les yeux.",
   "@narrationDayBreaks": {
-    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/dayBreaks.mp3, sinon synthèse vocale du téléphone). Fin de la nuit, avant l'annonce des morts. Ton plus clair."
+    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/dayBreaks.mp3). Fin de la nuit, avant l'annonce des morts. Ton plus clair."
   },
   "narrationLoversReveal": "Les Amoureux vont se découvrir. Le téléphone va faire le tour de la table : quand il arrive entre vos mains, ouvrez les yeux, lisez votre message secret, donnez le téléphone au joueur indiqué, puis rendormez-vous.",
   "@narrationLoversReveal": {
-    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/loversReveal.mp3, sinon synthèse vocale du téléphone). Juste après Cupidon : le téléphone passe chez chaque joueur."
+    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/loversReveal.mp3). Juste après Cupidon : le téléphone passe chez chaque joueur."
   },
   "narrationWakeVoleur": "Le Voleur se réveille.",
   "@narrationWakeVoleur": {
-    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeVoleur.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se réveille."
+    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeVoleur.mp3). Dite quand ce rôle se réveille."
   },
   "narrationSleepVoleur": "Le Voleur se rendort.",
   "@narrationSleepVoleur": {
-    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepVoleur.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se rendort."
+    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepVoleur.mp3). Dite quand ce rôle se rendort."
   },
   "narrationWakeCupidon": "Cupidon se réveille.",
   "@narrationWakeCupidon": {
-    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeCupidon.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se réveille."
+    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeCupidon.mp3). Dite quand ce rôle se réveille."
   },
   "narrationSleepCupidon": "Cupidon se rendort.",
   "@narrationSleepCupidon": {
-    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepCupidon.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se rendort."
+    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepCupidon.mp3). Dite quand ce rôle se rendort."
   },
   "narrationWakeEnfantSauvage": "L'Enfant Sauvage se réveille.",
   "@narrationWakeEnfantSauvage": {
-    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeEnfantSauvage.mp3, sinon synthèse vocale du téléphone). Dite aussi quand l'Enfant Sauvage apprend en secret qu'il est devenu Loup-Garou."
+    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeEnfantSauvage.mp3). Dite aussi quand l'Enfant Sauvage apprend en secret qu'il est devenu Loup-Garou."
   },
   "narrationSleepEnfantSauvage": "L'Enfant Sauvage se rendort.",
   "@narrationSleepEnfantSauvage": {
-    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepEnfantSauvage.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se rendort."
+    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepEnfantSauvage.mp3). Dite quand ce rôle se rendort."
   },
   "narrationWakeSalvateur": "Le Salvateur se réveille.",
   "@narrationWakeSalvateur": {
-    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeSalvateur.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se réveille."
+    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeSalvateur.mp3). Dite quand ce rôle se réveille."
   },
   "narrationSleepSalvateur": "Le Salvateur se rendort.",
   "@narrationSleepSalvateur": {
-    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepSalvateur.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se rendort."
+    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepSalvateur.mp3). Dite quand ce rôle se rendort."
   },
   "narrationWakeVoyante": "La Voyante se réveille.",
   "@narrationWakeVoyante": {
-    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeVoyante.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se réveille."
+    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeVoyante.mp3). Dite quand ce rôle se réveille."
   },
   "narrationSleepVoyante": "La Voyante se rendort.",
   "@narrationSleepVoyante": {
-    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepVoyante.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se rendort."
+    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepVoyante.mp3). Dite quand ce rôle se rendort."
   },
   "narrationWakeLoups": "Les Loups-Garous se réveillent.",
   "@narrationWakeLoups": {
-    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeLoups.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se réveille."
+    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeLoups.mp3). Dite quand ce rôle se réveille."
   },
   "narrationSleepLoups": "Les Loups-Garous se rendorment.",
   "@narrationSleepLoups": {
-    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepLoups.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se rendort."
+    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepLoups.mp3). Dite quand ce rôle se rendort."
   },
   "narrationWakeLoupBlanc": "Le Loup-Garou Blanc se réveille.",
   "@narrationWakeLoupBlanc": {
-    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeLoupBlanc.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se réveille."
+    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeLoupBlanc.mp3). Dite quand ce rôle se réveille."
   },
   "narrationSleepLoupBlanc": "Le Loup-Garou Blanc se rendort.",
   "@narrationSleepLoupBlanc": {
-    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepLoupBlanc.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se rendort."
+    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepLoupBlanc.mp3). Dite quand ce rôle se rendort."
   },
   "narrationWakeGrandMechantLoup": "Le Grand Méchant Loup se réveille.",
   "@narrationWakeGrandMechantLoup": {
-    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeGrandMechantLoup.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se réveille."
+    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeGrandMechantLoup.mp3). Dite quand ce rôle se réveille."
   },
   "narrationSleepGrandMechantLoup": "Le Grand Méchant Loup se rendort.",
   "@narrationSleepGrandMechantLoup": {
-    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepGrandMechantLoup.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se rendort."
+    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepGrandMechantLoup.mp3). Dite quand ce rôle se rendort."
   },
   "narrationWakeInfectPereDesLoups": "L'Infect Père des Loups se réveille.",
   "@narrationWakeInfectPereDesLoups": {
-    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeInfectPereDesLoups.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se réveille."
+    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeInfectPereDesLoups.mp3). Dite quand ce rôle se réveille."
   },
   "narrationSleepInfectPereDesLoups": "L'Infect Père des Loups se rendort.",
   "@narrationSleepInfectPereDesLoups": {
-    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepInfectPereDesLoups.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se rendort."
+    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepInfectPereDesLoups.mp3). Dite quand ce rôle se rendort."
   },
   "narrationWakeRenard": "Le Renard se réveille.",
   "@narrationWakeRenard": {
-    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeRenard.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se réveille."
+    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeRenard.mp3). Dite quand ce rôle se réveille."
   },
   "narrationSleepRenard": "Le Renard se rendort.",
   "@narrationSleepRenard": {
-    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepRenard.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se rendort."
+    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepRenard.mp3). Dite quand ce rôle se rendort."
   },
   "narrationWakeCorbeau": "Le Corbeau se réveille.",
   "@narrationWakeCorbeau": {
-    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeCorbeau.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se réveille."
+    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeCorbeau.mp3). Dite quand ce rôle se réveille."
   },
   "narrationSleepCorbeau": "Le Corbeau se rendort.",
   "@narrationSleepCorbeau": {
-    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepCorbeau.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se rendort."
+    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepCorbeau.mp3). Dite quand ce rôle se rendort."
   },
   "narrationWakeSorciere": "La Sorcière se réveille.",
   "@narrationWakeSorciere": {
-    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeSorciere.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se réveille."
+    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/wakeSorciere.mp3). Dite quand ce rôle se réveille."
   },
   "narrationSleepSorciere": "La Sorcière se rendort.",
   "@narrationSleepSorciere": {
-    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepSorciere.mp3, sinon synthèse vocale du téléphone). Dite quand ce rôle se rendort."
+    "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepSorciere.mp3). Dite quand ce rôle se rendort."
   }
 }

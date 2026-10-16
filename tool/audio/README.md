@@ -6,10 +6,12 @@ tombe », « La Voyante se réveille », « La Voyante se rendort », « Le jour
 lève »…), jamais un prénom ni une victime. Une musique d'ambiance tourne en
 boucle pendant toute la nuit, et couvre les bruits de ceux qui jouent.
 
-**Aucun fichier n'est obligatoire.** Tant qu'une phrase n'a pas son fichier,
-elle est lue par la synthèse vocale du téléphone (dans la langue de l'app).
-Sans fichier de musique ou de bruitage, il n'y a simplement pas de musique
-ou de bruitage. On peut donc ajouter les fichiers petit à petit.
+**Chaque phrase doit avoir son fichier, dans chaque langue de l'app** : une
+phrase sans fichier n'est pas dite (l'app n'utilise pas la synthèse vocale
+du téléphone). `flutter test` le vérifie
+(`test/services/voice_assets_test.dart`). La musique et les bruitages, eux,
+sont facultatifs : sans fichier, il n'y a simplement pas de musique ou de
+bruitage.
 
 Les deux sons se coupent dans **Options → Application → Voix du narrateur /
 Musique d'ambiance**.
@@ -273,12 +275,11 @@ ffmpeg -i coq_source.wav -t 4 -af "afade=t=out:st=3:d=1,loudnorm=I=-16:TP=-1.5:L
 
 1. `dart run tool/audio/generate_voices.dart list` : chaque phrase doit
    avoir ✅.
-2. Relance l'app (`flutter run`, pas de hot reload) et lance une partie
+2. `flutter test test/services/voice_assets_test.dart` : aucun fichier de
+   phrase ne doit manquer.
+3. Relance l'app (`flutter run`, pas de hot reload) et lance une partie
    jusqu'à la nuit. Sur Android, c'est le **volume multimédia** qui compte ;
    sur iPhone, le son passe même en mode silencieux.
-3. Pas de son du tout avec la synthèse vocale sur Android ? Vérifie qu'un
-   moteur de synthèse vocale est installé et que la voix française est
-   téléchargée : *Paramètres → Accessibilité → Synthèse vocale*.
 
 ---
 

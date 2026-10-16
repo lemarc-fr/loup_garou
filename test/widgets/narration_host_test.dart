@@ -15,13 +15,12 @@ import 'package:thiercelieux/widgets/narration_host.dart';
 /// Enregistre la bande-son au lieu de la jouer.
 class _RecordingSoundService extends SoundService {
   final played = <SoundAction>[];
-  final spokenTexts = <String>[];
+  final spokenCues = <NarrationCue>[];
   int stops = 0;
   bool? voiceEnabled;
   bool? musicEnabled;
   String? languageCode;
   bool disposed = false;
-  String Function(NarrationCue)? _textFor;
 
   @override
   void configure({required bool voiceEnabled, required bool musicEnabled}) {
@@ -30,18 +29,12 @@ class _RecordingSoundService extends SoundService {
   }
 
   @override
-  void setLanguage(
-      String languageCode, String Function(NarrationCue cue) textFor) {
-    this.languageCode = languageCode;
-    _textFor = textFor;
-  }
+  void setLanguage(String languageCode) => this.languageCode = languageCode;
 
   @override
   void play(List<SoundAction> actions) {
     played.addAll(actions);
-    for (final a in actions.whereType<SpeakCue>()) {
-      spokenTexts.add(_textFor!(a.cue));
-    }
+    spokenCues.addAll(actions.whereType<SpeakCue>().map((a) => a.cue));
   }
 
   @override
@@ -107,14 +100,14 @@ void main() {
     startGame();
 
     expect(sound.played, contains(const StartMusic()));
-    expect(sound.spokenTexts, ['La Voyante se réveille.']);
+    expect(sound.spokenCues, [NarrationCue.wakeVoyante]);
   });
 
   testWidgets('parle anglais quand l\'app est en anglais', (tester) async {
     await pumpHost(tester, locale: const Locale('en'));
     startGame();
     expect(sound.languageCode, 'en');
-    expect(sound.spokenTexts, ['The Seer wakes up.']);
+    expect(sound.spokenCues, [NarrationCue.wakeVoyante]);
   });
 
   testWidgets('ne répète rien si la phase ne change pas', (tester) async {
