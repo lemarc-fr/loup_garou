@@ -591,7 +591,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get loupBlancInstruction =>
-      'Choisis un joueur à éliminer secrètement pendant ton tour.';
+      'Choisis un autre Loup-Garou à éliminer secrètement, ou renonce cette nuit.';
 
   @override
   String get loupsSubtitle =>
@@ -659,7 +659,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get salvateurInstruction =>
-      'Choisis le joueur protégé contre les attaques de cette nuit.';
+      'Choisis le joueur protégé contre les attaques de cette nuit (pas le même que la nuit dernière).';
 
   @override
   String get servanteDevoueeSubtitle =>
@@ -827,6 +827,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get endGameWinnerSolo => 'Il l\'emporte !';
+
+  @override
+  String get endGameWinnerNobody => 'Personne ne survit : aucun vainqueur';
 
   @override
   String get endGameViewStatsButton => 'Voir les statistiques';

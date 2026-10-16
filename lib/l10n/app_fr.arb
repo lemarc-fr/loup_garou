@@ -725,7 +725,7 @@
   "@loupBlancTitle": {
     "description": "Titre de l'écran du Loup Blanc"
   },
-  "loupBlancInstruction": "Choisis un joueur à éliminer secrètement pendant ton tour.",
+  "loupBlancInstruction": "Choisis un autre Loup-Garou à éliminer secrètement, ou renonce cette nuit.",
   "@loupBlancInstruction": {
     "description": "Instruction d'action pour le Loup Blanc"
   },
@@ -800,7 +800,7 @@
   "@salvateurTitle": {
     "description": "Titre de l'écran du Salvateur"
   },
-  "salvateurInstruction": "Choisis le joueur protégé contre les attaques de cette nuit.",
+  "salvateurInstruction": "Choisis le joueur protégé contre les attaques de cette nuit (pas le même que la nuit dernière).",
   "@salvateurInstruction": {
     "description": "Instruction d'action pour le Salvateur"
   },
@@ -1024,6 +1024,10 @@
   "endGameWinnerSolo": "Il l'emporte !",
   "@endGameWinnerSolo": {
     "description": "Annonce d'une victoire solo"
+  },
+  "endGameWinnerNobody": "Personne ne survit : aucun vainqueur",
+  "@endGameWinnerNobody": {
+    "description": "Annonce de fin de partie quand tous les joueurs sont morts"
   },
   "endGameViewStatsButton": "Voir les statistiques",
   "@endGameViewStatsButton": {

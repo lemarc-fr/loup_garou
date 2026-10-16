@@ -112,7 +112,10 @@ class RoleSectionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: theme.dividerColor),
       ),
-      child: child,
+      // Les ListTile (interrupteurs de la Sorcière...) dessinent leur effet
+      // d'appui sur le Material le plus proche : sans celui-ci, le fond de
+      // la carte le masquerait.
+      child: Material(type: MaterialType.transparency, child: child),
     );
   }
 }

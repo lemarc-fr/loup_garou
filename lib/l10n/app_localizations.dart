@@ -1085,7 +1085,7 @@ abstract class AppLocalizations {
   /// Instruction d'action pour le Loup Blanc
   ///
   /// In fr, this message translates to:
-  /// **'Choisis un joueur à éliminer secrètement pendant ton tour.'**
+  /// **'Choisis un autre Loup-Garou à éliminer secrètement, ou renonce cette nuit.'**
   String get loupBlancInstruction;
 
   /// Sous-titre du tour des Loups-Garous
@@ -1199,7 +1199,7 @@ abstract class AppLocalizations {
   /// Instruction d'action pour le Salvateur
   ///
   /// In fr, this message translates to:
-  /// **'Choisis le joueur protégé contre les attaques de cette nuit.'**
+  /// **'Choisis le joueur protégé contre les attaques de cette nuit (pas le même que la nuit dernière).'**
   String get salvateurInstruction;
 
   /// Sous-titre du tour de la Servante Dévouée
@@ -1495,6 +1495,12 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Il l\'emporte !'**
   String get endGameWinnerSolo;
+
+  /// Annonce de fin de partie quand tous les joueurs sont morts
+  ///
+  /// In fr, this message translates to:
+  /// **'Personne ne survit : aucun vainqueur'**
+  String get endGameWinnerNobody;
 
   /// Bouton pour afficher les statistiques après la fin de partie
   ///

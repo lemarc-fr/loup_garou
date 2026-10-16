@@ -589,7 +589,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loupBlancInstruction =>
-      'Choose a player to eliminate secretly during your turn.';
+      'Choose another Werewolf to eliminate secretly, or pass tonight.';
 
   @override
   String get loupsSubtitle => 'Wake up and silently agree on your victim.';
@@ -656,7 +656,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get salvateurInstruction =>
-      'Choose the player protected from attacks tonight.';
+      'Choose the player protected from attacks tonight (not the same as last night).';
 
   @override
   String get servanteDevoueeSubtitle =>
@@ -824,6 +824,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get endGameWinnerSolo => 'Solo victory!';
+
+  @override
+  String get endGameWinnerNobody => 'Nobody survived: no winner';
 
   @override
   String get endGameViewStatsButton => 'View statistics';

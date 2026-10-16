@@ -7,6 +7,7 @@ Companion app for playing *Loups-Garous de Thiercelieux* around a single phone
 - [Updating packages](#updating-packages)
 - [Android build settings](#android-build-settings)
 - [Night sound files](#night-sound-files)
+- [Tests](#tests)
 
 ## Packages: why each one is here
 
@@ -115,3 +116,27 @@ old setup in a future version.
 
 See [tool/audio/README.md](tool/audio/README.md) to generate the narrator's
 voice files, the music and the sound effects.
+
+## Tests
+
+```sh
+flutter test                                 # everything (~2 min)
+flutter test test/services                   # game rules only (~15 s)
+flutter test integration_test -d <device>    # full game on a phone/emulator
+```
+
+| Where | What it checks |
+|---|---|
+| `test/services/game_engine*_test.dart` | Each rule on its own: night order, every role, votes, mayor, follow-ups of a death, win conditions. |
+| `test/services/full_game_scenario_test.dart` | A scripted 18-player game (7 nights) using almost every role, with checks at each step. |
+| `test/services/random_games_test.dart` | 600 complete games with random roles, settings and choices; game invariants are checked after every action. A failure prints the seed and the action log. |
+| `test/widgets/full_game_ui_test.dart` | The same 18-player game played in the real app by tapping every screen, from home back to home. |
+| `test/widgets/random_games_ui_test.dart` | Random games (12–16 players, in English) played through the UI. |
+| `test/providers`, `test/models`, other `test/widgets` | Setup wizard, statistics, JSON, individual screens. |
+
+Shared helpers live in `test/support/`: `game_fixtures.dart` (games with chosen
+cards), `game_decisions.dart` (player choices, scripted or random),
+`engine_runner.dart` (plays a game on the engine and checks invariants),
+`ui_game_driver.dart` (plays the same choices by tapping the screens) and
+`village_scenario.dart` (the 18-player game). Everything random is seeded, so a
+failing game replays exactly.

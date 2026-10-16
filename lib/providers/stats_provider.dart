@@ -36,10 +36,15 @@ class StatsProvider extends ChangeNotifier {
     if (result == null) return;
 
     for (final player in finalState.players) {
-      final won = result.winner == Camp.amoureux
-          ? result.winningPlayerIds.contains(player.id)
-          : player.camp.name ==
-              (result.winner == Camp.village ? 'village' : 'loups');
+      // Village et Loups gagnent en équipe, morts compris ; les Amoureux et
+      // le Loup-Garou Blanc gagnent seuls.
+      final won = switch (result.winner) {
+        Camp.village || Camp.loups => player.camp == result.winner,
+        Camp.amoureux ||
+        Camp.seul =>
+          result.winningPlayerIds.contains(player.id),
+        null => false,
+      };
 
       final entry = GameHistoryEntry(
         date: finalState.startedAt,

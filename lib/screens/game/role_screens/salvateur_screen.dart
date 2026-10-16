@@ -29,6 +29,7 @@ class _SalvateurContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gp = context.read<GameProvider>();
+    final state = gp.state!;
     final loc = AppLocalizations.of(context)!;
 
     return RoleScreenFrame(
@@ -46,7 +47,12 @@ class _SalvateurContent extends StatelessWidget {
             child: RoleSectionCard(
               child: SingleChildScrollView(
                 child: PlayerGridSelector(
-                  players: gp.state!.alivePlayers,
+                  players: state.alivePlayers,
+                  // Pas deux nuits de suite la même personne.
+                  disabledIds: {
+                    for (final p in state.alivePlayers)
+                      if (!state.salvateurCanProtect(p.id)) p.id,
+                  },
                   onSelect: (id) => gp.setSalvateurTarget(id),
                 ),
               ),

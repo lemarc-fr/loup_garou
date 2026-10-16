@@ -12,15 +12,31 @@ void main() {
 }
 
 class ThiercelieuxApp extends StatelessWidget {
-  const ThiercelieuxApp({super.key});
+  /// Remplaçables dans les tests (hasard contrôlé, réglages déjà chargés).
+  final GameProvider? gameProvider;
+  final SettingsProvider? settingsProvider;
+  final StatsProvider? statsProvider;
+
+  const ThiercelieuxApp({
+    super.key,
+    this.gameProvider,
+    this.settingsProvider,
+    this.statsProvider,
+  });
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => GameProvider()),
-        ChangeNotifierProvider(create: (_) => StatsProvider()..load()),
-        ChangeNotifierProvider(create: (_) => SettingsProvider()..load()),
+        gameProvider != null
+            ? ChangeNotifierProvider.value(value: gameProvider!)
+            : ChangeNotifierProvider(create: (_) => GameProvider()),
+        statsProvider != null
+            ? ChangeNotifierProvider.value(value: statsProvider!)
+            : ChangeNotifierProvider(create: (_) => StatsProvider()..load()),
+        settingsProvider != null
+            ? ChangeNotifierProvider.value(value: settingsProvider!)
+            : ChangeNotifierProvider(create: (_) => SettingsProvider()..load()),
       ],
       // La langue choisie dans les réglages (null = celle du téléphone).
       child: Selector<SettingsProvider, Locale?>(

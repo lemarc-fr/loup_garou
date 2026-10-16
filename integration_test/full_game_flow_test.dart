@@ -1,48 +1,44 @@
 // integration_test/full_game_flow_test.dart
-import 'package:flutter/material.dart';
+//
+// Sur un téléphone ou un émulateur :
+//   flutter test integration_test -d <appareil>
+//
+// Rejoue, sur un vrai appareil, la partie complète à 18 joueurs de
+// test/widgets/full_game_ui_test.dart : création de la partie depuis
+// l'accueil, chaque rôle, chaque vote, jusqu'au retour à l'accueil.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:thiercelieux/main.dart';
+
+import '../test/support/app_harness.dart';
+import '../test/support/game_fixtures.dart';
+import '../test/support/ui_game_driver.dart';
+import '../test/support/village_scenario.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('crée une partie à 5 joueurs et arrive à la nuit 1',
-      (tester) async {
-    await tester.pumpWidget(const ThiercelieuxApp());
-    await tester.pumpAndSettle();
+  testWidgets('partie complète à 18 joueurs sur un appareil', (tester) async {
+    final app = await AppHarness.start(tester, simulatePhoneScreen: false);
+    final driver = UiGameDriver(
+      tester,
+      app.game,
+      VillageScenarioDecisions(),
+      beforeStep: VillageScenario.checkpoint,
+    );
 
-    // Accueil → Nouvelle partie
-    await tester.tap(find.text('Nouvelle partie'));
-    await tester.pumpAndSettle();
+    await driver.createGame(
+      names: VillageScenario.names,
+      roleCounts: {for (final role in VillageScenario.roles) role: 1},
+      rig: (s) => rigRoles(s, VillageScenario.roles),
+    );
+    await driver.playToEnd();
 
-    // Choix du nombre de joueurs (par défaut 8, on le laisse) → Continuer
-    await tester.tap(find.text('Continuer'));
-    await tester.pumpAndSettle();
-
-    // Répartition des rôles : on garde la config par défaut → Continuer
-    await tester.tap(find.text('Continuer'));
-    await tester.pumpAndSettle();
-
-    // Saisie des prénoms
-    final fields = find.byType(TextField);
-    for (var i = 0; i < tester.widgetList(fields).length; i++) {
-      await tester.enterText(fields.at(i), 'Joueur${i + 1}');
-    }
-    await tester.tap(find.text('Distribuer les rôles'));
-    await tester.pumpAndSettle();
-
-    // Révélation des rôles : passer chaque joueur (PassDeviceGate → révéler → masquer)
-    for (var i = 0; i < 8; i++) {
-      await tester.tap(find.text("C'est moi, j'ai le téléphone"));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Révéler mon rôle'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text("J'ai vu, masquer mon rôle"));
-      await tester.pumpAndSettle();
-    }
-
-    // On doit maintenant être sur l'intro de la nuit 1
-    expect(find.text('La nuit tombe sur Thiercelieux'), findsOneWidget);
+    VillageScenario.checkEnd(app.game.state!);
+    expect(find.text(driver.loc.endGameWinnerVillage), findsOneWidget);
+    await tapOnHome(tester, driver.loc.endGameReturnHomeButton);
+    expect(app.game.state, isNull);
+    // Le village gagne en équipe : ses 14 joueurs de départ, moins Emma
+    // (infectée) et Jules (Enfant Sauvage devenu loup).
+    expect(app.stats.stats.where((st) => st.wins == 1), hasLength(12));
   });
 }

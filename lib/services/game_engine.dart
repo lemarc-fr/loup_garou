@@ -49,8 +49,13 @@ enum UpcomingStep {
 /// décider de la prochaine phase — un simple enchaînement de "if", pas de
 /// queue générique à maintenir.
 class GameEngine {
-  final Random _rng = Random();
+  /// Hasard de la partie (distribution des cartes, Amoureux tirés au sort,
+  /// Petite Fille surprise). Injectable pour rejouer une partie à
+  /// l'identique dans les tests.
+  final Random _rng;
   static const uuid = Uuid();
+
+  GameEngine({Random? random}) : _rng = random ?? Random();
 
   // ---------------------------------------------------------------------
   // Initialisation
@@ -265,7 +270,7 @@ class GameEngine {
       q.add(GamePhase.nightEnfantSauvageMutation);
       addSleep();
     }
-    if (s.aliveWolves.isNotEmpty) {
+    if (s.wolfPackAwake) {
       q.add(GamePhase.nightLoups);
       // La Petite Fille espionne PENDANT le tour des loups : sa phase se
       // joue donc juste après, une fois la victime des loups connue.
@@ -299,7 +304,7 @@ class GameEngine {
     final sorciereEncorePuissante = !s.sorciereVieUsed || !s.sorciereMortUsed;
     if (s.hasAliveRole(RoleId.sorciere) &&
         sorciereEncorePuissante &&
-        s.aliveWolves.isNotEmpty &&
+        s.wolfPackAwake &&
         !_isAsleep(s, RoleId.sorciere)) {
       q.add(GamePhase.nightSorciere);
       addSleep();
@@ -436,9 +441,28 @@ class GameEngine {
       if (idx != -1) {
         s.voleurTableCards[idx] = RoleId.voleur;
         voleur.role = chosenTableCard;
+        // La file de la nuit a été construite avant l'échange : le rôle
+        // pris sur la table (Cupidon, Voyante, Loup-Garou...) doit jouer
+        // dès cette nuit.
+        _rebuildRestOfNight(s);
       }
     }
     advance(s);
+  }
+
+  /// Reconstruit la suite de la nuit en cours après un changement de rôle,
+  /// en gardant telles quelles les étapes déjà jouées (jusqu'à l'écran
+  /// courant inclus).
+  void _rebuildRestOfNight(GameState s) {
+    final played = s.phaseQueue.sublist(0, s.phaseIndex + 1);
+    final rest = buildNightQueue(s).skip(1).toList(); // sans nightIntro
+    s.phaseQueue = [...played, GamePhase.nightGoBackToSleep, ...rest];
+    // Résumé live : les étapes « à venir » pré-remplies ne sont plus les
+    // bonnes.
+    if (s.rounds.isNotEmpty) {
+      s.rounds.last.steps.removeWhere((st) => st.status == StepStatus.pending);
+    }
+    _seedRoundSteps(s, rest);
   }
 
   void resolveCupidon(GameState s, String playerId1, String playerId2) {
@@ -628,6 +652,12 @@ class GameEngine {
   /// [GameState.followUpOrigin]. C'est l'unique remplaçant de l'ancienne
   /// file [pendingActions] : pas de queue, juste des flags et des "if".
   void _resolveFollowUps(GameState s) {
+    // Le Chasseur tire avant que l'on juge la partie : sa balle peut encore
+    // en changer l'issue (dernier Loup-Garou abattu...).
+    if (s.chasseurRevengeTargetId != null) {
+      _goToPhase(s, GamePhase.chasseurRevange);
+      return;
+    }
     final result = checkWinCondition(s);
     if (result != null) {
       s.result = result;
@@ -675,6 +705,11 @@ class GameEngine {
   /// sans rien modifier à l'état. [origin] : d'où viennent les morts en
   /// cours de résolution — par défaut [GameState.followUpOrigin].
   UpcomingStep upcomingStep(GameState s, {FollowUpOrigin? origin}) {
+    // Même ordre que _resolveFollowUps : le Chasseur tire avant la fin.
+    if (s.chasseurRevengeTargetId != null &&
+        s.phase != GamePhase.chasseurRevange) {
+      return UpcomingStep.followUp;
+    }
     if (checkWinCondition(s) != null) return UpcomingStep.gameOver;
     if (_pendingFollowUpPhase(s, except: s.phase) != null) {
       return UpcomingStep.followUp;
@@ -698,8 +733,17 @@ class GameEngine {
 
   void resolveMayorSuccession(GameState s, String successorId) {
     s.mayorSuccessionNeededFor = null;
-    s.mayorId = successorId;
+    _setMayor(s, successorId);
     _resolveFollowUps(s);
+  }
+
+  /// [GameState.mayorId] et [Player.isMayor] désignent toujours le même
+  /// joueur : _applyDeath s'appuie sur isMayor pour lancer la succession.
+  void _setMayor(GameState s, String playerId) {
+    for (final p in s.players) {
+      p.isMayor = p.id == playerId;
+    }
+    s.mayorId = playerId;
   }
 
   void confirmEnfantSauvageReveal(GameState s) {
@@ -746,7 +790,7 @@ class GameEngine {
   // ---------------------------------------------------------------------
 
   void resolveMayorElection(GameState s, String winnerId) {
-    s.mayorId = winnerId;
+    _setMayor(s, winnerId);
     advance2(s);
   }
 
@@ -771,14 +815,25 @@ class GameEngine {
     advance2(s);
   }
 
-  VoteTally tallyVotes(GameState s, Map<String, String> votes) {
+  /// Dépouille un vote secret ([votes] : votant → cible). [candidates] :
+  /// joueurs pour qui l'on pouvait voter (les ex aequo lors d'un second
+  /// tour), tous si null.
+  VoteTally tallyVotes(GameState s, Map<String, String> votes,
+      {Iterable<String>? candidates}) {
     final counts = <String, int>{};
     votes.forEach((voterId, targetId) {
       final weight = (s.mayorId != null && voterId == s.mayorId) ? 2 : 1;
       counts[targetId] = (counts[targetId] ?? 0) + weight;
     });
-    if (s.corbeauCursedId != null) {
-      counts[s.corbeauCursedId!] = (counts[s.corbeauCursedId!] ?? 0) + 2;
+    // Les deux voix du Corbeau ne comptent que pour le vote du village (pas
+    // pour l'élection du maire), contre un joueur encore vivant et encore
+    // candidat.
+    final cursed = s.tryById(s.corbeauCursedId);
+    if (s.phase == GamePhase.villageVote &&
+        cursed != null &&
+        cursed.alive &&
+        (candidates == null || candidates.contains(cursed.id))) {
+      counts[cursed.id] = (counts[cursed.id] ?? 0) + 2;
     }
     if (counts.isEmpty) return const VoteTally(tiedCandidates: []);
     final maxVotes = counts.values.reduce(max);
@@ -805,8 +860,11 @@ class GameEngine {
 
   void _afterVoteDeathsResolved(GameState s) {
     if (s.voteReplayPending) {
-      // Pouvoir du Juge Bègue : on revote immédiatement, le même jour.
+      // Pouvoir du Juge Bègue : on revote immédiatement, le même jour. Le
+      // premier éliminé a déjà été annoncé : le résultat du second vote ne
+      // doit montrer que le sien.
       s.voteReplayPending = false;
+      s.deathsThisWave = [];
       s.phaseQueue = [GamePhase.villageVote];
       s.phaseIndex = 0;
       _goToPhase(s, GamePhase.villageVote);
@@ -924,6 +982,11 @@ class GameEngine {
         p.role = RoleId.simpleVillageois;
       }
     }
+    // La Servante Dévouée vient de perdre son pouvoir elle aussi : plus
+    // personne à qui proposer le rôle du pendu.
+    if (!s.hasAliveRole(RoleId.servanteDevouee)) {
+      s.servanteDevoueeOfferId = null;
+    }
   }
 
   // ---------------------------------------------------------------------
@@ -932,6 +995,11 @@ class GameEngine {
 
   GameResult? checkWinCondition(GameState s) {
     final alive = s.alivePlayers;
+
+    // Tout le monde est mort la même nuit (la Sorcière empoisonne le dernier
+    // loup pendant qu'il la dévore, le Chasseur abat son meurtrier...) :
+    // personne ne gagne.
+    if (alive.isEmpty) return const GameResult(null, []);
 
     if (alive.length == 2) {
       final a = alive[0], b = alive[1];
@@ -950,11 +1018,10 @@ class GameEngine {
         .where((p) => p.camp != Camp.loups && p.role != RoleId.loupBlanc)
         .length;
 
-    if (wolves == 0 && others == 0) {
-      // Ne devrait arriver qu'avec le Loup Blanc seul, déjà géré au-dessus.
-      return null;
-    }
     if (wolves == 0) {
+      // Le village ne gagne qu'une fois le Loup-Garou Blanc mort lui aussi :
+      // tant qu'il vit, il continue de dévorer (voir wolfPackAwake).
+      if (s.hasAliveRole(RoleId.loupBlanc)) return null;
       return GameResult(Camp.village, alive.map((p) => p.id).toList());
     }
     if (wolves >= others && s.currentWave=='night') {

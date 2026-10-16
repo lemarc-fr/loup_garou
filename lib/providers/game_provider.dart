@@ -10,7 +10,10 @@ import '../services/game_engine.dart';
 enum SetupStep { playerCount, roles, names, reveal, done }
 
 class GameProvider extends ChangeNotifier {
-  final GameEngine engine = GameEngine();
+  final GameEngine engine;
+
+  /// [engine] : remplaçable dans les tests (hasard contrôlé).
+  GameProvider({GameEngine? engine}) : engine = engine ?? GameEngine();
 
   // --- Assistant de création (setup) ---
   SetupStep setupStep = SetupStep.playerCount;
@@ -407,8 +410,9 @@ class GameProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  VoteTally tallyVotes(Map<String, String> votes) =>
-      engine.tallyVotes(state!, votes);
+  VoteTally tallyVotes(Map<String, String> votes,
+          {Iterable<String>? candidates}) =>
+      engine.tallyVotes(state!, votes, candidates: candidates);
 
   void resolveVillageVote(String eliminatedId) {
     engine.resolveVillageVote(state!, eliminatedId);

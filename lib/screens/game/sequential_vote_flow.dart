@@ -55,7 +55,8 @@ class _SequentialVoteFlowState extends State<SequentialVoteFlow> {
     final newVotes = {...votes, widget.voters[voterIndex].id: targetId};
 
     if (voterIndex == widget.voters.length - 1) {
-      final tally = gp.tallyVotes(newVotes);
+      final tally =
+          gp.tallyVotes(newVotes, candidates: candidates.map((c) => c.id));
       if (tally.winner != null) {
         widget.onResolved(tally.winner!);
         return;

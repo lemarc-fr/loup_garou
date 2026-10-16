@@ -47,11 +47,21 @@ class _LoupBlancContent extends StatelessWidget {
           Expanded(
             child: RoleSectionCard(
               child: SingleChildScrollView(
+                // Il ne peut éliminer qu'un autre Loup-Garou (lui-même est
+                // du camp « seul », donc absent de aliveWolves).
                 child: PlayerGridSelector(
-                  players: gp.state!.alivePlayers,
+                  players: gp.state!.aliveWolves,
                   onSelect: (id) => gp.setLoupBlancVictim(id),
                 ),
               ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: () => gp.setLoupBlancVictim(null),
+              child: Text(loc.skipPowerThisNightButton),
             ),
           ),
         ],

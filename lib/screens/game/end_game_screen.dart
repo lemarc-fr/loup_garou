@@ -34,8 +34,10 @@ class _EndGameScreenState extends State<EndGameScreen> {
     }
   }
 
-  String _winnerLabel(AppLocalizations loc, Camp w) {
+  String _winnerLabel(AppLocalizations loc, Camp? w) {
     switch (w) {
+      case null:
+        return loc.endGameWinnerNobody;
       case Camp.village:
         return loc.endGameWinnerVillage;
       case Camp.loups:

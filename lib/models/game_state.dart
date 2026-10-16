@@ -88,7 +88,8 @@ class PowerLossEntry {
 }
 
 class GameResult {
-  final Camp winner;
+  /// null : plus personne n'est en vie, personne ne gagne.
+  final Camp? winner;
   final List<String> winningPlayerIds;
   const GameResult(this.winner, this.winningPlayerIds);
 }
@@ -195,6 +196,17 @@ class GameState {
 
   List<Player> get aliveWolves =>
       alivePlayers.where((p) => p.camp == Camp.loups).toList();
+
+  /// Vrai tant qu'un loup se réveille au tour des Loups — le Loup-Garou
+  /// Blanc compris, qui chasse avec la meute (et seul une fois la meute
+  /// décimée).
+  bool get wolfPackAwake => alivePlayers
+      .any((p) => p.camp == Camp.loups || p.role == RoleId.loupBlanc);
+
+  /// Le Salvateur ne peut pas protéger la même personne deux nuits de
+  /// suite.
+  bool salvateurCanProtect(String playerId) =>
+      playerId != salvateurLastProtectedId;
   List<Player> get aliveVillagers =>
       alivePlayers.where((p) => p.camp == Camp.village).toList();
 
@@ -213,8 +225,13 @@ class GameState {
     if (idx == -1 || ordered.length < 2) return false;
     final left = ordered[(idx - 1 + ordered.length) % ordered.length];
     final right = ordered[(idx + 1) % ordered.length];
-    return left.camp == Camp.loups || right.camp == Camp.loups;
+    return _smellsLikeWolf(left) || _smellsLikeWolf(right);
   }
+
+  /// Pour l'ours du Montreur comme pour le flair du Renard, le Loup-Garou
+  /// Blanc est un loup (son camp est pourtant Camp.seul).
+  static bool _smellsLikeWolf(Player p) =>
+      p.camp == Camp.loups || p.role == RoleId.loupBlanc;
   /// Le joueur [centerId] et ses deux voisins vivants immédiats (ordre de
   /// la liste des joueurs, comme pour le Montreur d'Ours). Avec très peu de
   /// joueurs vivants, les doublons sont fusionnés (groupe de 1 ou 2).
@@ -233,7 +250,7 @@ class GameState {
   /// Blanc compte comme un loup pour le flair (son camp est Camp.seul).
   bool renardTrioHasWolf(List<String> ids) => ids.any((id) {
     final p = tryById(id);
-    return p != null && (p.camp == Camp.loups || p.role == RoleId.loupBlanc);
+    return p != null && _smellsLikeWolf(p);
   });
 }
 
