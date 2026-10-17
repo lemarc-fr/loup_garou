@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
@@ -35,6 +36,9 @@ class _NarrationHostState extends State<NarrationHost>
   late final SoundService _sound;
   final _script = NarrationScript();
 
+  /// Ce qui vient d'être annoncé, pour les écrans calés sur la voix.
+  final _currentStep = ValueNotifier<List<SoundAction>>(const []);
+
   /// Dernière étape annoncée : (partie, phase, position dans la file).
   /// Le GameProvider notifie aussi pour des changements qui ne changent
   /// pas de phase (sélection en cours du Renard...) : on ne dit rien.
@@ -66,6 +70,7 @@ class _NarrationHostState extends State<NarrationHost>
     _settings.removeListener(_onSettingsChanged);
     WidgetsBinding.instance.removeObserver(this);
     _sound.dispose();
+    _currentStep.dispose();
     super.dispose();
   }
 
@@ -109,9 +114,32 @@ class _NarrationHostState extends State<NarrationHost>
       _sound.stop();
     }
     _lastStep = step;
-    _sound.play(_script.onPhase(state.phase));
+    final actions = _script.onPhase(state.phase);
+    // Mis à jour avant que l'écran de la nouvelle phase ne soit construit :
+    // il peut s'y fier dès son initialisation.
+    _currentStep.value = actions;
+    _sound.play(actions);
   }
 
   @override
-  Widget build(BuildContext context) => widget.child;
+  Widget build(BuildContext context) =>
+      CurrentNarration(step: _currentStep, child: widget.child);
+}
+
+/// L'étape que le narrateur vient d'annoncer (voir NarrationHost), pour les
+/// écrans qui suivent son rythme.
+class CurrentNarration extends InheritedWidget {
+  final ValueListenable<List<SoundAction>> step;
+
+  const CurrentNarration({super.key, required this.step, required super.child});
+
+  /// Null hors d'une partie narrée (écran affiché seul dans un test...).
+  static List<SoundAction>? of(BuildContext context) => context
+      .getInheritedWidgetOfExactType<CurrentNarration>()
+      ?.step
+      .value;
+
+  @override
+  bool updateShouldNotify(CurrentNarration oldWidget) =>
+      oldWidget.step != step;
 }
