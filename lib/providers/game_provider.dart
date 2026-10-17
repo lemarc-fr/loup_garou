@@ -295,7 +295,8 @@ class GameProvider extends ChangeNotifier {
     }).length;
   }
 
-  void setCorbeauVictim(String targetId) {
+  /// [targetId] == null si le Corbeau ne maudit personne cette nuit.
+  void setCorbeauVictim(String? targetId) {
     engine.resolveCorbeau(state!, targetId);
     notifyListeners();
   }

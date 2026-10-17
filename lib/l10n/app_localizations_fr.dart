@@ -263,7 +263,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get roleCorbeauDescription =>
-      'Chaque nuit, il désigne un joueur qui aura deux voix de plus contre lui lors du prochain vote du village.';
+      'Chaque nuit, il peut désigner un joueur qui aura deux voix de plus contre lui lors du prochain vote du village.';
 
   @override
   String get passDeviceToPlural => 'Passe le téléphone aux';
@@ -419,7 +419,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get corbeauInstruction =>
-      'Désigne un joueur qui recevra deux voix contre lui au vote.';
+      'Désigne un joueur qui recevra deux voix contre lui au vote, ou renonce cette nuit.';
 
   @override
   String get cupidonSubtitle => 'C\'est le rôle de Cupidon. Réveille-toi.';
@@ -1028,6 +1028,30 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get settingEnfantSauvagePublicRevealDescription =>
       'Si activé, la mutation de l\'Enfant Sauvage est révélée publiquement dès la mort de son modèle (pas d\'écran de nuit). Si désactivé, rien n\'est annoncé : l\'Enfant Sauvage est prévenu en secret au début de la nuit suivante.';
+
+  @override
+  String get settingHunterCanOverturnFinishedGameLabel =>
+      'Le Chasseur peut renverser une partie gagnée';
+
+  @override
+  String get settingHunterCanOverturnFinishedGameDescription =>
+      'Si activé, le Chasseur tire avant que la partie ne soit jugée : quand sa mort semble donner la victoire à un camp, sa balle peut encore en changer l\'issue. Si désactivé, la partie se termine aussitôt, sans son tir.';
+
+  @override
+  String get settingVoleurPlaysNewRoleFirstNightLabel =>
+      'Le Voleur joue son nouveau rôle dès la première nuit';
+
+  @override
+  String get settingVoleurPlaysNewRoleFirstNightDescription =>
+      'Si activé, le rôle pris sur la table (Voyante, Loup-Garou, Cupidon...) est appelé dès la première nuit. Si désactivé, il ne joue qu\'à partir de la nuit suivante : un rôle de première nuit (Cupidon, Enfant Sauvage) n\'agira alors jamais.';
+
+  @override
+  String get settingInfectCanInfectProtectedVictimLabel =>
+      'L\'Infect Père peut infecter une victime protégée';
+
+  @override
+  String get settingInfectCanInfectProtectedVictimDescription =>
+      'Si activé, l\'Infect Père des Loups infecte la victime des loups même si le Salvateur la protège. Si désactivé, la protection empêche aussi l\'infection, et l\'Infect Père garde son pouvoir pour une autre nuit.';
 
   @override
   String get statsTitle => 'Statistiques';

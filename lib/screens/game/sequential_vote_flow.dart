@@ -6,6 +6,7 @@ import '../../../providers/game_provider.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/pass_device_gate.dart';
 import '../../../widgets/player_grid_selector.dart';
+import 'collective_vote_screen.dart';
 
 /// Fait voter chaque joueur vivant, un par un (téléphone passé de main en
 /// main, vote secret), puis calcule le résultat. En cas d'égalité, relance
@@ -22,6 +23,8 @@ class SequentialVoteFlow extends StatefulWidget {
   final void Function(String winnerId) onResolved;
   final bool allowSelfVote;
 
+  /// Rappels montrés à chaque votant (voix du Corbeau...).
+  final List<CollectiveVoteNote> notes;
 
   const SequentialVoteFlow({
     super.key,
@@ -32,6 +35,7 @@ class SequentialVoteFlow extends StatefulWidget {
     required this.onResolved,
     this.accent = AppColors.lantern,
     this.allowSelfVote = true,
+    this.notes = const [],
   });
 
   @override
@@ -113,6 +117,10 @@ class _SequentialVoteFlowState extends State<SequentialVoteFlow> {
                 Text(widget.instruction,
                     style: theme.textTheme.bodyLarge,
                     textAlign: TextAlign.center),
+                for (final note in widget.notes) ...[
+                  const SizedBox(height: 10),
+                  VoteNoteBox(note: note),
+                ],
                 const SizedBox(height: 20),
                 Expanded(
                   child: SingleChildScrollView(

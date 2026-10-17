@@ -254,14 +254,15 @@ void expectPhasePreconditions(GameState s, [List<String> log = const []]) {
       s.chasseurRevengeTargetId != null && s.alivePlayers.isNotEmpty,
     GamePhase.successionMaire =>
       s.mayorSuccessionNeededFor != null && s.alivePlayers.isNotEmpty,
-    GamePhase.enfantsauvageReveal => s.enfantSauvageTransformedId != null,
+    GamePhase.enfantsauvageReveal =>
+      s.tryById(s.enfantSauvageTransformedId)?.alive ?? false,
     GamePhase.villagePowerLoss => s.powerLossThisWave.isNotEmpty,
     GamePhase.servanteDevouee =>
       s.servanteDevoueeOfferId != null && alive(RoleId.servanteDevouee),
     GamePhase.boucEmissaire =>
       s.boucEmissaireChoiceNeededId != null && s.alivePlayers.isNotEmpty,
     GamePhase.idiotduvillageCivicRightLoss =>
-      s.idiotDuVillageRevealId != null,
+      s.tryById(s.idiotDuVillageRevealId)?.alive ?? false,
     GamePhase.mayorElection => s.alivePlayers.isNotEmpty,
     GamePhase.mayorReveal => s.tryById(s.mayorId)?.alive ?? false,
     GamePhase.jugeBegueDecision => alive(RoleId.jugeBegue) && !s.jugeBegueUsed,

@@ -24,7 +24,9 @@ abstract class GameDecisions {
   String? grandMechantLoup(GameState s);
   bool infect(GameState s);
   String renardCenter(GameState s);
-  String corbeau(GameState s);
+
+  /// null : il ne maudit personne cette nuit.
+  String? corbeau(GameState s);
   ({bool save, String? poison}) sorciere(GameState s);
   String chasseur(GameState s);
   String mayorSuccessor(GameState s);
@@ -46,14 +48,13 @@ abstract class GameDecisions {
 abstract final class LegalChoices {
   static List<Player> loupsTargets(GameState s) {
     if (s.settings.allowWerewolfToKillThemselves) return s.alivePlayers;
-    final wolves = s.aliveWolves.map((w) => w.id).toSet();
-    return s.alivePlayers.where((p) => !wolves.contains(p.id)).toList();
+    return s.alivePlayers.where((p) => !s.isWolfPackMember(p)).toList();
   }
 
   static List<Player> grandMechantLoupTargets(GameState s) => s.alivePlayers
       .where((p) => p.id != s.loupsVictimId)
       .where((p) =>
-          s.settings.allowWerewolfToKillThemselves || p.camp != Camp.loups)
+          s.settings.allowWerewolfToKillThemselves || !s.isWolfPackMember(p))
       .toList();
 
   static List<Player> loupBlancTargets(GameState s) => s.aliveWolves;
@@ -147,7 +148,8 @@ class RandomDecisions implements GameDecisions {
   String renardCenter(GameState s) => _pick(s.alivePlayers).id;
 
   @override
-  String corbeau(GameState s) => _pick(s.alivePlayers).id;
+  String? corbeau(GameState s) =>
+      _chance(0.2) ? null : _pick(s.alivePlayers).id;
 
   @override
   ({bool save, String? poison}) sorciere(GameState s) {

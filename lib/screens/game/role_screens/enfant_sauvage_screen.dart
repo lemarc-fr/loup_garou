@@ -4,11 +4,29 @@ import 'package:provider/provider.dart';
 import 'package:thiercelieux/models/role.dart';
 
 import '../../../providers/game_provider.dart';
+import '../../../widgets/pass_device_gate.dart';
 import '../../../widgets/player_grid_selector.dart';
 import 'role_screen_chrome.dart';
 
 class EnfantSauvageScreen extends StatelessWidget {
   const EnfantSauvageScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    // Comme pour les autres rôles de nuit : le téléphone passe d'abord à
+    // l'Enfant Sauvage, personne d'autre ne voit qui il choisit.
+    return PassDeviceGate(
+      toName: loc.enfantSauvagePassTo,
+      subtitle: loc.enfantSauvageCheckSubtitle,
+      accent: RoleId.enfantSauvage.info.accent,
+      contentBuilder: (_) => const _EnfantSauvageContent(),
+    );
+  }
+}
+
+class _EnfantSauvageContent extends StatelessWidget {
+  const _EnfantSauvageContent();
 
   @override
   Widget build(BuildContext context) {

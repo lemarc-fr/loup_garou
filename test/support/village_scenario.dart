@@ -313,7 +313,7 @@ class VillageScenarioDecisions implements GameDecisions {
   String renardCenter(GameState s) => _id(s, s.night == 1 ? 'Bruno' : 'Emma');
 
   @override
-  String corbeau(GameState s) => _id(s, 'Inès');
+  String? corbeau(GameState s) => _id(s, 'Inès');
 
   @override
   ({bool save, String? poison}) sorciere(GameState s) => s.night == 1

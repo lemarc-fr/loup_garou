@@ -10,6 +10,9 @@ enum SettingId {
   allowWitchToSaveHerself,
   enfantSauvagePublicReveal,
   randomLoversInsteadOfCupidon,
+  hunterCanOverturnFinishedGame,
+  voleurPlaysNewRoleFirstNight,
+  infectCanInfectProtectedVictim,
 }
 
 /// Décrit une option pour l'affichage dans l'écran de réglages. Les textes
@@ -53,6 +56,23 @@ const List<GameSettingDefinition> kGameSettingDefinitions = [
     id: SettingId.randomLoversInsteadOfCupidon,
     defaultValue: false,
   ),
+  // Règle officielle : le Chasseur tire au moment même de sa mort, avant
+  // que la partie ne soit jugée.
+  GameSettingDefinition(
+    id: SettingId.hunterCanOverturnFinishedGame,
+    defaultValue: true,
+  ),
+  // Règle officielle : le Voleur joue le rôle pris dès la première nuit.
+  GameSettingDefinition(
+    id: SettingId.voleurPlaysNewRoleFirstNight,
+    defaultValue: true,
+  ),
+  // Règle officielle : une victime protégée n'est pas attaquée, donc pas
+  // infectée non plus.
+  GameSettingDefinition(
+    id: SettingId.infectCanInfectProtectedVictim,
+    defaultValue: false,
+  ),
 ];
 
 /// Valeurs courantes des options, avec repli sur la valeur par défaut du
@@ -77,6 +97,9 @@ class GameSettings {
   bool get allowWitchToSaveHerself => get(SettingId.allowWitchToSaveHerself);
   bool get enfantSauvagePublicReveal => get(SettingId.enfantSauvagePublicReveal);
   bool get randomLoversInsteadOfCupidon => get(SettingId.randomLoversInsteadOfCupidon);
+  bool get hunterCanOverturnFinishedGame => get(SettingId.hunterCanOverturnFinishedGame);
+  bool get voleurPlaysNewRoleFirstNight => get(SettingId.voleurPlaysNewRoleFirstNight);
+  bool get infectCanInfectProtectedVictim => get(SettingId.infectCanInfectProtectedVictim);
 
   Map<String, dynamic> toJson() => {
     for (final e in _values.entries) e.key.name: e.value,

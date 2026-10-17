@@ -32,10 +32,13 @@ class _LoupsContent extends StatelessWidget {
     final state = gp.state!;
     final loc = AppLocalizations.of(context)!;
 
-    final wolfIds = state.aliveWolves.map((w) => w.id).toSet();
+    // Le Loup Blanc fait partie de la meute : il est protégé comme les
+    // autres quand les loups ne peuvent pas se dévorer entre eux.
     final targets = state.settings.allowWerewolfToKillThemselves
         ? state.alivePlayers
-        : state.alivePlayers.where((p) => !wolfIds.contains(p.id)).toList();
+        : state.alivePlayers
+            .where((p) => !state.isWolfPackMember(p))
+            .toList();
 
     return RoleScreenFrame(
       title: loc.loupsTitle,

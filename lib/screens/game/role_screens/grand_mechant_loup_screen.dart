@@ -37,8 +37,8 @@ class _GrandMechantLoupContent extends StatelessWidget {
     final targets = state.alivePlayers
         .where((p) => p.id != state.loupsVictimId)
         .where((p) =>
-    state.settings.allowWerewolfToKillThemselves ||
-        p.camp != Camp.loups)
+            state.settings.allowWerewolfToKillThemselves ||
+            !state.isWolfPackMember(p))
         .toList();
 
     return RoleScreenFrame(

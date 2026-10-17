@@ -51,7 +51,10 @@ class _InfectPereDesLoupsContent extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: victim == null
+                    // Pas d'infection d'un loup (la meute a pu dévorer l'un
+                    // des siens). Une victime protégée reste proposée :
+                    // l'Infect Père ne doit pas apprendre la protection.
+                    onPressed: victim == null || state.isWolfPackMember(victim)
                         ? null
                         : () => gp.setInfectPereDesLoups(true),
                     child: Text(loc.infectPereDesLoupsInfectButton),

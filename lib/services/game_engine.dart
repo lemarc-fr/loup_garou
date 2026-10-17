@@ -442,9 +442,9 @@ class GameEngine {
         s.voleurTableCards[idx] = RoleId.voleur;
         voleur.role = chosenTableCard;
         // La file de la nuit a été construite avant l'échange : le rôle
-        // pris sur la table (Cupidon, Voyante, Loup-Garou...) doit jouer
-        // dès cette nuit.
-        _rebuildRestOfNight(s);
+        // pris sur la table (Cupidon, Voyante, Loup-Garou...) joue dès
+        // cette nuit si le réglage le permet.
+        if (s.settings.voleurPlaysNewRoleFirstNight) _rebuildRestOfNight(s);
       }
     }
     advance(s);
@@ -536,12 +536,18 @@ class GameEngine {
     advance(s);
   }
 
-  /// Convertit la victime des Loups en Loup-Garou au lieu de la tuer, si
-  /// elle n'a pas déjà été sauvée ou remplacée entre-temps.
+  /// Convertit la victime des Loups en Loup-Garou au lieu de la tuer. Une
+  /// victime protégée par le Salvateur n'est infectée que si le réglage le
+  /// permet ; sinon rien ne se passe et le pouvoir reste disponible.
   void resolveInfectPereDesLoups(GameState s, bool infect) {
     if (infect && !s.infectPereDesLoupsUsed && s.loupsVictimId != null) {
       final victim = s.tryById(s.loupsVictimId);
-      if (victim != null && victim.alive && victim.camp != Camp.loups) {
+      final protectedBySalvateur = victim?.id == s.salvateurProtectedId;
+      if (victim != null &&
+          victim.alive &&
+          !s.isWolfPackMember(victim) &&
+          (!protectedBySalvateur ||
+              s.settings.infectCanInfectProtectedVictim)) {
         s.infectPereDesLoupsUsed = true;
         s.infectedTonightId = victim.id;
         if (s.finalNightVictimId == victim.id) {
@@ -564,7 +570,8 @@ class GameEngine {
     advance(s);
   }
 
-  void resolveCorbeau(GameState s, String targetId) {
+  /// [targetId] == null si le Corbeau ne maudit personne cette nuit.
+  void resolveCorbeau(GameState s, String? targetId) {
     s.corbeauCursedId = targetId;
     advance(s);
   }
@@ -598,11 +605,15 @@ class GameEngine {
     if (s.finalNightVictimId != null) {
       _applyDeath(s, s.finalNightVictimId!, DeathCause.devoreParLesLoups);
     }
-    if (s.grandMechantLoupSecondVictimId != null) {
+    // Le Salvateur protège contre toute attaque de loup cette nuit : celle
+    // de la meute (déjà écartée dans setLoupsVictim), du Grand Méchant Loup
+    // et du Loup-Garou Blanc.
+    bool attackable(String? id) => id != null && id != s.salvateurProtectedId;
+    if (attackable(s.grandMechantLoupSecondVictimId)) {
       _applyDeath(
           s, s.grandMechantLoupSecondVictimId!, DeathCause.devoreParLesLoups);
     }
-    if (s.loupBlancVictimId != null) {
+    if (attackable(s.loupBlancVictimId)) {
       _applyDeath(s, s.loupBlancVictimId!, DeathCause.tueParLoupBlanc);
     }
     if (s.sorciereKilledIdTonight != null) {
@@ -652,9 +663,9 @@ class GameEngine {
   /// [GameState.followUpOrigin]. C'est l'unique remplaçant de l'ancienne
   /// file [pendingActions] : pas de queue, juste des flags et des "if".
   void _resolveFollowUps(GameState s) {
-    // Le Chasseur tire avant que l'on juge la partie : sa balle peut encore
-    // en changer l'issue (dernier Loup-Garou abattu...).
-    if (s.chasseurRevengeTargetId != null) {
+    // Le Chasseur tire avant que l'on juge la partie (réglage) : sa balle
+    // peut encore en changer l'issue (dernier Loup-Garou abattu...).
+    if (_chasseurShootsFirst(s)) {
       _goToPhase(s, GamePhase.chasseurRevange);
       return;
     }
@@ -705,9 +716,8 @@ class GameEngine {
   /// sans rien modifier à l'état. [origin] : d'où viennent les morts en
   /// cours de résolution — par défaut [GameState.followUpOrigin].
   UpcomingStep upcomingStep(GameState s, {FollowUpOrigin? origin}) {
-    // Même ordre que _resolveFollowUps : le Chasseur tire avant la fin.
-    if (s.chasseurRevengeTargetId != null &&
-        s.phase != GamePhase.chasseurRevange) {
+    // Même ordre que _resolveFollowUps.
+    if (_chasseurShootsFirst(s) && s.phase != GamePhase.chasseurRevange) {
       return UpcomingStep.followUp;
     }
     if (checkWinCondition(s) != null) return UpcomingStep.gameOver;
@@ -724,6 +734,10 @@ class GameEngine {
             : UpcomingStep.nightFalls;
     }
   }
+
+  bool _chasseurShootsFirst(GameState s) =>
+      s.chasseurRevengeTargetId != null &&
+      s.settings.hunterCanOverturnFinishedGame;
 
   void resolveChasseurRevenge(GameState s, String targetId) {
     s.chasseurRevengeTargetId = null;
@@ -915,6 +929,15 @@ class GameEngine {
     p.deathAtNight = s.currentWave == 'night' ? s.night : null;
     p.deathAtDay = s.currentWave == 'day' ? s.day : null;
     s.deathsThisWave.add(playerId);
+
+    // Mort avant d'avoir joué sa suite (abattu par le Chasseur...) : la
+    // Servante ne choisira plus, la mutation de l'Enfant Sauvage n'a plus à
+    // être annoncée.
+    if (p.role == RoleId.servanteDevouee) s.servanteDevoueeOfferId = null;
+    if (p.id == s.enfantSauvageTransformedId) {
+      s.enfantSauvageTransformedId = null;
+      s.enfantSauvagePreviousRole = null;
+    }
 
     // Chagrin d'amour : mort immédiate et inconditionnelle de l'autre
     // Amoureux. Pas besoin d'attendre un tour ou une confirmation : c'est

@@ -62,7 +62,7 @@ class _CollectiveVoteScreenState extends State<CollectiveVoteScreen> {
                   textAlign: TextAlign.center),
               for (final note in widget.notes) ...[
                 const SizedBox(height: 10),
-                _NoteBox(note: note),
+                VoteNoteBox(note: note),
               ],
               const SizedBox(height: 16),
               Expanded(
@@ -93,9 +93,10 @@ class _CollectiveVoteScreenState extends State<CollectiveVoteScreen> {
   }
 }
 
-class _NoteBox extends StatelessWidget {
+/// Encadré d'un rappel avant un vote (collectif ou secret).
+class VoteNoteBox extends StatelessWidget {
   final CollectiveVoteNote note;
-  const _NoteBox({required this.note});
+  const VoteNoteBox({super.key, required this.note});
 
   @override
   Widget build(BuildContext context) {

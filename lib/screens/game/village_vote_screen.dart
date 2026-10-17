@@ -35,7 +35,23 @@ class VillageVoteScreen extends StatelessWidget {
       // L'Idiot du Village démasqué a perdu son droit de vote.
       voters: state.eligibleVoters,
       initialCandidates: state.alivePlayers,
+      // Les deux voix du Corbeau sont ajoutées au décompte : chaque votant
+      // doit le savoir.
+      notes: [
+        if (_corbeauNote(state, loc) case final note?) note,
+      ],
       onResolved: (eliminatedId) => gp.resolveVillageVote(eliminatedId),
+    );
+  }
+
+  static CollectiveVoteNote? _corbeauNote(
+      GameState state, AppLocalizations loc) {
+    final cursed = state.tryById(state.corbeauCursedId);
+    if (cursed == null || !cursed.alive) return null;
+    return CollectiveVoteNote(
+      icon: Icons.campaign,
+      color: AppColors.blood,
+      text: loc.collectiveVoteCorbeauCurse(cursed.name),
     );
   }
 
@@ -45,7 +61,6 @@ class VillageVoteScreen extends StatelessWidget {
   List<CollectiveVoteNote> _collectiveNotes(
       GameState state, AppLocalizations loc) {
     final mayor = state.tryById(state.mayorId);
-    final cursed = state.tryById(state.corbeauCursedId);
     return [
       if (mayor != null && mayor.alive)
         CollectiveVoteNote(
@@ -53,12 +68,7 @@ class VillageVoteScreen extends StatelessWidget {
           color: AppColors.lantern,
           text: loc.collectiveVoteMayorDoubleVoice(mayor.name),
         ),
-      if (cursed != null && cursed.alive)
-        CollectiveVoteNote(
-          icon: Icons.campaign,
-          color: AppColors.blood,
-          text: loc.collectiveVoteCorbeauCurse(cursed.name),
-        ),
+      if (_corbeauNote(state, loc) case final note?) note,
       for (final id in state.disenfranchisedPlayerIds)
         if (state.tryById(id)?.alive ?? false)
           CollectiveVoteNote(

@@ -226,6 +226,7 @@ class UiGameDriver {
           await tapButton(loc.loversRevealDoneButton);
         }
       case GamePhase.nightEnfantSauvage:
+        await passTo(loc.enfantSauvagePassTo);
         await tapPlayer(d.enfantSauvageModel(s));
       case GamePhase.nightEnfantSauvageCheck:
         await passTo(loc.enfantSauvagePassTo);
@@ -266,7 +267,7 @@ class UiGameDriver {
         await tapButton(loc.goBackToSleepButton);
       case GamePhase.nightCorbeau:
         await passTo(loc.roleName(RoleId.corbeau));
-        await tapPlayer(d.corbeau(s));
+        await _playerOrSkip(d.corbeau(s));
       case GamePhase.nightSorciere:
         await passTo(loc.roleName(RoleId.sorciere));
         final choice = d.sorciere(s);

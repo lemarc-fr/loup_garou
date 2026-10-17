@@ -263,7 +263,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get roleCorbeauDescription =>
-      'Each night, he designates a player who will have two extra votes against them at the next village vote.';
+      'Each night, he may designate a player who will have two extra votes against them at the next village vote.';
 
   @override
   String get passDeviceToPlural => 'Pass the phone to the';
@@ -419,7 +419,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get corbeauInstruction =>
-      'Designate a player who will receive two votes against them in the village vote.';
+      'Designate a player who will receive two votes against them in the village vote, or pass tonight.';
 
   @override
   String get cupidonSubtitle => 'It is Cupid\'s turn. Wake up.';
@@ -1022,6 +1022,30 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingEnfantSauvagePublicRevealDescription =>
       'If enabled, the Wild Child\'s transformation is revealed publicly as soon as their role model dies (no night screen). If disabled, nothing is announced: the Wild Child is told secretly at the start of the next night.';
+
+  @override
+  String get settingHunterCanOverturnFinishedGameLabel =>
+      'The Hunter can overturn a won game';
+
+  @override
+  String get settingHunterCanOverturnFinishedGameDescription =>
+      'If enabled, the Hunter shoots before the game is decided: when his death seems to hand victory to a side, his bullet can still change the outcome. If disabled, the game ends at once, without his shot.';
+
+  @override
+  String get settingVoleurPlaysNewRoleFirstNightLabel =>
+      'The Thief plays his new role on the first night';
+
+  @override
+  String get settingVoleurPlaysNewRoleFirstNightDescription =>
+      'If enabled, the role taken from the table (Seer, Werewolf, Cupid...) is called on the first night. If disabled, it only plays from the next night on: a first-night role (Cupid, Wild Child) will then never act.';
+
+  @override
+  String get settingInfectCanInfectProtectedVictimLabel =>
+      'The Infect Father can infect a protected victim';
+
+  @override
+  String get settingInfectCanInfectProtectedVictimDescription =>
+      'If enabled, the Infect Father of Wolves infects the wolves\' victim even when the Savior protects them. If disabled, the protection also prevents the infection, and the Infect Father keeps his power for another night.';
 
   @override
   String get statsTitle => 'Statistics';

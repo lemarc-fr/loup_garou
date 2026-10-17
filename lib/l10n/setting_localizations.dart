@@ -19,6 +19,12 @@ extension SettingLocalizations on AppLocalizations {
           settingEnfantSauvagePublicRevealLabel,
         SettingId.randomLoversInsteadOfCupidon =>
           settingRandomLoversInsteadOfCupidonLabel,
+        SettingId.hunterCanOverturnFinishedGame =>
+          settingHunterCanOverturnFinishedGameLabel,
+        SettingId.voleurPlaysNewRoleFirstNight =>
+          settingVoleurPlaysNewRoleFirstNightLabel,
+        SettingId.infectCanInfectProtectedVictim =>
+          settingInfectCanInfectProtectedVictimLabel,
       };
 
   String settingDescription(SettingId id) => switch (id) {
@@ -34,5 +40,11 @@ extension SettingLocalizations on AppLocalizations {
           settingEnfantSauvagePublicRevealDescription,
         SettingId.randomLoversInsteadOfCupidon =>
           settingRandomLoversInsteadOfCupidonDescription,
+        SettingId.hunterCanOverturnFinishedGame =>
+          settingHunterCanOverturnFinishedGameDescription,
+        SettingId.voleurPlaysNewRoleFirstNight =>
+          settingVoleurPlaysNewRoleFirstNightDescription,
+        SettingId.infectCanInfectProtectedVictim =>
+          settingInfectCanInfectProtectedVictimDescription,
       };
 }

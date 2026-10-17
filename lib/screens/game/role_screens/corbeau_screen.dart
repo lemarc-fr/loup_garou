@@ -54,6 +54,14 @@ class _CorbeauContent extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: () => gp.setCorbeauVictim(null),
+              child: Text(loc.skipPowerThisNightButton),
+            ),
+          ),
         ],
       ),
     );

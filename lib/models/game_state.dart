@@ -197,11 +197,19 @@ class GameState {
   List<Player> get aliveWolves =>
       alivePlayers.where((p) => p.camp == Camp.loups).toList();
 
-  /// Vrai tant qu'un loup se réveille au tour des Loups — le Loup-Garou
-  /// Blanc compris, qui chasse avec la meute (et seul une fois la meute
-  /// décimée).
-  bool get wolfPackAwake => alivePlayers
-      .any((p) => p.camp == Camp.loups || p.role == RoleId.loupBlanc);
+  /// Membre de la meute qui se réveille au tour des Loups : les Loups-Garous
+  /// et le Loup-Garou Blanc, qui chasse avec eux (son camp est pourtant
+  /// Camp.seul). C'est aussi un loup pour l'ours du Montreur et le flair
+  /// du Renard.
+  bool isWolfPackMember(Player p) =>
+      p.camp == Camp.loups || p.role == RoleId.loupBlanc;
+
+  List<Player> get aliveWolfPack =>
+      alivePlayers.where(isWolfPackMember).toList();
+
+  /// Vrai tant qu'un loup se réveille au tour des Loups — y compris le Loup
+  /// Blanc seul, une fois la meute décimée.
+  bool get wolfPackAwake => alivePlayers.any(isWolfPackMember);
 
   /// Le Salvateur ne peut pas protéger la même personne deux nuits de
   /// suite.
@@ -225,13 +233,9 @@ class GameState {
     if (idx == -1 || ordered.length < 2) return false;
     final left = ordered[(idx - 1 + ordered.length) % ordered.length];
     final right = ordered[(idx + 1) % ordered.length];
-    return _smellsLikeWolf(left) || _smellsLikeWolf(right);
+    return isWolfPackMember(left) || isWolfPackMember(right);
   }
 
-  /// Pour l'ours du Montreur comme pour le flair du Renard, le Loup-Garou
-  /// Blanc est un loup (son camp est pourtant Camp.seul).
-  static bool _smellsLikeWolf(Player p) =>
-      p.camp == Camp.loups || p.role == RoleId.loupBlanc;
   /// Le joueur [centerId] et ses deux voisins vivants immédiats (ordre de
   /// la liste des joueurs, comme pour le Montreur d'Ours). Avec très peu de
   /// joueurs vivants, les doublons sont fusionnés (groupe de 1 ou 2).
@@ -250,7 +254,7 @@ class GameState {
   /// Blanc compte comme un loup pour le flair (son camp est Camp.seul).
   bool renardTrioHasWolf(List<String> ids) => ids.any((id) {
     final p = tryById(id);
-    return p != null && _smellsLikeWolf(p);
+    return p != null && isWolfPackMember(p);
   });
 }
 
