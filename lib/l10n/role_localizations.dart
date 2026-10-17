@@ -86,6 +86,8 @@ extension RoleLocalizations on AppLocalizations {
   /// joueur a muté en cours de partie, on rappelle son rôle d'origine :
   /// "Loup-Garou (anciennement Enfant Sauvage)".
   String playerRoleLabel(Player player) {
+    // Infecté en gardant son rôle : "Voyante infecté(e)".
+    if (player.infected) return roleInfected(roleName(player.role));
     final former = player.formerRole;
     if (former == null || former == player.role) return roleName(player.role);
     return roleWithFormerRole(roleName(player.role), roleShortName(former));

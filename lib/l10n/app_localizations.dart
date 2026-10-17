@@ -413,7 +413,7 @@ abstract class AppLocalizations {
   /// Description du rôle Bouc Émissaire
   ///
   /// In fr, this message translates to:
-  /// **'S\'il est éliminé par le vote du village, il peut désigner un joueur qui ne se réveillera pas lors de la nuit suivante.'**
+  /// **'Si le vote du village finit à égalité, c\'est lui qui est éliminé à la place des ex aequo. Avant de mourir, il désigne qui pourra voter le lendemain.'**
   String get roleBoucEmissaireDescription;
 
   /// Nom du rôle Idiot du Village
@@ -769,12 +769,6 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Le Bouc Émissaire'**
   String get boucEmissaireTitle;
-
-  /// Instruction d'action pour le Bouc Émissaire
-  ///
-  /// In fr, this message translates to:
-  /// **'Tu dois désigner le joueur qui ne participera pas au prochain vote du village.'**
-  String get boucEmissaireInstruction;
 
   /// Titre de l'écran du Chasseur
   ///
@@ -1867,6 +1861,186 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Si activé, l\'Infect Père des Loups infecte la victime des loups même si le Salvateur la protège. Si désactivé, la protection empêche aussi l\'infection, et l\'Infect Père garde son pouvoir pour une autre nuit.'**
   String get settingInfectCanInfectProtectedVictimDescription;
+
+  /// Libellé de l'option infectedKeepsPower
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'infecté garde son pouvoir'**
+  String get settingInfectedKeepsPowerLabel;
+
+  /// Description de l'option infectedKeepsPower
+  ///
+  /// In fr, this message translates to:
+  /// **'Si activé, le joueur infecté par l\'Infect Père rejoint la meute en gardant son rôle et son pouvoir (une Voyante infectée continue de sonder, pour les loups). Si désactivé, il devient un simple Loup-Garou.'**
+  String get settingInfectedKeepsPowerDescription;
+
+  /// Libellé de l'option mayorBreaksTies
+  ///
+  /// In fr, this message translates to:
+  /// **'Égalité au vote : le maire tranche'**
+  String get settingMayorBreaksTiesLabel;
+
+  /// Description de l'option mayorBreaksTies
+  ///
+  /// In fr, this message translates to:
+  /// **'Si activé, quand le vote du village finit à égalité, le maire désigne lui-même qui est éliminé parmi les ex aequo. Sans maire vivant (ou si désactivé), c\'est l\'option suivante qui s\'applique. Un Bouc Émissaire vivant passe avant tout : c\'est lui qui est éliminé.'**
+  String get settingMayorBreaksTiesDescription;
+
+  /// Libellé de l'option tieMeansNoElimination
+  ///
+  /// In fr, this message translates to:
+  /// **'Égalité au vote : personne n\'est éliminé'**
+  String get settingTieMeansNoEliminationLabel;
+
+  /// Description de l'option tieMeansNoElimination
+  ///
+  /// In fr, this message translates to:
+  /// **'Si activé, une égalité que le maire ne tranche pas n\'élimine personne ce jour-là. Si désactivé, le village revote entre les ex aequo.'**
+  String get settingTieMeansNoEliminationDescription;
+
+  /// Libellé de l'option idiotDiesOnSecondVote
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'Idiot du Village n\'est gracié qu\'une fois'**
+  String get settingIdiotDiesOnSecondVoteLabel;
+
+  /// Description de l'option idiotDiesOnSecondVote
+  ///
+  /// In fr, this message translates to:
+  /// **'Si activé, l\'Idiot déjà démasqué meurt s\'il est de nouveau désigné par le vote. Si désactivé, il survit à chaque vote.'**
+  String get settingIdiotDiesOnSecondVoteDescription;
+
+  /// Libellé de l'option loupBlancMustBeLastSurvivor
+  ///
+  /// In fr, this message translates to:
+  /// **'Le Loup Blanc empêche la victoire des loups'**
+  String get settingLoupBlancMustBeLastSurvivorLabel;
+
+  /// Description de l'option loupBlancMustBeLastSurvivor
+  ///
+  /// In fr, this message translates to:
+  /// **'Si activé, tant que le Loup-Garou Blanc vit, les loups ne gagnent pas : la partie continue jusqu\'à ce qu\'il reste seul ou meure. Si désactivé, les loups gagnent dès qu\'ils sont majoritaires, et le Loup Blanc perd avec le village.'**
+  String get settingLoupBlancMustBeLastSurvivorDescription;
+
+  /// Libellé de l'option ancienPowerLossByAnyVillager
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'Ancien tué par un villageois coûte leurs pouvoirs au village'**
+  String get settingAncienPowerLossByAnyVillagerLabel;
+
+  /// Description de l'option ancienPowerLossByAnyVillager
+  ///
+  /// In fr, this message translates to:
+  /// **'Si activé, les villageois perdent leurs pouvoirs si l\'Ancien est pendu, empoisonné par la Sorcière ou abattu par le Chasseur. Si désactivé, seulement s\'il est pendu par le vote.'**
+  String get settingAncienPowerLossByAnyVillagerDescription;
+
+  /// Titre de l'écran privé qui apprend à un joueur qu'il a été infecté
+  ///
+  /// In fr, this message translates to:
+  /// **'Infection'**
+  String get infectedRevealTitle;
+
+  /// Message privé au joueur infecté
+  ///
+  /// In fr, this message translates to:
+  /// **'Les Loups-Garous t\'ont infecté(e) : tu fais désormais partie de la meute. Tu te réveilles avec eux dès cette nuit.'**
+  String get infectedRevealInstruction;
+
+  /// Ajout quand l'infecté garde son pouvoir
+  ///
+  /// In fr, this message translates to:
+  /// **'Tu gardes ton pouvoir de {role}.'**
+  String infectedRevealKeepsPower(String role);
+
+  /// Rôle d'un joueur infecté, en fin de partie ou à sa mort
+  ///
+  /// In fr, this message translates to:
+  /// **'{role} infecté(e)'**
+  String roleInfected(String role);
+
+  /// Bouton des Loups quand il ne reste que des loups à dévorer et qu'ils ne peuvent pas se dévorer entre eux
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune victime possible cette nuit'**
+  String get loupsNoPossibleVictimButton;
+
+  /// Consigne du Bouc Émissaire, éliminé à la place des ex aequo
+  ///
+  /// In fr, this message translates to:
+  /// **'Avant de mourir, désigne qui pourra voter demain : touche les joueurs pour les retirer ou les remettre.'**
+  String get boucEmissaireVotersInstruction;
+
+  /// Bouton de validation du Bouc Émissaire
+  ///
+  /// In fr, this message translates to:
+  /// **'Confirmer ({count} votant(s) demain)'**
+  String boucEmissaireConfirmVoters(int count);
+
+  /// Rappel avant le vote du village quand le Bouc Émissaire a restreint les votants
+  ///
+  /// In fr, this message translates to:
+  /// **'Le Bouc Émissaire n\'a laissé voter aujourd\'hui que : {names}.'**
+  String voteRestrictedByBouc(String names);
+
+  /// Rappel de la règle d'égalité
+  ///
+  /// In fr, this message translates to:
+  /// **'En cas d\'égalité, c\'est le Bouc Émissaire qui est éliminé.'**
+  String get voteTieRuleBouc;
+
+  /// Rappel de la règle d'égalité
+  ///
+  /// In fr, this message translates to:
+  /// **'En cas d\'égalité, le maire désigne qui est éliminé parmi les ex aequo.'**
+  String get voteTieRuleMayor;
+
+  /// Rappel de la règle d'égalité
+  ///
+  /// In fr, this message translates to:
+  /// **'En cas d\'égalité, personne n\'est éliminé.'**
+  String get voteTieRuleNobody;
+
+  /// Rappel de la règle d'égalité
+  ///
+  /// In fr, this message translates to:
+  /// **'En cas d\'égalité, revotez entre les ex aequo.'**
+  String get voteTieRuleRunoff;
+
+  /// Bouton du vote collectif quand la table est à égalité
+  ///
+  /// In fr, this message translates to:
+  /// **'Égalité'**
+  String get voteTieButton;
+
+  /// Titre de l'écran où le maire départage
+  ///
+  /// In fr, this message translates to:
+  /// **'Égalité !'**
+  String get voteTieMayorTitle;
+
+  /// Consigne au maire qui départage
+  ///
+  /// In fr, this message translates to:
+  /// **'{mayor}, maire, désigne qui est éliminé parmi les ex aequo.'**
+  String voteTieMayorInstruction(String mayor);
+
+  /// Résultat d'un vote à égalité
+  ///
+  /// In fr, this message translates to:
+  /// **'Égalité : le Bouc Émissaire est éliminé à la place des ex aequo.'**
+  String get voteResultTieBouc;
+
+  /// Résultat d'un vote à égalité
+  ///
+  /// In fr, this message translates to:
+  /// **'Égalité : le maire a tranché.'**
+  String get voteResultTieMayor;
+
+  /// Résultat d'un vote à égalité
+  ///
+  /// In fr, this message translates to:
+  /// **'Égalité : personne n\'est éliminé.'**
+  String get voteResultTieNobody;
 
   /// Titre de l'écran des statistiques
   ///

@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:thiercelieux/models/game_progress.dart';
 import 'package:thiercelieux/models/game_state.dart';
+import 'package:thiercelieux/models/player.dart';
 import 'package:thiercelieux/models/role.dart';
 import 'package:thiercelieux/services/game_engine.dart';
 
@@ -15,6 +16,7 @@ const nightPhases = {
   GamePhase.nightLoversReveal,
   GamePhase.nightEnfantSauvage,
   GamePhase.nightEnfantSauvageMutation,
+  GamePhase.nightInfectedReveal,
   GamePhase.nightSalvateur,
   GamePhase.nightVoyante,
   GamePhase.nightLoups,
@@ -95,6 +97,8 @@ class EngineRunner {
         engine.resolveEnfantSauvageMentor(s, d.enfantSauvageModel(s));
       case GamePhase.nightEnfantSauvageMutation:
         engine.confirmEnfantSauvageNightMutation(s);
+      case GamePhase.nightInfectedReveal:
+        engine.confirmInfectedReveal(s);
       case GamePhase.nightEnfantSauvageCheck:
         engine.confirmEnfantSauvageCheck(s);
       case GamePhase.nightSalvateur:
@@ -106,7 +110,9 @@ class EngineRunner {
         d.voyante(s);
         engine.confirmVoyanteDone(s);
       case GamePhase.nightLoups:
-        final id = d.loups(s);
+        // Plus personne à dévorer : bouton « aucune victime possible ».
+        final id =
+            LegalChoices.loupsTargets(s).isEmpty ? null : d.loups(s);
         log.add('  loups -> ${_name(id)}');
         engine.setLoupsVictim(s, id);
       case GamePhase.nightPetiteFille:
@@ -154,9 +160,7 @@ class EngineRunner {
       case GamePhase.jugeBegueDecision:
         engine.resolveJugeBegueDecision(s, d.jugeBegue(s));
       case GamePhase.villageVote:
-        final id = _vote(mayorElection: false);
-        log.add('  village -> ${_name(id)}');
-        engine.resolveVillageVote(s, id);
+        _villageVote();
       case GamePhase.voteResult:
         _confirm(() => engine.confirmVoteResult(s),
             origin: FollowUpOrigin.voteDeaths);
@@ -188,11 +192,53 @@ class EngineRunner {
         s, log);
   }
 
+  /// Vote du village, avec sa règle d'égalité (VillageVoteScreen).
+  void _villageVote() {
+    final rule = engine.villageVoteTieRule(s);
+    if (s.voteMode == VoteMode.collective) {
+      if (rule != VoteTieRule.runoff && d.collectiveTie(s)) {
+        _resolveTie(rule, s.alivePlayers);
+      } else {
+        final id = d.collectiveVote(s, mayorElection: false);
+        log.add('  village -> ${_name(id)}');
+        engine.resolveVillageVote(s, id);
+      }
+      return;
+    }
+    final (winner, tied) = _secretVote(mayorElection: false, tieRule: rule);
+    if (winner != null) {
+      log.add('  village -> ${_name(winner)}');
+      engine.resolveVillageVote(s, winner);
+    } else {
+      _resolveTie(rule, tied!);
+    }
+  }
+
+  void _resolveTie(VoteTieRule rule, List<Player> tied) {
+    log.add('  égalité ($rule) entre ${tied.map((p) => p.name).join(', ')}');
+    if (rule == VoteTieRule.mayorDecides) {
+      final choice = d.mayorTieBreak(s, tied);
+      _ensure(tied.any((p) => p.id == choice),
+          () => 'Le maire tranche hors des ex aequo', s, log);
+      engine.resolveVillageVoteTie(s, mayorChoiceId: choice);
+    } else {
+      engine.resolveVillageVoteTie(s);
+    }
+  }
+
   /// Même déroulé que SequentialVoteFlow / CollectiveVoteScreen.
   String _vote({required bool mayorElection}) {
     if (s.voteMode == VoteMode.collective) {
       return d.collectiveVote(s, mayorElection: mayorElection);
     }
+    final (winner, _) = _secretVote(mayorElection: mayorElection);
+    return winner!;
+  }
+
+  /// Vote secret : (élu, null), ou (null, ex aequo) si l'égalité ne se
+  /// règle pas par un second tour.
+  (String?, List<Player>?) _secretVote(
+      {required bool mayorElection, VoteTieRule tieRule = VoteTieRule.runoff}) {
     final voters = mayorElection ? s.alivePlayers : s.eligibleVoters;
     _ensure(voters.isNotEmpty, () => 'Vote sans votant', s, log);
     var candidates = s.alivePlayers;
@@ -208,11 +254,12 @@ class EngineRunner {
       if (tally.winner != null) {
         _ensure(ids.contains(tally.winner),
             () => 'Le vote désigne ${_name(tally.winner)}, non candidat', s, log);
-        return tally.winner!;
+        return (tally.winner!, null);
       }
       _ensure(tally.tiedCandidates.length > 1, () => 'Vote sans résultat', s,
           log);
       candidates = tally.tiedCandidates.map(s.byId).toList();
+      if (tieRule != VoteTieRule.runoff) return (null, candidates);
     }
     fail('Égalités sans fin au vote\n${log.join('\n')}');
   }
@@ -239,6 +286,8 @@ void expectPhasePreconditions(GameState s, [List<String> log = const []]) {
     GamePhase.nightEnfantSauvageCheck => alive(RoleId.enfantSauvage),
     GamePhase.nightEnfantSauvageMutation =>
       s.tryById(s.enfantSauvageNightMutationId)?.alive ?? false,
+    GamePhase.nightInfectedReveal =>
+      s.tryById(s.infectedRevealPendingId)?.alive ?? false,
     GamePhase.nightSalvateur => alive(RoleId.salvateur) &&
         s.alivePlayers.any((p) => s.salvateurCanProtect(p.id)),
     GamePhase.nightVoyante => alive(RoleId.voyante),

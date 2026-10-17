@@ -61,6 +61,15 @@ class _LoupsContent extends StatelessWidget {
               ),
             ),
           ),
+          // Il ne reste que des loups (le Loup Blanc empêche leur victoire)
+          // et ils ne peuvent pas s'entre-dévorer : pas de victime.
+          if (targets.isEmpty) ...[
+            const SizedBox(height: 12),
+            OutlinedButton(
+              onPressed: () => gp.setLoupsVictim(null),
+              child: Text(loc.loupsNoPossibleVictimButton),
+            ),
+          ],
         ],
       ),
     );

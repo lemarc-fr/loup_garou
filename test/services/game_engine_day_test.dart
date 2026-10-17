@@ -219,29 +219,120 @@ void main() {
   });
 
   group('Bouc Émissaire', () {
-    test('éliminé, il désigne qui dormira la nuit suivante (et seulement elle)',
-        () {
-      final s = dayOne([
-        ('Bouc', RoleId.boucEmissaire),
-        ('Voy', RoleId.voyante),
-        ...village(),
-      ]);
+    List<Seat> seats() => [
+          ('Bouc', RoleId.boucEmissaire),
+          ('Voy', RoleId.voyante),
+          ...village(),
+        ];
+
+    /// Jour 1 : le vote finit à égalité, le Bouc meurt à la place.
+    GameState scapegoated() {
+      final s = dayOne(seats());
       engine.dayToVote(s, mayor: s.idOf('V2'));
-      engine.resolveVillageVote(s, s.idOf('Bouc'));
+      expect(engine.villageVoteTieRule(s), VoteTieRule.boucEmissaire,
+          reason: 'Il passe avant le maire');
+      engine.resolveVillageVoteTie(s);
+      return s;
+    }
+
+    test('égalité : il est éliminé à la place des ex aequo', () {
+      final s = scapegoated();
+      expect(s.namesOf(s.deathsThisWave), ['Bouc']);
+      expect(s.named('Bouc').deathCause, DeathCause.vote);
+      expect(s.lastVoteTie, VoteTieRule.boucEmissaire);
       engine.confirmVoteResult(s);
       expect(s.phase, GamePhase.boucEmissaire);
-      engine.resolveBoucEmissaireChoice(s, s.idOf('Voy'));
+    });
 
+    test('il désigne les seuls votants du lendemain, et seulement eux', () {
+      final s = scapegoated();
+      engine.confirmVoteResult(s);
+      engine.resolveBoucEmissaireChoice(
+          s, {s.idOf('V2'), s.idOf('V3'), s.idOf('Voy')});
       expect(s.phase, GamePhase.nightIntro);
-      expect(s.phaseQueue, isNot(contains(GamePhase.nightVoyante)));
+      expect(s.phaseQueue, contains(GamePhase.nightVoyante),
+          reason: 'Il ne touche plus aux nuits (ancienne règle maison)');
+
       engine.skipTo(s, GamePhase.nightLoups);
       engine.setLoupsVictim(s, s.idOf('V3'));
       engine.finishNight(s);
       engine.dayToVote(s);
+      expect(s.voteRestrictedByBouc, isTrue);
+      expect(s.eligibleVoters.map((p) => p.name), ['Voy', 'V2'],
+          reason: 'V3 est mort cette nuit');
       engine.resolveVillageVote(s, s.idOf('V4'));
       engine.confirmVoteResult(s);
-      expect(s.phaseQueue, contains(GamePhase.nightVoyante),
-          reason: 'Réveillée de nouveau la nuit d\'après');
+
+      engine.skipTo(s, GamePhase.nightLoups);
+      engine.setLoupsVictim(s, s.idOf('V5'));
+      engine.finishNight(s);
+      engine.dayToVote(s);
+      expect(s.voteRestrictedByBouc, isFalse, reason: 'Le lendemain seulement');
+    });
+
+    test('ses votants tous morts dans la nuit : tout le monde vote', () {
+      final s = scapegoated();
+      engine.confirmVoteResult(s);
+      engine.resolveBoucEmissaireChoice(s, {s.idOf('V3')});
+      engine.skipTo(s, GamePhase.nightLoups);
+      engine.setLoupsVictim(s, s.idOf('V3'));
+      engine.finishNight(s);
+      engine.dayToVote(s);
+      expect(s.eligibleVoters, hasLength(s.alivePlayers.length));
+    });
+
+    test('éliminé par un vote ordinaire : il meurt sans pouvoir', () {
+      final s = dayOne(seats());
+      engine.dayToVote(s, mayor: s.idOf('V2'));
+      engine.resolveVillageVote(s, s.idOf('Bouc'));
+      engine.confirmVoteResult(s);
+      expect(s.phase, GamePhase.nightIntro);
+    });
+  });
+
+  group('Égalité au vote du village', () {
+    /// Jour 1 après l'élection du maire, avec les réglages [values].
+    GameState voteDay([Map<SettingId, bool> values = const {}]) {
+      final s = dayOne(village(), settings: settingsWith(values));
+      engine.dayToVote(s, mayor: s.idOf('V2'));
+      return s;
+    }
+
+    void killMayor(GameState s) => s.named('V2')
+      ..alive = false
+      ..deathCause = DeathCause.vengeanceDuChasseur
+      ..isMayor = false;
+
+    test('le maire tranche parmi les ex aequo (par défaut)', () {
+      final s = voteDay();
+      expect(engine.villageVoteTieRule(s), VoteTieRule.mayorDecides);
+      engine.resolveVillageVoteTie(s, mayorChoiceId: s.idOf('Lg'));
+      expect(s.namesOf(s.deathsThisWave), ['Lg']);
+      expect(s.lastVoteTie, VoteTieRule.mayorDecides);
+    });
+
+    test('sans maire vivant : second tour (par défaut)', () {
+      final s = voteDay();
+      killMayor(s);
+      expect(engine.villageVoteTieRule(s), VoteTieRule.runoff);
+    });
+
+    test('sans maire vivant, réglage « personne » : nul n\'est éliminé', () {
+      final s = voteDay({SettingId.tieMeansNoElimination: true});
+      killMayor(s);
+      expect(engine.villageVoteTieRule(s), VoteTieRule.nobodyEliminated);
+      engine.resolveVillageVoteTie(s);
+      expect(s.deathsThisWave, isEmpty);
+      expect(s.lastVoteTie, VoteTieRule.nobodyEliminated);
+      expect(engine.upcomingStep(s, origin: FollowUpOrigin.voteDeaths),
+          UpcomingStep.nightFalls);
+    });
+
+    test('maire désactivé : la règle suivante s\'applique', () {
+      expect(
+          engine.villageVoteTieRule(
+              voteDay({SettingId.mayorBreaksTies: false})),
+          VoteTieRule.runoff);
     });
   });
 

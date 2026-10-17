@@ -13,6 +13,12 @@ enum SettingId {
   hunterCanOverturnFinishedGame,
   voleurPlaysNewRoleFirstNight,
   infectCanInfectProtectedVictim,
+  infectedKeepsPower,
+  mayorBreaksTies,
+  tieMeansNoElimination,
+  idiotDiesOnSecondVote,
+  loupBlancMustBeLastSurvivor,
+  ancienPowerLossByAnyVillager,
 }
 
 /// Décrit une option pour l'affichage dans l'écran de réglages. Les textes
@@ -73,6 +79,36 @@ const List<GameSettingDefinition> kGameSettingDefinitions = [
     id: SettingId.infectCanInfectProtectedVictim,
     defaultValue: false,
   ),
+  // Règle officielle : l'infecté rejoint la meute en gardant son rôle.
+  GameSettingDefinition(
+    id: SettingId.infectedKeepsPower,
+    defaultValue: true,
+  ),
+  // Égalité au vote du village (le Bouc Émissaire, s'il vit, passe avant) :
+  // le maire tranche (règle officielle), sinon personne n'est éliminé ou,
+  // à défaut, second tour entre les ex aequo.
+  GameSettingDefinition(
+    id: SettingId.mayorBreaksTies,
+    defaultValue: true,
+  ),
+  GameSettingDefinition(
+    id: SettingId.tieMeansNoElimination,
+    defaultValue: false,
+  ),
+  GameSettingDefinition(
+    id: SettingId.idiotDiesOnSecondVote,
+    defaultValue: false,
+  ),
+  // Sa description : « son objectif est de rester le dernier survivant ».
+  GameSettingDefinition(
+    id: SettingId.loupBlancMustBeLastSurvivor,
+    defaultValue: true,
+  ),
+  // Règle officielle : pendu, empoisonné ou abattu par le Chasseur.
+  GameSettingDefinition(
+    id: SettingId.ancienPowerLossByAnyVillager,
+    defaultValue: true,
+  ),
 ];
 
 /// Valeurs courantes des options, avec repli sur la valeur par défaut du
@@ -100,6 +136,12 @@ class GameSettings {
   bool get hunterCanOverturnFinishedGame => get(SettingId.hunterCanOverturnFinishedGame);
   bool get voleurPlaysNewRoleFirstNight => get(SettingId.voleurPlaysNewRoleFirstNight);
   bool get infectCanInfectProtectedVictim => get(SettingId.infectCanInfectProtectedVictim);
+  bool get infectedKeepsPower => get(SettingId.infectedKeepsPower);
+  bool get mayorBreaksTies => get(SettingId.mayorBreaksTies);
+  bool get tieMeansNoElimination => get(SettingId.tieMeansNoElimination);
+  bool get idiotDiesOnSecondVote => get(SettingId.idiotDiesOnSecondVote);
+  bool get loupBlancMustBeLastSurvivor => get(SettingId.loupBlancMustBeLastSurvivor);
+  bool get ancienPowerLossByAnyVillager => get(SettingId.ancienPowerLossByAnyVillager);
 
   Map<String, dynamic> toJson() => {
     for (final e in _values.entries) e.key.name: e.value,

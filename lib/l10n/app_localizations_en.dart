@@ -178,7 +178,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get roleBoucEmissaireDescription =>
-      'If he is eliminated by the village vote, he can designate a player who will not wake up during the following night.';
+      'If the village vote ends in a tie, he is eliminated instead of the tied players. Before dying, he chooses who may vote the next day.';
 
   @override
   String get roleIdiotDuVillageName => 'The Village Idiot';
@@ -399,10 +399,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get boucEmissaireTitle => 'The Scapegoat';
-
-  @override
-  String get boucEmissaireInstruction =>
-      'You must designate the player who will not participate in the next village vote.';
 
   @override
   String get chasseurTitle => 'The Hunter';
@@ -1046,6 +1042,123 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingInfectCanInfectProtectedVictimDescription =>
       'If enabled, the Infect Father of Wolves infects the wolves\' victim even when the Savior protects them. If disabled, the protection also prevents the infection, and the Infect Father keeps his power for another night.';
+
+  @override
+  String get settingInfectedKeepsPowerLabel =>
+      'The infected player keeps their power';
+
+  @override
+  String get settingInfectedKeepsPowerDescription =>
+      'If enabled, the player infected by the Infect Father joins the pack while keeping their role and power (an infected Seer still probes, for the wolves). If disabled, they become a plain Werewolf.';
+
+  @override
+  String get settingMayorBreaksTiesLabel => 'Tied vote: the mayor decides';
+
+  @override
+  String get settingMayorBreaksTiesDescription =>
+      'If enabled, when the village vote ends in a tie, the mayor chooses who is eliminated among the tied players. With no living mayor (or if disabled), the next option applies. A living Scapegoat comes first: he is the one eliminated.';
+
+  @override
+  String get settingTieMeansNoEliminationLabel =>
+      'Tied vote: nobody is eliminated';
+
+  @override
+  String get settingTieMeansNoEliminationDescription =>
+      'If enabled, a tie the mayor does not settle eliminates nobody that day. If disabled, the village votes again between the tied players.';
+
+  @override
+  String get settingIdiotDiesOnSecondVoteLabel =>
+      'The Village Idiot is spared only once';
+
+  @override
+  String get settingIdiotDiesOnSecondVoteDescription =>
+      'If enabled, an already unmasked Idiot dies if the vote designates him again. If disabled, he survives every vote.';
+
+  @override
+  String get settingLoupBlancMustBeLastSurvivorLabel =>
+      'The White Werewolf blocks the wolves\' victory';
+
+  @override
+  String get settingLoupBlancMustBeLastSurvivorDescription =>
+      'If enabled, while the White Werewolf lives the wolves cannot win: the game goes on until he is alone or dead. If disabled, the wolves win as soon as they outnumber the others, and the White Werewolf loses with the village.';
+
+  @override
+  String get settingAncienPowerLossByAnyVillagerLabel =>
+      'The Elder killed by a villager costs the village its powers';
+
+  @override
+  String get settingAncienPowerLossByAnyVillagerDescription =>
+      'If enabled, the villagers lose their powers if the Elder is hanged, poisoned by the Witch or shot by the Hunter. If disabled, only if he is hanged by the vote.';
+
+  @override
+  String get infectedRevealTitle => 'Infection';
+
+  @override
+  String get infectedRevealInstruction =>
+      'The Werewolves have infected you: you are now part of the pack. You wake up with them from tonight on.';
+
+  @override
+  String infectedRevealKeepsPower(String role) {
+    return 'You keep your power as $role.';
+  }
+
+  @override
+  String roleInfected(String role) {
+    return '$role, infected';
+  }
+
+  @override
+  String get loupsNoPossibleVictimButton => 'No possible victim tonight';
+
+  @override
+  String get boucEmissaireVotersInstruction =>
+      'Before dying, choose who may vote tomorrow: tap players to remove or add them.';
+
+  @override
+  String boucEmissaireConfirmVoters(int count) {
+    return 'Confirm ($count voter(s) tomorrow)';
+  }
+
+  @override
+  String voteRestrictedByBouc(String names) {
+    return 'The Scapegoat only allowed these players to vote today: $names.';
+  }
+
+  @override
+  String get voteTieRuleBouc =>
+      'In case of a tie, the Scapegoat is eliminated.';
+
+  @override
+  String get voteTieRuleMayor =>
+      'In case of a tie, the mayor chooses who is eliminated among the tied players.';
+
+  @override
+  String get voteTieRuleNobody => 'In case of a tie, nobody is eliminated.';
+
+  @override
+  String get voteTieRuleRunoff =>
+      'In case of a tie, vote again between the tied players.';
+
+  @override
+  String get voteTieButton => 'Tie';
+
+  @override
+  String get voteTieMayorTitle => 'Tie!';
+
+  @override
+  String voteTieMayorInstruction(String mayor) {
+    return '$mayor, as mayor, chooses who is eliminated among the tied players.';
+  }
+
+  @override
+  String get voteResultTieBouc =>
+      'Tie: the Scapegoat is eliminated instead of the tied players.';
+
+  @override
+  String get voteResultTieMayor => 'Tie: the mayor decided.';
+
+  @override
+  String get voteResultTieNobody => 'Tie: nobody is eliminated.';
 
   @override
   String get statsTitle => 'Statistics';

@@ -25,6 +25,10 @@ class CollectiveVoteScreen extends StatefulWidget {
   final String Function(String name) confirmLabel;
   final void Function(String playerId) onConfirmed;
 
+  /// La table déclare une égalité (règle d'égalité du vote du village).
+  /// Null : pas de bouton, la table revote d'elle-même.
+  final VoidCallback? onTie;
+
   const CollectiveVoteScreen({
     super.key,
     required this.title,
@@ -33,6 +37,7 @@ class CollectiveVoteScreen extends StatefulWidget {
     required this.confirmLabel,
     required this.onConfirmed,
     this.notes = const [],
+    this.onTie,
   });
 
   @override
@@ -85,6 +90,14 @@ class _CollectiveVoteScreenState extends State<CollectiveVoteScreen> {
                     ? loc.collectiveVoteSelectPlayer
                     : widget.confirmLabel(selected.name)),
               ),
+              if (widget.onTie != null) ...[
+                const SizedBox(height: 10),
+                OutlinedButton.icon(
+                  onPressed: widget.onTie,
+                  icon: const Icon(Icons.balance),
+                  label: Text(loc.voteTieButton),
+                ),
+              ],
             ],
           ),
         ),

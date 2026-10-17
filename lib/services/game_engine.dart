@@ -131,6 +131,8 @@ class GameEngine {
     GamePhase.nightIntro,
     GamePhase.nightGoBackToSleep,
     GamePhase.nightEnfantSauvageMutation,
+    // Secret : l'infection ne doit pas apparaître dans le résumé.
+    GamePhase.nightInfectedReveal,
   };
 
   void _startRound(GameState s, String wave, int number) {
@@ -257,17 +259,21 @@ class GameEngine {
       addSleep();
     }
 
-    if (s.hasAliveRole(RoleId.salvateur) && !_isAsleep(s, RoleId.salvateur)) {
+    if (s.hasAliveRole(RoleId.salvateur)) {
       q.add(GamePhase.nightSalvateur);
       addSleep();
     }
-    if (s.hasAliveRole(RoleId.voyante) && !_isAsleep(s, RoleId.voyante)) {
+    if (s.hasAliveRole(RoleId.voyante)) {
       q.add(GamePhase.nightVoyante);
       addSleep();
     }
     final mutated = s.tryById(s.enfantSauvageNightMutationId);
     if (mutated != null && mutated.alive && mutated.role == RoleId.loupGarou) {
       q.add(GamePhase.nightEnfantSauvageMutation);
+      addSleep();
+    }
+    if (s.tryById(s.infectedRevealPendingId)?.alive ?? false) {
+      q.add(GamePhase.nightInfectedReveal);
       addSleep();
     }
     if (s.wolfPackAwake) {
@@ -304,8 +310,7 @@ class GameEngine {
     final sorciereEncorePuissante = !s.sorciereVieUsed || !s.sorciereMortUsed;
     if (s.hasAliveRole(RoleId.sorciere) &&
         sorciereEncorePuissante &&
-        s.wolfPackAwake &&
-        !_isAsleep(s, RoleId.sorciere)) {
+        s.wolfPackAwake) {
       q.add(GamePhase.nightSorciere);
       addSleep();
     }
@@ -336,18 +341,6 @@ class GameEngine {
     }
     q.add(GamePhase.villageVote);
     return q;
-  }
-
-  /// Le Bouc Émissaire peut désigner un joueur qui "saute" la nuit
-  /// suivante. Simplification assumée : seuls les rôles à pouvoir
-  /// individuel (Salvateur, Voyante, Sorcière) peuvent ainsi être
-  /// endormis pour une nuit — sauter le tour d'un seul Loup au sein du
-  /// tour collectif des Loups demanderait une UI dédiée (voir TODO).
-  bool _isAsleep(GameState s, RoleId role) {
-    final skippedId = s.skippedNextNightPlayerId;
-    if (skippedId == null) return false;
-    final p = s.tryById(skippedId);
-    return p != null && p.alive && p.role == role;
   }
 
   void _resetNightTempData(GameState s) {
@@ -499,10 +492,18 @@ class GameEngine {
     advance(s);
   }
 
-  void setLoupsVictim(GameState s, String victimId) {
+  /// L'infecté a appris en secret qu'il rejoint la meute.
+  void confirmInfectedReveal(GameState s) {
+    s.infectedRevealPendingId = null;
+    advance(s);
+  }
+
+  /// [victimId] == null quand les loups n'ont personne à dévorer : il ne
+  /// reste que des loups et le réglage leur interdit de s'entre-dévorer.
+  void setLoupsVictim(GameState s, String? victimId) {
     s.loupsVictimId = victimId;
     s.finalNightVictimId =
-    (victimId == s.salvateurProtectedId) ? null : victimId;
+        (victimId == s.salvateurProtectedId) ? null : victimId;
     advance(s);
   }
 
@@ -581,10 +582,13 @@ class GameEngine {
         bool useVie = false,
         String? poisonTargetId,
       }) {
-    if (useVie && !s.sorciereVieUsed) {
+    // Elle sauve la victime qu'on lui a montrée ; si le Salvateur la
+    // protégeait déjà, la potion est perdue.
+    final victim = s.sorciereSeesVictimId;
+    if (useVie && !s.sorciereVieUsed && victim != null) {
       s.sorciereVieUsed = true;
-      s.sorciereSavedIdTonight = s.finalNightVictimId;
-      s.finalNightVictimId = null;
+      s.sorciereSavedIdTonight = victim;
+      if (s.finalNightVictimId == victim) s.finalNightVictimId = null;
     }
     if (poisonTargetId != null && !s.sorciereMortUsed) {
       s.sorciereMortUsed = true;
@@ -619,11 +623,17 @@ class GameEngine {
     if (s.sorciereKilledIdTonight != null) {
       _applyDeath(s, s.sorciereKilledIdTonight!, DeathCause.potionDeMort);
     }
-    if (s.infectedTonightId != null) {
-      final infected = s.tryById(s.infectedTonightId);
-      if (infected != null && infected.alive) {
+    final infected = s.tryById(s.infectedTonightId);
+    if (infected != null && infected.alive) {
+      // Il rejoint la meute, en gardant son rôle ou non (réglage), et
+      // l'apprendra en secret au début de la nuit suivante.
+      if (s.settings.infectedKeepsPower) {
+        infected.infected = true;
+      } else {
+        infected.formerRole ??= infected.role;
         infected.role = RoleId.loupGarou;
       }
+      s.infectedRevealPendingId = infected.id;
     }
 
     s.currentWave = 'day';
@@ -786,9 +796,12 @@ class GameEngine {
     _resolveFollowUps(s);
   }
 
-  void resolveBoucEmissaireChoice(GameState s, String skippedPlayerId) {
+  /// Le Bouc Émissaire, mort à la place des ex aequo, désigne les seuls
+  /// joueurs qui pourront voter le lendemain.
+  void resolveBoucEmissaireChoice(GameState s, Set<String> allowedVoterIds) {
     s.boucEmissaireChoiceNeededId = null;
-    s.skippedNextNightPlayerId = skippedPlayerId;
+    s.boucAllowedVoterIds = {...allowedVoterIds};
+    s.boucVoteRestrictionDay = s.day + 1;
     _resolveFollowUps(s);
   }
 
@@ -863,7 +876,47 @@ class GameEngine {
 
   void resolveVillageVote(GameState s, String eliminatedId) {
     _applyDeath(s, eliminatedId, DeathCause.vote);
+    s.lastVoteTie = null;
     s.corbeauCursedId = null; // la malédiction ne vaut que pour ce vote
+    _goToPhase(s, GamePhase.voteResult);
+  }
+
+  /// Ce qui règle une égalité au vote du village, dans cet ordre : un Bouc
+  /// Émissaire vivant est éliminé ; sinon le maire tranche (réglage) ;
+  /// sinon personne n'est éliminé (réglage) ; sinon on revote entre les
+  /// ex aequo.
+  VoteTieRule villageVoteTieRule(GameState s) {
+    if (s.hasAliveRole(RoleId.boucEmissaire)) return VoteTieRule.boucEmissaire;
+    final mayor = s.tryById(s.mayorId);
+    if (s.settings.mayorBreaksTies && mayor != null && mayor.alive) {
+      return VoteTieRule.mayorDecides;
+    }
+    if (s.settings.tieMeansNoElimination) return VoteTieRule.nobodyEliminated;
+    return VoteTieRule.runoff;
+  }
+
+  /// Le vote du village finit à égalité, réglée selon [villageVoteTieRule]
+  /// (un second tour, lui, se rejoue : rien à résoudre ici).
+  /// [mayorChoiceId] : l'ex aequo désigné par le maire quand il tranche.
+  void resolveVillageVoteTie(GameState s, {String? mayorChoiceId}) {
+    final rule = villageVoteTieRule(s);
+    switch (rule) {
+      case VoteTieRule.boucEmissaire:
+        final bouc = s.alivePlayersWithRole(RoleId.boucEmissaire).first;
+        _applyDeath(s, bouc.id, DeathCause.vote);
+        s.boucEmissaireChoiceNeededId = bouc.id;
+      case VoteTieRule.mayorDecides:
+        if (mayorChoiceId == null) {
+          throw ArgumentError('Le maire doit désigner un ex aequo');
+        }
+        _applyDeath(s, mayorChoiceId, DeathCause.vote);
+      case VoteTieRule.nobodyEliminated:
+        break;
+      case VoteTieRule.runoff:
+        throw StateError('Égalité réglée par un second tour');
+    }
+    s.lastVoteTie = rule;
+    s.corbeauCursedId = null;
     _goToPhase(s, GamePhase.voteResult);
   }
 
@@ -894,7 +947,6 @@ class GameEngine {
     _startRound(s, 'night', s.night);
     s.phaseQueue = buildNightQueue(s);
     _seedRoundSteps(s, s.phaseQueue);
-    s.skippedNextNightPlayerId = null;
     s.phaseIndex = 0;
     _goToPhase(s, s.phaseQueue[0]);
   }
@@ -918,8 +970,11 @@ class GameEngine {
 
     // L'Idiot du Village survit à un vote : démasqué, il perd son droit
     // de vote mais reste en vie. On s'arrête là pour ce joueur : ce n'est
-    // pas une mort.
-    if (p.role == RoleId.idiotDuVillage && cause == DeathCause.vote) {
+    // pas une mort. Déjà démasqué, il meurt cette fois si le réglage le veut.
+    final idiotAlreadyUnmasked = s.disenfranchisedPlayerIds.contains(p.id);
+    if (p.role == RoleId.idiotDuVillage &&
+        cause == DeathCause.vote &&
+        !(idiotAlreadyUnmasked && s.settings.idiotDiesOnSecondVote)) {
       s.idiotDuVillageRevealId = p.id;
       return;
     }
@@ -978,12 +1033,6 @@ class GameEngine {
       s.mayorSuccessionNeededFor = p.id;
     }
 
-    // Bouc Émissaire éliminé par le vote : il désigne un joueur qui
-    // sautera la nuit suivante.
-    if (p.role == RoleId.boucEmissaire && cause == DeathCause.vote) {
-      s.boucEmissaireChoiceNeededId = p.id;
-    }
-
     // Servante Dévouée : peut reprendre le rôle d'un joueur mort au vote.
     if (cause == DeathCause.vote &&
         p.role != RoleId.servanteDevouee &&
@@ -991,9 +1040,16 @@ class GameEngine {
       s.servanteDevoueeOfferId = p.id;
     }
 
-    // Le village a fait pendre l'Ancien par erreur : tous les villageois
-    // à pouvoir perdent leur don pour le reste de la partie.
-    if (p.role == RoleId.ancien && cause == DeathCause.vote) {
+    // Le village a tué l'Ancien par erreur : tous les villageois à pouvoir
+    // perdent leur don pour le reste de la partie. Pendu, toujours ;
+    // empoisonné par la Sorcière ou abattu par le Chasseur, selon le
+    // réglage. (Le Bouc Émissaire, lui, n'a de pouvoir qu'en mourant à la
+    // place des ex aequo : voir resolveVillageVoteTie.)
+    final killedByVillage = cause == DeathCause.vote ||
+        (s.settings.ancienPowerLossByAnyVillager &&
+            (cause == DeathCause.potionDeMort ||
+                cause == DeathCause.vengeanceDuChasseur));
+    if (p.role == RoleId.ancien && killedByVillage) {
       _villageLosesPowers(s);
     }
   }
@@ -1047,13 +1103,14 @@ class GameEngine {
       if (s.hasAliveRole(RoleId.loupBlanc)) return null;
       return GameResult(Camp.village, alive.map((p) => p.id).toList());
     }
-    if (wolves >= others && s.currentWave=='night') {
-      return GameResult(
-        Camp.loups,
-        alive.where((p) => p.camp == Camp.loups).map((p) => p.id).toList(),
-      );
-    }
-    if (wolves >= others+1 && s.currentWave=='day') {
+    // Les loups gagnent en étant strictement plus nombreux que les autres —
+    // sauf si le Loup-Garou Blanc, encore en vie, doit rester seul
+    // (réglage) : la partie continue.
+    if (wolves > others) {
+      if (s.hasAliveRole(RoleId.loupBlanc) &&
+          s.settings.loupBlancMustBeLastSurvivor) {
+        return null;
+      }
       return GameResult(
         Camp.loups,
         alive.where((p) => p.camp == Camp.loups).map((p) => p.id).toList(),

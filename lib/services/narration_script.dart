@@ -193,6 +193,8 @@ class NarrationScript {
   static bool _isNightPhase(GamePhase phase) =>
       phase == GamePhase.nightIntro ||
       phase == GamePhase.nightGoBackToSleep ||
+      // Révélation silencieuse : on passe juste le téléphone à l'infecté.
+      phase == GamePhase.nightInfectedReveal ||
       _wakeCue(phase) != null ||
       phase == GamePhase.nightPetiteFille;
 

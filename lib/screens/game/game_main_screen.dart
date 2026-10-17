@@ -22,6 +22,7 @@ import 'role_screens/corbeau_screen.dart';
 import 'role_screens/cupidon_screen.dart';
 import 'role_screens/enfant_sauvage_screen.dart';
 import 'role_screens/infect_pere_des_loups_screen.dart';
+import 'role_screens/infected_reveal_screen.dart';
 import 'role_screens/juge_begue_screen.dart';
 import 'role_screens/loup_blanc_screen.dart';
 import 'role_screens/lovers_reveal_screen.dart';
@@ -94,6 +95,7 @@ class GameMainScreen extends StatelessWidget {
       GamePhase.enfantsauvageReveal => const EnfantSauvageRevealScreen(),
       GamePhase.idiotduvillageCivicRightLoss => const IdiotDuVillageRevealScreen(),
       GamePhase.nightEnfantSauvageMutation => const EnfantSauvageMutationScreen(),
+      GamePhase.nightInfectedReveal => const InfectedRevealScreen(),
       _ => const SizedBox.shrink(),
     };
 

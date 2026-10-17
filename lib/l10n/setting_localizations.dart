@@ -25,6 +25,14 @@ extension SettingLocalizations on AppLocalizations {
           settingVoleurPlaysNewRoleFirstNightLabel,
         SettingId.infectCanInfectProtectedVictim =>
           settingInfectCanInfectProtectedVictimLabel,
+        SettingId.infectedKeepsPower => settingInfectedKeepsPowerLabel,
+        SettingId.mayorBreaksTies => settingMayorBreaksTiesLabel,
+        SettingId.tieMeansNoElimination => settingTieMeansNoEliminationLabel,
+        SettingId.idiotDiesOnSecondVote => settingIdiotDiesOnSecondVoteLabel,
+        SettingId.loupBlancMustBeLastSurvivor =>
+          settingLoupBlancMustBeLastSurvivorLabel,
+        SettingId.ancienPowerLossByAnyVillager =>
+          settingAncienPowerLossByAnyVillagerLabel,
       };
 
   String settingDescription(SettingId id) => switch (id) {
@@ -46,5 +54,15 @@ extension SettingLocalizations on AppLocalizations {
           settingVoleurPlaysNewRoleFirstNightDescription,
         SettingId.infectCanInfectProtectedVictim =>
           settingInfectCanInfectProtectedVictimDescription,
+        SettingId.infectedKeepsPower => settingInfectedKeepsPowerDescription,
+        SettingId.mayorBreaksTies => settingMayorBreaksTiesDescription,
+        SettingId.tieMeansNoElimination =>
+          settingTieMeansNoEliminationDescription,
+        SettingId.idiotDiesOnSecondVote =>
+          settingIdiotDiesOnSecondVoteDescription,
+        SettingId.loupBlancMustBeLastSurvivor =>
+          settingLoupBlancMustBeLastSurvivorDescription,
+        SettingId.ancienPowerLossByAnyVillager =>
+          settingAncienPowerLossByAnyVillagerDescription,
       };
 }

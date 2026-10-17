@@ -141,9 +141,9 @@ void main() {
       expect(s.phaseQueue, contains(GamePhase.nightInfectPereDesLoups));
     });
 
-    test('activé : la victime protégée devient Loup-Garou', () {
+    test('activé : la victime protégée rejoint la meute', () {
       final s = protectedVictimInfected(true);
-      expect(s.named('V1').role, RoleId.loupGarou);
+      expect(s.named('V1').camp, Camp.loups);
       expect(s.infectPereDesLoupsUsed, isTrue);
     });
 
@@ -281,6 +281,196 @@ void main() {
       expect(s.enfantSauvageTransformedId, isNull);
       engine.confirmDayReveal(s);
       expect(s.phase, GamePhase.mayorElectionExplain);
+    });
+  });
+
+  group('Réglage « l\'Idiot du Village n\'est gracié qu\'une fois »', () {
+    GameState idiotVotedTwice(bool diesSecondTime) {
+      final s = startedGame(
+        engine,
+        [
+          ('Idiot', RoleId.idiotDuVillage),
+          ('Lg', RoleId.loupGarou),
+          ('Lg2', RoleId.loupGarou),
+          for (var i = 1; i <= 7; i++) ('V$i', RoleId.simpleVillageois),
+        ],
+        settings:
+            settingsWith({SettingId.idiotDiesOnSecondVote: diesSecondTime}),
+      );
+      engine.skipTo(s, GamePhase.nightLoups);
+      engine.setLoupsVictim(s, s.idOf('V1'));
+      engine.finishNight(s);
+      engine.dayToVote(s, mayor: s.idOf('V2'));
+      engine.resolveVillageVote(s, s.idOf('Idiot'));
+      engine.confirmVoteResult(s);
+      engine.confirmIdiotDuVillageReveal(s);
+      engine.skipTo(s, GamePhase.nightLoups);
+      engine.setLoupsVictim(s, s.idOf('V3'));
+      engine.finishNight(s);
+      engine.dayToVote(s);
+      engine.resolveVillageVote(s, s.idOf('Idiot'));
+      return s;
+    }
+
+    test('désactivé (par défaut) : il survit encore', () {
+      expect(GameSettings().idiotDiesOnSecondVote, isFalse);
+      final s = idiotVotedTwice(false);
+      expect(s.named('Idiot').alive, isTrue);
+    });
+
+    test('activé : démasqué, il meurt cette fois', () {
+      final s = idiotVotedTwice(true);
+      expect(s.named('Idiot').deathCause, DeathCause.vote);
+      expect(s.namesOf(s.deathsThisWave), ['Idiot']);
+    });
+  });
+
+  group('Réglage « le Loup Blanc empêche la victoire des loups »', () {
+    // Il ne reste que la meute (dont le Loup Blanc) et un villageois.
+    GameState packAlmostAlone(Map<SettingId, bool> values) {
+      final s = riggedGame(
+        engine,
+        [
+          ('Lg', RoleId.loupGarou),
+          ('Lg2', RoleId.loupGarou),
+          ('Lb', RoleId.loupBlanc),
+          ('V1', RoleId.simpleVillageois),
+          ('V2', RoleId.simpleVillageois),
+        ],
+        settings: settingsWith(values),
+      );
+      s.currentWave = 'day';
+      s.named('V2')
+        ..alive = false
+        ..deathCause = DeathCause.vote;
+      return s;
+    }
+
+    test('activé (par défaut) : la partie continue tant qu\'il vit', () {
+      expect(GameSettings().loupBlancMustBeLastSurvivor, isTrue);
+      expect(engine.checkWinCondition(packAlmostAlone({})), isNull);
+    });
+
+    test('désactivé : les loups gagnent, sans lui', () {
+      final result = engine.checkWinCondition(packAlmostAlone(
+          {SettingId.loupBlancMustBeLastSurvivor: false}))!;
+      expect(result.winner, Camp.loups);
+    });
+
+    test('seule la meute reste, sans s\'entre-dévorer : pas de victime', () {
+      final s = startedGame(
+        engine,
+        [
+          ('Lg', RoleId.loupGarou),
+          ('Lb', RoleId.loupBlanc),
+          ('V1', RoleId.simpleVillageois),
+          ('V2', RoleId.simpleVillageois),
+        ],
+        settings:
+            settingsWith({SettingId.allowWerewolfToKillThemselves: false}),
+      );
+      for (final name in ['V1', 'V2']) {
+        s.named(name)
+          ..alive = false
+          ..deathCause = DeathCause.vote;
+      }
+      engine.skipTo(s, GamePhase.nightLoups);
+      expect(LegalChoices.loupsTargets(s), isEmpty);
+      engine.setLoupsVictim(s, null);
+      engine.finishNight(s);
+      expect(s.deathsThisWave, isEmpty);
+      expect(engine.checkWinCondition(s), isNull);
+    });
+  });
+
+  group('Réglage « l\'Ancien tué par un villageois »', () {
+    GameState ancienPoisoned(bool anyVillager) {
+      final s = startedGame(
+        engine,
+        [
+          ('Anc', RoleId.ancien),
+          ('Sor', RoleId.sorciere),
+          ('Voy', RoleId.voyante),
+          ('Lg', RoleId.loupGarou),
+          ('Lg2', RoleId.loupGarou),
+          for (var i = 1; i <= 5; i++) ('V$i', RoleId.simpleVillageois),
+        ],
+        settings: settingsWith(
+            {SettingId.ancienPowerLossByAnyVillager: anyVillager}),
+      );
+      engine.skipTo(s, GamePhase.nightLoups);
+      engine.setLoupsVictim(s, s.idOf('V1'));
+      engine.skipTo(s, GamePhase.nightSorciere);
+      engine.resolveSorciere(s, poisonTargetId: s.idOf('Anc'));
+      engine.finishNight(s);
+      return s;
+    }
+
+    test('activé (par défaut) : empoisonné, il coûte leurs pouvoirs', () {
+      expect(GameSettings().ancienPowerLossByAnyVillager, isTrue);
+      final s = ancienPoisoned(true);
+      expect(s.named('Voy').role, RoleId.simpleVillageois);
+      engine.confirmDayReveal(s);
+      expect(s.phase, GamePhase.villagePowerLoss);
+    });
+
+    test('abattu par le Chasseur : idem', () {
+      final s = startedGame(engine, [
+        ('Anc', RoleId.ancien),
+        ('Chas', RoleId.chasseur),
+        ('Voy', RoleId.voyante),
+        ('Lg', RoleId.loupGarou),
+        ('Lg2', RoleId.loupGarou),
+        for (var i = 1; i <= 5; i++) ('V$i', RoleId.simpleVillageois),
+      ]);
+      engine.skipTo(s, GamePhase.nightLoups);
+      engine.setLoupsVictim(s, s.idOf('Chas'));
+      engine.finishNight(s);
+      engine.confirmDayReveal(s);
+      engine.resolveChasseurRevenge(s, s.idOf('Anc'));
+      expect(s.phase, GamePhase.villagePowerLoss);
+      expect(s.named('Voy').role, RoleId.simpleVillageois);
+    });
+
+    test('désactivé : seulement s\'il est pendu', () {
+      final s = ancienPoisoned(false);
+      expect(s.named('Voy').role, RoleId.voyante);
+      expect(s.powerLossThisWave, isEmpty);
+    });
+  });
+
+  group('Sorcière', () {
+    test('voit la victime désignée même protégée, et peut gâcher sa potion',
+        () {
+      final s = startedGame(engine, [
+        ('Sor', RoleId.sorciere),
+        ('Sal', RoleId.salvateur),
+        ('Lg', RoleId.loupGarou),
+        for (var i = 1; i <= 5; i++) ('V$i', RoleId.simpleVillageois),
+      ]);
+      engine.skipTo(s, GamePhase.nightSalvateur);
+      engine.resolveSalvateur(s, s.idOf('V1'));
+      engine.skipTo(s, GamePhase.nightLoups);
+      engine.setLoupsVictim(s, s.idOf('V1'));
+      engine.skipTo(s, GamePhase.nightSorciere);
+      expect(LegalChoices.sorciereVictim(s)?.name, 'V1');
+      engine.resolveSorciere(s, useVie: true);
+      expect(s.sorciereVieUsed, isTrue, reason: 'Potion gâchée');
+      engine.finishNight(s);
+      expect(s.deathsThisWave, isEmpty);
+    });
+
+    test('ne voit pas de victime quand elle a été infectée', () {
+      final s = startedGame(engine, [
+        ('Sor', RoleId.sorciere),
+        ('Ipl', RoleId.infectPereDesLoups),
+        for (var i = 1; i <= 5; i++) ('V$i', RoleId.simpleVillageois),
+      ]);
+      engine.skipTo(s, GamePhase.nightLoups);
+      engine.setLoupsVictim(s, s.idOf('V1'));
+      engine.resolveInfectPereDesLoups(s, true);
+      engine.skipTo(s, GamePhase.nightSorciere);
+      expect(LegalChoices.sorciereVictim(s), isNull);
     });
   });
 }

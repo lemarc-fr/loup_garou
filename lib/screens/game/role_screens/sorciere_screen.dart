@@ -42,7 +42,9 @@ class _SorciereContentState extends State<_SorciereContent> {
     final loc = AppLocalizations.of(context)!;
 
     final sorciereId = state.alivePlayersWithRole(RoleId.sorciere).first.id;
-    final victim = state.tryById(state.finalNightVictimId);
+    // La victime désignée par les loups, même si le Salvateur la protège :
+    // la Sorcière ne le sait pas.
+    final victim = state.tryById(state.sorciereSeesVictimId);
     final victimIsSorciere = victim?.id == sorciereId;
     final selfSaveBlocked =
         victimIsSorciere && !state.settings.allowWitchToSaveHerself;

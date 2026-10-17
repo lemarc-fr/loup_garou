@@ -36,9 +36,8 @@ void main() {
       longest = max(longest, state.night);
     }
     // Les parties couvrent bien les différentes issues (la victoire des
-    // Amoureux, rare au hasard, a son propre test).
-    expect(winners.keys,
-        containsAll([null, Camp.village, Camp.loups, Camp.seul]),
+    // Amoureux et le match nul, rares au hasard, ont leurs propres tests).
+    expect(winners.keys, containsAll([Camp.village, Camp.loups, Camp.seul]),
         reason: 'Issues observées : $winners');
     expect(longest, lessThan(40));
   });

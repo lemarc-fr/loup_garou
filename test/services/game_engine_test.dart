@@ -505,25 +505,62 @@ void main() {
   });
 
   group('Infect Père des Loups', () {
-    test('la victime devient Loup-Garou au matin au lieu de mourir, une fois',
-        () {
-      final s = startedGame(engine, [
-        ('Ipl', RoleId.infectPereDesLoups),
-        ('Lg', RoleId.loupGarou),
-        for (var i = 1; i <= 8; i++) ('V$i', RoleId.simpleVillageois),
-      ]);
+    GameState voyanteInfected({required bool keepsPower}) {
+      final s = startedGame(
+        engine,
+        [
+          ('Ipl', RoleId.infectPereDesLoups),
+          ('Lg', RoleId.loupGarou),
+          ('Voy', RoleId.voyante),
+          for (var i = 1; i <= 7; i++) ('V$i', RoleId.simpleVillageois),
+        ],
+        settings: settingsWith({SettingId.infectedKeepsPower: keepsPower}),
+      );
       engine.skipTo(s, GamePhase.nightLoups);
-      engine.setLoupsVictim(s, s.idOf('V1'));
+      engine.setLoupsVictim(s, s.idOf('Voy'));
       engine.resolveInfectPereDesLoups(s, true);
-      expect(s.named('V1').role, RoleId.simpleVillageois,
+      expect(s.named('Voy').camp, Camp.village,
           reason: 'Mutation au matin seulement');
       engine.finishNight(s);
-
-      expect(s.deathsThisWave, isEmpty);
-      expect(s.named('V1').role, RoleId.loupGarou);
+      expect(s.deathsThisWave, isEmpty, reason: 'Infectée, pas dévorée');
+      expect(s.named('Voy').camp, Camp.loups);
       expect(s.infectPereDesLoupsUsed, isTrue);
       toNextNight(s, 'V2');
       expect(s.phaseQueue, isNot(contains(GamePhase.nightInfectPereDesLoups)));
+      return s;
+    }
+
+    test('l\'infectée garde son pouvoir (par défaut) et l\'apprend en secret',
+        () {
+      final s = voyanteInfected(keepsPower: true);
+      final voy = s.named('Voy');
+      expect(voy.role, RoleId.voyante);
+      expect(voy.infected, isTrue);
+      // Prévenue juste avant son premier réveil avec la meute, et toujours
+      // Voyante.
+      expect(s.phaseQueue, [
+        GamePhase.nightIntro,
+        GamePhase.nightVoyante,
+        GamePhase.nightGoBackToSleep,
+        GamePhase.nightInfectedReveal,
+        GamePhase.nightGoBackToSleep,
+        GamePhase.nightLoups,
+        GamePhase.nightGoBackToSleep,
+      ]);
+      engine.skipTo(s, GamePhase.nightInfectedReveal);
+      engine.confirmInfectedReveal(s);
+      expect(s.infectedRevealPendingId, isNull);
+      // Les loups ne peuvent plus la viser quand ils ne s'entre-dévorent pas.
+      expect(s.isWolfPackMember(voy), isTrue);
+    });
+
+    test('réglage désactivé : elle devient simple Loup-Garou', () {
+      final s = voyanteInfected(keepsPower: false);
+      final voy = s.named('Voy');
+      expect(voy.role, RoleId.loupGarou);
+      expect(voy.formerRole, RoleId.voyante);
+      expect(s.phaseQueue, isNot(contains(GamePhase.nightVoyante)));
+      expect(s.phaseQueue, contains(GamePhase.nightInfectedReveal));
     });
   });
 

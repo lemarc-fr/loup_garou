@@ -178,7 +178,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get roleBoucEmissaireDescription =>
-      'S\'il est éliminé par le vote du village, il peut désigner un joueur qui ne se réveillera pas lors de la nuit suivante.';
+      'Si le vote du village finit à égalité, c\'est lui qui est éliminé à la place des ex aequo. Avant de mourir, il désigne qui pourra voter le lendemain.';
 
   @override
   String get roleIdiotDuVillageName => 'L\'Idiot du Village';
@@ -399,10 +399,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get boucEmissaireTitle => 'Le Bouc Émissaire';
-
-  @override
-  String get boucEmissaireInstruction =>
-      'Tu dois désigner le joueur qui ne participera pas au prochain vote du village.';
 
   @override
   String get chasseurTitle => 'Le Chasseur';
@@ -1052,6 +1048,124 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get settingInfectCanInfectProtectedVictimDescription =>
       'Si activé, l\'Infect Père des Loups infecte la victime des loups même si le Salvateur la protège. Si désactivé, la protection empêche aussi l\'infection, et l\'Infect Père garde son pouvoir pour une autre nuit.';
+
+  @override
+  String get settingInfectedKeepsPowerLabel => 'L\'infecté garde son pouvoir';
+
+  @override
+  String get settingInfectedKeepsPowerDescription =>
+      'Si activé, le joueur infecté par l\'Infect Père rejoint la meute en gardant son rôle et son pouvoir (une Voyante infectée continue de sonder, pour les loups). Si désactivé, il devient un simple Loup-Garou.';
+
+  @override
+  String get settingMayorBreaksTiesLabel =>
+      'Égalité au vote : le maire tranche';
+
+  @override
+  String get settingMayorBreaksTiesDescription =>
+      'Si activé, quand le vote du village finit à égalité, le maire désigne lui-même qui est éliminé parmi les ex aequo. Sans maire vivant (ou si désactivé), c\'est l\'option suivante qui s\'applique. Un Bouc Émissaire vivant passe avant tout : c\'est lui qui est éliminé.';
+
+  @override
+  String get settingTieMeansNoEliminationLabel =>
+      'Égalité au vote : personne n\'est éliminé';
+
+  @override
+  String get settingTieMeansNoEliminationDescription =>
+      'Si activé, une égalité que le maire ne tranche pas n\'élimine personne ce jour-là. Si désactivé, le village revote entre les ex aequo.';
+
+  @override
+  String get settingIdiotDiesOnSecondVoteLabel =>
+      'L\'Idiot du Village n\'est gracié qu\'une fois';
+
+  @override
+  String get settingIdiotDiesOnSecondVoteDescription =>
+      'Si activé, l\'Idiot déjà démasqué meurt s\'il est de nouveau désigné par le vote. Si désactivé, il survit à chaque vote.';
+
+  @override
+  String get settingLoupBlancMustBeLastSurvivorLabel =>
+      'Le Loup Blanc empêche la victoire des loups';
+
+  @override
+  String get settingLoupBlancMustBeLastSurvivorDescription =>
+      'Si activé, tant que le Loup-Garou Blanc vit, les loups ne gagnent pas : la partie continue jusqu\'à ce qu\'il reste seul ou meure. Si désactivé, les loups gagnent dès qu\'ils sont majoritaires, et le Loup Blanc perd avec le village.';
+
+  @override
+  String get settingAncienPowerLossByAnyVillagerLabel =>
+      'L\'Ancien tué par un villageois coûte leurs pouvoirs au village';
+
+  @override
+  String get settingAncienPowerLossByAnyVillagerDescription =>
+      'Si activé, les villageois perdent leurs pouvoirs si l\'Ancien est pendu, empoisonné par la Sorcière ou abattu par le Chasseur. Si désactivé, seulement s\'il est pendu par le vote.';
+
+  @override
+  String get infectedRevealTitle => 'Infection';
+
+  @override
+  String get infectedRevealInstruction =>
+      'Les Loups-Garous t\'ont infecté(e) : tu fais désormais partie de la meute. Tu te réveilles avec eux dès cette nuit.';
+
+  @override
+  String infectedRevealKeepsPower(String role) {
+    return 'Tu gardes ton pouvoir de $role.';
+  }
+
+  @override
+  String roleInfected(String role) {
+    return '$role infecté(e)';
+  }
+
+  @override
+  String get loupsNoPossibleVictimButton =>
+      'Aucune victime possible cette nuit';
+
+  @override
+  String get boucEmissaireVotersInstruction =>
+      'Avant de mourir, désigne qui pourra voter demain : touche les joueurs pour les retirer ou les remettre.';
+
+  @override
+  String boucEmissaireConfirmVoters(int count) {
+    return 'Confirmer ($count votant(s) demain)';
+  }
+
+  @override
+  String voteRestrictedByBouc(String names) {
+    return 'Le Bouc Émissaire n\'a laissé voter aujourd\'hui que : $names.';
+  }
+
+  @override
+  String get voteTieRuleBouc =>
+      'En cas d\'égalité, c\'est le Bouc Émissaire qui est éliminé.';
+
+  @override
+  String get voteTieRuleMayor =>
+      'En cas d\'égalité, le maire désigne qui est éliminé parmi les ex aequo.';
+
+  @override
+  String get voteTieRuleNobody => 'En cas d\'égalité, personne n\'est éliminé.';
+
+  @override
+  String get voteTieRuleRunoff =>
+      'En cas d\'égalité, revotez entre les ex aequo.';
+
+  @override
+  String get voteTieButton => 'Égalité';
+
+  @override
+  String get voteTieMayorTitle => 'Égalité !';
+
+  @override
+  String voteTieMayorInstruction(String mayor) {
+    return '$mayor, maire, désigne qui est éliminé parmi les ex aequo.';
+  }
+
+  @override
+  String get voteResultTieBouc =>
+      'Égalité : le Bouc Émissaire est éliminé à la place des ex aequo.';
+
+  @override
+  String get voteResultTieMayor => 'Égalité : le maire a tranché.';
+
+  @override
+  String get voteResultTieNobody => 'Égalité : personne n\'est éliminé.';
 
   @override
   String get statsTitle => 'Statistiques';

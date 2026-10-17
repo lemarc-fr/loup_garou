@@ -31,7 +31,8 @@ abstract class GameDecisions {
   String chasseur(GameState s);
   String mayorSuccessor(GameState s);
   bool servanteTakesRole(GameState s);
-  String boucEmissaire(GameState s);
+  /// Les seuls joueurs qui pourront voter demain (au moins un).
+  Set<String> boucEmissaire(GameState s);
   VoteMode voteMode(GameState s, {required bool mayorElection});
   bool jugeBegue(GameState s);
 
@@ -42,6 +43,13 @@ abstract class GameDecisions {
 
   /// Vote collectif : résultat saisi par la table.
   String collectiveVote(GameState s, {required bool mayorElection});
+
+  /// Vote collectif du village : la table se déclare à égalité (seulement
+  /// demandé quand une règle d'égalité autre que le second tour s'applique).
+  bool collectiveTie(GameState s);
+
+  /// Le maire tranche une égalité parmi [tied].
+  String mayorTieBreak(GameState s, List<Player> tied);
 }
 
 /// Ce que chaque écran propose réellement (mêmes filtres que l'UI).
@@ -67,7 +75,8 @@ abstract final class LegalChoices {
     return s.alivePlayers.where((p) => p.id != enfant.id).toList();
   }
 
-  static Player? sorciereVictim(GameState s) => s.tryById(s.finalNightVictimId);
+  static Player? sorciereVictim(GameState s) =>
+      s.tryById(s.sorciereSeesVictimId);
 
   static bool sorciereCanSave(GameState s) {
     final victim = sorciereVictim(s);
@@ -172,7 +181,13 @@ class RandomDecisions implements GameDecisions {
   bool servanteTakesRole(GameState s) => _chance(0.5);
 
   @override
-  String boucEmissaire(GameState s) => _pick(s.alivePlayers).id;
+  Set<String> boucEmissaire(GameState s) {
+    final allowed = {
+      for (final p in s.alivePlayers)
+        if (_chance(0.7)) p.id,
+    };
+    return allowed.isEmpty ? {_pick(s.alivePlayers).id} : allowed;
+  }
 
   @override
   VoteMode voteMode(GameState s, {required bool mayorElection}) =>
@@ -189,4 +204,10 @@ class RandomDecisions implements GameDecisions {
   @override
   String collectiveVote(GameState s, {required bool mayorElection}) =>
       _pick(s.alivePlayers).id;
+
+  @override
+  bool collectiveTie(GameState s) => _chance(0.2);
+
+  @override
+  String mayorTieBreak(GameState s, List<Player> tied) => _pick(tied).id;
 }

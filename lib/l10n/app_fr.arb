@@ -208,7 +208,7 @@
   "@roleBoucEmissaireShortName": {
     "description": "Nom court du rôle Bouc Émissaire"
   },
-  "roleBoucEmissaireDescription": "S'il est éliminé par le vote du village, il peut désigner un joueur qui ne se réveillera pas lors de la nuit suivante.",
+  "roleBoucEmissaireDescription": "Si le vote du village finit à égalité, c'est lui qui est éliminé à la place des ex aequo. Avant de mourir, il désigne qui pourra voter le lendemain.",
   "@roleBoucEmissaireDescription": {
     "description": "Description du rôle Bouc Émissaire"
   },
@@ -483,10 +483,6 @@
   "boucEmissaireTitle": "Le Bouc Émissaire",
   "@boucEmissaireTitle": {
     "description": "Titre de l'écran du Bouc Émissaire"
-  },
-  "boucEmissaireInstruction": "Tu dois désigner le joueur qui ne participera pas au prochain vote du village.",
-  "@boucEmissaireInstruction": {
-    "description": "Instruction d'action pour le Bouc Émissaire"
   },
   "chasseurTitle": "Le Chasseur",
   "@chasseurTitle": {
@@ -1285,6 +1281,151 @@
   "settingInfectCanInfectProtectedVictimDescription": "Si activé, l'Infect Père des Loups infecte la victime des loups même si le Salvateur la protège. Si désactivé, la protection empêche aussi l'infection, et l'Infect Père garde son pouvoir pour une autre nuit.",
   "@settingInfectCanInfectProtectedVictimDescription": {
     "description": "Description de l'option infectCanInfectProtectedVictim"
+  },
+  "settingInfectedKeepsPowerLabel": "L'infecté garde son pouvoir",
+  "@settingInfectedKeepsPowerLabel": {
+    "description": "Libellé de l'option infectedKeepsPower"
+  },
+  "settingInfectedKeepsPowerDescription": "Si activé, le joueur infecté par l'Infect Père rejoint la meute en gardant son rôle et son pouvoir (une Voyante infectée continue de sonder, pour les loups). Si désactivé, il devient un simple Loup-Garou.",
+  "@settingInfectedKeepsPowerDescription": {
+    "description": "Description de l'option infectedKeepsPower"
+  },
+  "settingMayorBreaksTiesLabel": "Égalité au vote : le maire tranche",
+  "@settingMayorBreaksTiesLabel": {
+    "description": "Libellé de l'option mayorBreaksTies"
+  },
+  "settingMayorBreaksTiesDescription": "Si activé, quand le vote du village finit à égalité, le maire désigne lui-même qui est éliminé parmi les ex aequo. Sans maire vivant (ou si désactivé), c'est l'option suivante qui s'applique. Un Bouc Émissaire vivant passe avant tout : c'est lui qui est éliminé.",
+  "@settingMayorBreaksTiesDescription": {
+    "description": "Description de l'option mayorBreaksTies"
+  },
+  "settingTieMeansNoEliminationLabel": "Égalité au vote : personne n'est éliminé",
+  "@settingTieMeansNoEliminationLabel": {
+    "description": "Libellé de l'option tieMeansNoElimination"
+  },
+  "settingTieMeansNoEliminationDescription": "Si activé, une égalité que le maire ne tranche pas n'élimine personne ce jour-là. Si désactivé, le village revote entre les ex aequo.",
+  "@settingTieMeansNoEliminationDescription": {
+    "description": "Description de l'option tieMeansNoElimination"
+  },
+  "settingIdiotDiesOnSecondVoteLabel": "L'Idiot du Village n'est gracié qu'une fois",
+  "@settingIdiotDiesOnSecondVoteLabel": {
+    "description": "Libellé de l'option idiotDiesOnSecondVote"
+  },
+  "settingIdiotDiesOnSecondVoteDescription": "Si activé, l'Idiot déjà démasqué meurt s'il est de nouveau désigné par le vote. Si désactivé, il survit à chaque vote.",
+  "@settingIdiotDiesOnSecondVoteDescription": {
+    "description": "Description de l'option idiotDiesOnSecondVote"
+  },
+  "settingLoupBlancMustBeLastSurvivorLabel": "Le Loup Blanc empêche la victoire des loups",
+  "@settingLoupBlancMustBeLastSurvivorLabel": {
+    "description": "Libellé de l'option loupBlancMustBeLastSurvivor"
+  },
+  "settingLoupBlancMustBeLastSurvivorDescription": "Si activé, tant que le Loup-Garou Blanc vit, les loups ne gagnent pas : la partie continue jusqu'à ce qu'il reste seul ou meure. Si désactivé, les loups gagnent dès qu'ils sont majoritaires, et le Loup Blanc perd avec le village.",
+  "@settingLoupBlancMustBeLastSurvivorDescription": {
+    "description": "Description de l'option loupBlancMustBeLastSurvivor"
+  },
+  "settingAncienPowerLossByAnyVillagerLabel": "L'Ancien tué par un villageois coûte leurs pouvoirs au village",
+  "@settingAncienPowerLossByAnyVillagerLabel": {
+    "description": "Libellé de l'option ancienPowerLossByAnyVillager"
+  },
+  "settingAncienPowerLossByAnyVillagerDescription": "Si activé, les villageois perdent leurs pouvoirs si l'Ancien est pendu, empoisonné par la Sorcière ou abattu par le Chasseur. Si désactivé, seulement s'il est pendu par le vote.",
+  "@settingAncienPowerLossByAnyVillagerDescription": {
+    "description": "Description de l'option ancienPowerLossByAnyVillager"
+  },
+  "infectedRevealTitle": "Infection",
+  "@infectedRevealTitle": {
+    "description": "Titre de l'écran privé qui apprend à un joueur qu'il a été infecté"
+  },
+  "infectedRevealInstruction": "Les Loups-Garous t'ont infecté(e) : tu fais désormais partie de la meute. Tu te réveilles avec eux dès cette nuit.",
+  "@infectedRevealInstruction": {
+    "description": "Message privé au joueur infecté"
+  },
+  "infectedRevealKeepsPower": "Tu gardes ton pouvoir de {role}.",
+  "@infectedRevealKeepsPower": {
+    "description": "Ajout quand l'infecté garde son pouvoir",
+    "placeholders": {
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "roleInfected": "{role} infecté(e)",
+  "@roleInfected": {
+    "description": "Rôle d'un joueur infecté, en fin de partie ou à sa mort",
+    "placeholders": {
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "loupsNoPossibleVictimButton": "Aucune victime possible cette nuit",
+  "@loupsNoPossibleVictimButton": {
+    "description": "Bouton des Loups quand il ne reste que des loups à dévorer et qu'ils ne peuvent pas se dévorer entre eux"
+  },
+  "boucEmissaireVotersInstruction": "Avant de mourir, désigne qui pourra voter demain : touche les joueurs pour les retirer ou les remettre.",
+  "@boucEmissaireVotersInstruction": {
+    "description": "Consigne du Bouc Émissaire, éliminé à la place des ex aequo"
+  },
+  "boucEmissaireConfirmVoters": "Confirmer ({count} votant(s) demain)",
+  "@boucEmissaireConfirmVoters": {
+    "description": "Bouton de validation du Bouc Émissaire",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "voteRestrictedByBouc": "Le Bouc Émissaire n'a laissé voter aujourd'hui que : {names}.",
+  "@voteRestrictedByBouc": {
+    "description": "Rappel avant le vote du village quand le Bouc Émissaire a restreint les votants",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "voteTieRuleBouc": "En cas d'égalité, c'est le Bouc Émissaire qui est éliminé.",
+  "@voteTieRuleBouc": {
+    "description": "Rappel de la règle d'égalité"
+  },
+  "voteTieRuleMayor": "En cas d'égalité, le maire désigne qui est éliminé parmi les ex aequo.",
+  "@voteTieRuleMayor": {
+    "description": "Rappel de la règle d'égalité"
+  },
+  "voteTieRuleNobody": "En cas d'égalité, personne n'est éliminé.",
+  "@voteTieRuleNobody": {
+    "description": "Rappel de la règle d'égalité"
+  },
+  "voteTieRuleRunoff": "En cas d'égalité, revotez entre les ex aequo.",
+  "@voteTieRuleRunoff": {
+    "description": "Rappel de la règle d'égalité"
+  },
+  "voteTieButton": "Égalité",
+  "@voteTieButton": {
+    "description": "Bouton du vote collectif quand la table est à égalité"
+  },
+  "voteTieMayorTitle": "Égalité !",
+  "@voteTieMayorTitle": {
+    "description": "Titre de l'écran où le maire départage"
+  },
+  "voteTieMayorInstruction": "{mayor}, maire, désigne qui est éliminé parmi les ex aequo.",
+  "@voteTieMayorInstruction": {
+    "description": "Consigne au maire qui départage",
+    "placeholders": {
+      "mayor": {
+        "type": "String"
+      }
+    }
+  },
+  "voteResultTieBouc": "Égalité : le Bouc Émissaire est éliminé à la place des ex aequo.",
+  "@voteResultTieBouc": {
+    "description": "Résultat d'un vote à égalité"
+  },
+  "voteResultTieMayor": "Égalité : le maire a tranché.",
+  "@voteResultTieMayor": {
+    "description": "Résultat d'un vote à égalité"
+  },
+  "voteResultTieNobody": "Égalité : personne n'est éliminé.",
+  "@voteResultTieNobody": {
+    "description": "Résultat d'un vote à égalité"
   },
   "statsTitle": "Statistiques",
   "@statsTitle": {

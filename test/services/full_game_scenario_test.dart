@@ -59,6 +59,7 @@ void main() {
           GamePhase.servanteDevouee,
           GamePhase.boucEmissaire,
           GamePhase.idiotduvillageCivicRightLoss,
+          GamePhase.nightInfectedReveal,
         ]));
   });
 }

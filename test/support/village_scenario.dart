@@ -12,7 +12,8 @@ import 'game_fixtures.dart';
 /// Idiot gracié, malédiction du Corbeau, Juge Bègue, mutation publique de
 /// l'Enfant Sauvage, Servante Dévouée, Bouc Émissaire, Loup Blanc, Grand
 /// Méchant Loup, infection, flair du Renard, ours du Montreur, et quatre
-/// successions de maire. Le village gagne au jour 7.
+/// successions de maire, égalité réglée par le Bouc Émissaire, infectée qui
+/// garde sa carte. Le village gagne au jour 7.
 ///
 /// Partagée par le test du moteur (test/services/full_game_scenario_test.dart)
 /// et celui de l'interface (test/widgets/full_game_ui_test.dart) : les deux
@@ -86,17 +87,22 @@ abstract final class VillageScenario {
       GamePhase.nightSorciere,
       GamePhase.nightGoBackToSleep,
     ],
-    // Nina (Voyante grâce à la Servante) dort, désignée par le Bouc ; le
-    // Renard a perdu son flair, la Sorcière ses deux potions.
+    // Nina est Voyante grâce à la Servante ; le Renard a perdu son flair,
+    // la Sorcière ses deux potions.
     3: [
       GamePhase.nightIntro,
+      GamePhase.nightVoyante,
+      GamePhase.nightGoBackToSleep,
       GamePhase.nightLoups,
       GamePhase.nightInfectPereDesLoups,
       GamePhase.nightGoBackToSleep,
     ],
+    // Emma, infectée la nuit 3, l'apprend avant de rejoindre la meute.
     4: [
       GamePhase.nightIntro,
       GamePhase.nightVoyante,
+      GamePhase.nightGoBackToSleep,
+      GamePhase.nightInfectedReveal,
       GamePhase.nightGoBackToSleep,
       GamePhase.nightLoups,
       GamePhase.nightGoBackToSleep,
@@ -182,10 +188,21 @@ abstract final class VillageScenario {
           expect(s.deathsThisWave, isEmpty);
           expect(s.idiotDuVillageRevealId, p('Inès').id);
         } else {
-          // Jour 2 : le premier vote est rejoué à la demande du Juge.
+          // Jour 2 : le premier vote est rejoué à la demande du Juge, et le
+          // second finit à égalité : le Bouc Émissaire meurt à leur place.
           final name = s.voteReplayPending ? voted.first : voted.last;
           expect(s.namesOf(s.deathsThisWave), [name]);
+          expect(s.lastVoteTie,
+              name == 'Rose' ? VoteTieRule.boucEmissaire : isNull);
         }
+      case GamePhase.boucEmissaire:
+        expect(s.boucEmissaireChoiceNeededId, p('Rose').id);
+      case GamePhase.villageVote when s.day == 3:
+        expect(s.voteRestrictedByBouc, isTrue);
+        expect(s.eligibleVoters.map((v) => v.name),
+            ['Chloé', 'Hugo', 'Léo', 'Nina', 'Oscar']);
+      case GamePhase.nightInfectedReveal:
+        expect(s.infectedRevealPendingId, p('Emma').id);
       case GamePhase.chasseurRevange:
         expect(s.chasseurRevengeTargetId, p('David').id);
         expect(s.day, 2);
@@ -230,7 +247,11 @@ abstract final class VillageScenario {
         expect(s.renardPowerLost, isTrue, reason: 'Aucun loup près d\'Emma');
         expect(s.wolfPackIntact, isFalse);
       case 3:
-        expect(p('Emma').role, RoleId.loupGarou, reason: 'Infectée');
+        // Infectée, elle rejoint la meute en gardant sa carte (réglage
+        // par défaut).
+        expect(p('Emma').infected, isTrue);
+        expect(p('Emma').camp, Camp.loups);
+        expect(p('Emma').role, RoleId.cupidon);
         expect(s.infectPereDesLoupsUsed, isTrue);
       case 4:
         expect(s.namesOf(s.disenfranchisedPlayerIds), ['Inès']);
@@ -255,7 +276,8 @@ abstract final class VillageScenario {
     // Rôles en fin de partie : mutations, infection, Servante, perte des
     // pouvoirs.
     expect(s.named('Jules').role, RoleId.loupGarou);
-    expect(s.named('Emma').role, RoleId.loupGarou);
+    expect(s.named('Emma').role, RoleId.cupidon);
+    expect(s.named('Emma').camp, Camp.loups);
     expect(s.named('Nina').role, RoleId.simpleVillageois);
     expect(s.named('Léo').role, RoleId.simpleVillageois);
     expect(s.named('Hugo').role, RoleId.ancien);
@@ -339,11 +361,21 @@ class VillageScenarioDecisions implements GameDecisions {
   bool servanteTakesRole(GameState s) => true;
 
   @override
-  String boucEmissaire(GameState s) => _id(s, 'Nina');
+  Set<String> boucEmissaire(GameState s) => {
+        for (final name in const ['Chloé', 'Hugo', 'Léo', 'Nina', 'Oscar'])
+          _id(s, name),
+      };
+
+  @override
+  bool collectiveTie(GameState s) => false;
+
+  @override
+  String mayorTieBreak(GameState s, List<Player> tied) =>
+      throw StateError("Pas d'égalité tranchée par le maire");
 
   @override
   VoteMode voteMode(GameState s, {required bool mayorElection}) =>
-      !mayorElection && (s.day == 3 || s.day == 6)
+      !mayorElection && s.day == 6
           ? VoteMode.collective
           : VoteMode.secret;
 
@@ -352,7 +384,7 @@ class VillageScenarioDecisions implements GameDecisions {
 
   @override
   String collectiveVote(GameState s, {required bool mayorElection}) =>
-      _id(s, s.day == 3 ? 'Quentin' : 'Manon');
+      _id(s, 'Manon');
 
   @override
   String secretVote(GameState s, Player voter, List<Player> candidates,
@@ -362,6 +394,7 @@ class VillageScenarioDecisions implements GameDecisions {
         : switch (s.day) {
             1 => _day1,
             2 => s.voteReplayPending ? _day2a : _day2b,
+            3 => _day3,
             4 => _day4,
             5 => _day5,
             7 => _day7,
@@ -401,13 +434,18 @@ class VillageScenarioDecisions implements GameDecisions {
     'Hugo': 'Rose', 'Léo': 'Rose', 'Nina': 'Rose',
   };
 
-  /// Vote rejoué (Juge Bègue) : Rose 6.
+  /// Vote rejoué (Juge Bègue) : Jules 4, Manon 4, Hugo 3. Égalité : Rose,
+  /// le Bouc Émissaire, meurt à leur place.
   static const _day2b = {
-    'Manon': 'Rose', 'Jules': 'Rose', 'Quentin': 'Rose', 'Hugo': 'Rose',
-    'Oscar': 'Rose', //
-    'Chloé': 'Jules', 'Léo': 'Jules', //
-    'Emma': 'Manon', 'Nina': 'Manon', //
-    'Rose': 'Hugo',
+    'Chloé': 'Jules', 'Léo': 'Jules', 'Oscar': 'Jules', //
+    'Emma': 'Manon', 'Nina': 'Manon', 'Hugo': 'Manon', 'Rose': 'Manon', //
+    'Manon': 'Hugo', 'Jules': 'Hugo', 'Quentin': 'Hugo',
+  };
+
+  /// Seuls votent ceux qu'a désignés le Bouc Émissaire : Quentin 6.
+  static const _day3 = {
+    'Chloé': 'Quentin', 'Hugo': 'Quentin', 'Léo': 'Quentin',
+    'Nina': 'Quentin', 'Oscar': 'Quentin',
   };
 
   /// Hugo, l'Ancien et maire, est pendu : 4 contre 3.

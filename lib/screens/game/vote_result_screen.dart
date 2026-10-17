@@ -36,6 +36,21 @@ class VoteResultScreen extends StatelessWidget {
                 style: theme.textTheme.headlineMedium,
                 textAlign: TextAlign.center,
               ),
+              // Égalité : comment elle a été réglée.
+              if (state.lastVoteTie case final tie?) ...[
+                const SizedBox(height: 12),
+                Text(
+                  switch (tie) {
+                    VoteTieRule.boucEmissaire => loc.voteResultTieBouc,
+                    VoteTieRule.mayorDecides => loc.voteResultTieMayor,
+                    VoteTieRule.nobodyEliminated ||
+                    VoteTieRule.runoff =>
+                      loc.voteResultTieNobody,
+                  },
+                  style: theme.textTheme.bodyLarge,
+                  textAlign: TextAlign.center,
+                ),
+              ],
               const SizedBox(height: 24),
               Expanded(
                 child: ListView(

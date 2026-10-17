@@ -234,6 +234,10 @@ class UiGameDriver {
       case GamePhase.nightEnfantSauvageMutation:
         await passTo(s.byId(s.enfantSauvageNightMutationId!).name);
         await tapButton(loc.goBackToSleepButton);
+      case GamePhase.nightInfectedReveal:
+        await passTo(s.byId(s.infectedRevealPendingId!).name);
+        expectShown(loc.infectedRevealInstruction);
+        await tapButton(loc.goBackToSleepButton);
       case GamePhase.nightSalvateur:
         await passTo(loc.roleName(RoleId.salvateur));
         await tapPlayer(d.salvateur(s));
@@ -245,7 +249,11 @@ class UiGameDriver {
         await tapButton(loc.voyanteDoneButton);
       case GamePhase.nightLoups:
         await passTo(loc.roleLoupGarouPlural);
-        await tapPlayer(d.loups(s));
+        if (LegalChoices.loupsTargets(s).isEmpty) {
+          await tapButton(loc.loupsNoPossibleVictimButton);
+        } else {
+          await tapPlayer(d.loups(s));
+        }
       case GamePhase.nightLoupBlanc:
         await passTo(loc.roleName(RoleId.loupBlanc));
         await _playerOrSkip(d.loupBlanc(s));
@@ -334,7 +342,12 @@ class UiGameDriver {
             ? loc.servanteDevoueeTakeRoleButton
             : loc.servanteDevoueeKeepRoleButton);
       case GamePhase.boucEmissaire:
-        await tapPlayer(d.boucEmissaire(s));
+        // Tout le monde est coché au départ : il retire les exclus.
+        final allowed = d.boucEmissaire(s);
+        for (final p in [...s.alivePlayers]) {
+          if (!allowed.contains(p.id)) await tapPlayer(p.id);
+        }
+        await tapButton(loc.boucEmissaireConfirmVoters(allowed.length));
       case GamePhase.idiotduvillageCivicRightLoss:
         expectShown(loc.idiotDuVillageRevealInstruction(
             s.byId(s.idiotDuVillageRevealId!).name));
@@ -363,7 +376,19 @@ class UiGameDriver {
 
   /// Même déroulé que EngineRunner._vote, mais en passant le téléphone.
   Future<void> _vote({required bool mayorElection}) async {
+    final tieRule =
+        mayorElection ? VoteTieRule.runoff : gp.villageVoteTieRule;
     if (s.voteMode == VoteMode.collective) {
+      if (tieRule != VoteTieRule.runoff && d.collectiveTie(s)) {
+        await tapText(loc.voteTieButton);
+        if (tieRule == VoteTieRule.mayorDecides) {
+          final choice = s.byId(d.mayorTieBreak(s, s.alivePlayers));
+          await tapPlayer(choice.id);
+          await tapButton(
+              loc.collectiveVoteConfirmEliminationButton(choice.name));
+        }
+        return;
+      }
       final target = s.byId(d.collectiveVote(s, mayorElection: mayorElection));
       await tapPlayer(target.id);
       await tapButton(mayorElection
@@ -384,11 +409,18 @@ class UiGameDriver {
         votes[voter.id] = target;
         await tapPlayer(target);
       }
+      // Élu, ou égalité réglée par le Bouc ou « personne n'est éliminé ».
       if (s.phase != phase) return;
       final tally = gp.tallyVotes(votes,
           candidates: candidates.map((c) => c.id));
       expect(tally.isTie, isTrue, reason: 'Vote resté sans résultat');
       candidates = tally.tiedCandidates.map(s.byId).toList();
+      if (tieRule == VoteTieRule.mayorDecides) {
+        // Écran public : le maire désigne l'éliminé parmi les ex aequo.
+        expectShown(loc.voteTieMayorInstruction(s.byId(s.mayorId!).name));
+        await tapPlayer(d.mayorTieBreak(s, candidates));
+        return;
+      }
     }
     fail('Égalités sans fin au vote');
   }

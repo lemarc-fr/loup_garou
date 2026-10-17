@@ -27,6 +27,9 @@ enum GamePhase {
   nightLoversReveal,
   nightEnfantSauvage,
   nightEnfantSauvageMutation,
+  // Le joueur infecté la nuit précédente l'apprend en secret, juste avant
+  // de se réveiller pour la première fois avec la meute.
+  nightInfectedReveal,
   nightSalvateur,
   nightVoyante,
   nightLoups,
@@ -78,6 +81,22 @@ enum FollowUpOrigin { nightDeaths, voteDeaths }
 /// collectif (toute la table vote ensemble, le résultat est saisi une fois).
 enum VoteMode { secret, collective }
 
+/// Ce qui règle une égalité au vote du village (voir
+/// GameEngine.villageVoteTieRule).
+enum VoteTieRule {
+  /// Le Bouc Émissaire, vivant, est éliminé à la place des ex aequo.
+  boucEmissaire,
+
+  /// Le maire désigne l'éliminé parmi les ex aequo.
+  mayorDecides,
+
+  /// Personne n'est éliminé ce jour-là.
+  nobodyEliminated,
+
+  /// Le village revote entre les ex aequo.
+  runoff,
+}
+
 /// Un villageois qui vient de perdre son pouvoir suite à l'exécution
 /// erronée de l'Ancien. On garde son ancien rôle pour l'animation de
 /// révélation, même si Player.role a déjà basculé sur simpleVillageois.
@@ -122,6 +141,9 @@ class GameState {
   String? grandMechantLoupSecondVictimId;
   bool infectPereDesLoupsUsed = false;
   String? infectedTonightId;
+  /// Joueur infecté qui ne le sait pas encore : il l'apprend en secret au
+  /// début de la nuit suivante.
+  String? infectedRevealPendingId;
   String? loupBlancVictimId;
 
   // --- Protections / substitutions ---
@@ -150,8 +172,15 @@ class GameState {
   bool voteReplayPending = false;
 
   // --- Bouc Émissaire / Idiot du Village ---
-  String? skippedNextNightPlayerId;
+  /// Les seuls joueurs autorisés à voter au jour [boucVoteRestrictionDay],
+  /// désignés par le Bouc Émissaire mort à la place des ex aequo.
+  Set<String> boucAllowedVoterIds = {};
+  int? boucVoteRestrictionDay;
   Set<String> disenfranchisedPlayerIds = {};
+
+  /// Comment s'est réglée l'égalité du dernier vote du village (null : pas
+  /// d'égalité), pour l'annoncer au résultat.
+  VoteTieRule? lastVoteTie;
 
   // --- Morts de la vague en cours (nuit ou vote), pas encore révélées ---
   List<String> deathsThisWave = [];
@@ -187,12 +216,32 @@ class GameState {
   bool hasAliveRole(RoleId role) => alivePlayersWithRole(role).isNotEmpty;
   bool gameHasRole(RoleId role) => players.any((p) => p.role == role);
 
-  /// Joueurs vivants pouvant participer aux votes. L'Idiot du Village,
-  /// une fois démasqué, en a perdu le droit — mais reste éligible en tant
-  /// que candidat.
-  List<Player> get eligibleVoters => alivePlayers
-      .where((p) => !disenfranchisedPlayerIds.contains(p.id))
-      .toList();
+  /// Joueurs vivants pouvant participer au vote du village. L'Idiot du
+  /// Village, une fois démasqué, en a perdu le droit — mais reste éligible
+  /// en tant que candidat. Le lendemain de sa mort, le Bouc Émissaire a pu
+  /// restreindre les votants (sauf s'ils sont tous morts entre-temps).
+  List<Player> get eligibleVoters {
+    final voters = alivePlayers
+        .where((p) => !disenfranchisedPlayerIds.contains(p.id))
+        .toList();
+    if (boucVoteRestrictionDay != day) return voters;
+    final allowed =
+        voters.where((p) => boucAllowedVoterIds.contains(p.id)).toList();
+    return allowed.isEmpty ? voters : allowed;
+  }
+
+  /// Vrai si le Bouc Émissaire a restreint les votants aujourd'hui.
+  bool get voteRestrictedByBouc =>
+      boucVoteRestrictionDay == day &&
+      eligibleVoters.length < alivePlayers
+          .where((p) => !disenfranchisedPlayerIds.contains(p.id))
+          .length;
+
+  /// La victime que la Sorcière voit à son réveil : celle désignée par les
+  /// loups, même protégée par le Salvateur (elle ne le sait pas et peut
+  /// gaspiller sa potion), mais pas une victime infectée, qui ne meurt pas.
+  String? get sorciereSeesVictimId =>
+      loupsVictimId == infectedTonightId ? null : loupsVictimId;
 
   List<Player> get aliveWolves =>
       alivePlayers.where((p) => p.camp == Camp.loups).toList();

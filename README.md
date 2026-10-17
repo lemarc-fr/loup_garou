@@ -22,7 +22,7 @@ imported by the app; unused ones are removed.
 | `flutter_svg` | Draws `.svg` images (the howling wolf, `assets/images/wolf_howling.svg`). Flutter cannot show SVG on its own. | `lib/widgets/night_scene.dart` |
 | `provider` | Shares the game state (`GameProvider`) and the settings (`SettingsProvider`) with every screen, and rebuilds screens when they change. | almost everywhere |
 | `shared_preferences` | Saves small data on the phone: settings, language and player statistics. | `lib/services/storage_service.dart` |
-| `google_fonts` | The two fonts of the "night" theme: *Cinzel* (titles) and *Work Sans* (text). | `lib/theme/app_theme.dart` |
+| `google_fonts` | The two fonts of the "night" theme: *Cinzel* (titles) and *Work Sans* (text). The files used are bundled in `assets/google_fonts/` (with their OFL licenses) and runtime downloads are disabled, so the app works offline from the first launch. A new weight must be added there (`test/theme/bundled_fonts_test.dart` fails otherwise). | `lib/theme/app_theme.dart`, `lib/main.dart` |
 | `uuid` | Unique ids for the players of a game. | `lib/services/game_engine.dart` |
 | `intl` | Required by the generated translation code (plurals, French/English rules). | `lib/l10n/app_localizations*.dart` (generated) |
 | `audioplayers` | Plays the narrator's voice, the night music and sound effects (`assets/audio/`). | `lib/services/sound_service.dart` |

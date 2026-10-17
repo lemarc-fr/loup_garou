@@ -247,7 +247,8 @@ class GameProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setLoupsVictim(String victimId) {
+  /// [victimId] == null : aucune victime possible (voir LoupsScreen).
+  void setLoupsVictim(String? victimId) {
     engine.setLoupsVictim(state!, victimId);
     notifyListeners();
   }
@@ -354,8 +355,10 @@ class GameProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setBoucEmissaireTarget(String skippedPlayerId) {
-    engine.resolveBoucEmissaireChoice(state!, skippedPlayerId);
+  /// Les seuls joueurs qui pourront voter demain, désignés par le Bouc
+  /// Émissaire.
+  void setBoucEmissaireVoters(Set<String> allowedVoterIds) {
+    engine.resolveBoucEmissaireChoice(state!, allowedVoterIds);
     notifyListeners();
   }
 
@@ -371,6 +374,11 @@ class GameProvider extends ChangeNotifier {
 
   void confirmEnfantSauvageNightMutation() {
     engine.confirmEnfantSauvageNightMutation(state!);
+    notifyListeners();
+  }
+
+  void confirmInfectedReveal() {
+    engine.confirmInfectedReveal(state!);
     notifyListeners();
   }
 
@@ -417,6 +425,16 @@ class GameProvider extends ChangeNotifier {
 
   void resolveVillageVote(String eliminatedId) {
     engine.resolveVillageVote(state!, eliminatedId);
+    notifyListeners();
+  }
+
+  /// Ce qui règle une égalité au vote du village (Bouc, maire...).
+  VoteTieRule get villageVoteTieRule => engine.villageVoteTieRule(state!);
+
+  /// Égalité au vote du village. [mayorChoiceId] : l'ex aequo désigné par
+  /// le maire quand c'est lui qui tranche.
+  void resolveVillageVoteTie({String? mayorChoiceId}) {
+    engine.resolveVillageVoteTie(state!, mayorChoiceId: mayorChoiceId);
     notifyListeners();
   }
 
