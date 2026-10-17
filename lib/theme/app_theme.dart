@@ -108,7 +108,6 @@ class AppTheme {
   }
 
   static TextTheme _textTheme(Color base) {
-    GoogleFonts.cinzelTextTheme();
     return _workSansTextTheme()
         .copyWith(
           displayLarge: GoogleFonts.cinzel(

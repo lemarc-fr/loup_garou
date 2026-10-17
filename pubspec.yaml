@@ -60,6 +60,11 @@ flutter:
     - assets/audio/voice/en/
     - assets/audio/music/
     - assets/audio/sfx/
+    # Polices embarquées (Cinzel, Work Sans) : google_fonts les prend ici au
+    # lieu de les télécharger au premier lancement. Une graisse utilisée par
+    # le thème mais absente d'ici fait échouer
+    # test/theme/bundled_fonts_test.dart.
+    - assets/google_fonts/
 
 flutter_launcher_icons:
   android: true
