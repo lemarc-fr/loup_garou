@@ -4,3 +4,6 @@ CORRIGE LES COULEURS : beaucoup de texte illisile à cause des couleurs.
 
 Error: google_fonts was unable to load font Cinzel-Black because the following exception occurred:
 Exception: GoogleFonts.config.allowRuntimeFetching is false but font Cinzel-Black was not found in the application assets. Ensure Cinzel-Black.ttf exists in a folder that is included in your pubspec's assets.
+
+
+loup garou : le hurlements pendant le tour des loups garous pas pendant la nuit
