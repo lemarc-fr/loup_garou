@@ -1,0 +1,46 @@
+# Captures d'écran de l'App Store (iPhone 6,3" et iPad 13", en français et en anglais), prises sur
+# simulateur par .github/scripts/screenshots.sh pendant la partie de
+# integration_test/screenshots_test.dart.
+# Les captures sont dans l'artefact « app-store-screenshots » de l'exécution.
+name: Screenshots
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: screenshots-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: 3.47.7
+
+jobs:
+  screenshots:
+    runs-on: macos-15
+    timeout-minutes: 90
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      # Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Take screenshots
+        run: .github/scripts/screenshots.sh screenshots
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: app-store-screenshots
+          path: screenshots
+          if-no-files-found: warn

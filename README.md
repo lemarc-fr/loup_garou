@@ -33,6 +33,7 @@ imported by the app; unused ones are removed.
 |---|---|
 | `flutter_test` (SDK) | Runs the tests in `test/` (`flutter test`). |
 | `integration_test` (SDK) | Runs the full-game test in `integration_test/` on a device. |
+| `flutter_driver` (SDK) | Receives the screenshots taken on the device by `integration_test/screenshots_test.dart` (`test_driver/screenshots.dart`). |
 | `flutter_lints` | The code rules checked by `flutter analyze`. |
 | `flutter_launcher_icons` | Generates the app icon for Android and iOS from `assets/icon/icon.png` (`dart run flutter_launcher_icons`). |
 
@@ -122,7 +123,7 @@ voice files, the music and the sound effects.
 ```sh
 flutter test                                 # everything (~2 min)
 flutter test test/services                   # game rules only (~15 s)
-flutter test integration_test -d <device>    # full game on a phone/emulator
+flutter test integration_test/full_game_flow_test.dart -d <device>   # full game on a phone/emulator
 ```
 
 | Where | What it checks |
@@ -140,3 +141,20 @@ cards), `game_decisions.dart` (player choices, scripted or random),
 `ui_game_driver.dart` (plays the same choices by tapping the screens) and
 `village_scenario.dart` (the 18-player game). Everything random is seeded, so a
 failing game replays exactly.
+
+## Screenshots
+
+`integration_test/screenshots_test.dart` replays the 18-player game and
+captures 15 screens (home, setup, night roles, votes, end of game), in French
+and in English. `UiGameDriver.onScreen` names each screen; edit the `screens`
+list to choose them.
+
+```sh
+SCREENSHOT_DIR=screenshots flutter drive -d <device>   --driver=test_driver/screenshots.dart   --target=integration_test/screenshots_test.dart
+```
+
+The **Screenshots** workflow (`.github/workflows/screenshots.yml`) runs it on
+an iPhone 6.3" and an iPad 13" simulator through
+`.github/scripts/screenshots.sh`, at sizes App Store Connect accepts. The
+files are in the run's `app-store-screenshots` artifact
+(`<iphone|ipad>/<fr|en>/NN-screen.png`).

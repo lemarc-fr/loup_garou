@@ -38,6 +38,9 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   integration_test:
     sdk: flutter
+  # Reçoit les captures d'écran de integration_test/screenshots_test.dart
+  flutter_driver:
+    sdk: flutter
   flutter_launcher_icons: ^0.14.4
 
 flutter:

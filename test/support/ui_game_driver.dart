@@ -27,10 +27,17 @@ class UiGameDriver {
   /// Appelé avant chaque étape jouée, pour des vérifications propres au test.
   final void Function(GameState s)? beforeStep;
 
+  /// Appelé sur chaque écran à montrer, une fois affiché (captures d'écran,
+  /// voir integration_test/screenshots_test.dart). Nommé d'après sa phase :
+  /// « nightVoyante » pour l'écran « passe le téléphone à... »,
+  /// « nightVoyante.open » pour l'écran du rôle une fois le téléphone passé.
+  final Future<void> Function(String screen)? onScreen;
+
   /// Écrans de jeu traversés, dans l'ordre.
   final List<GamePhase> visited = [];
 
-  UiGameDriver(this.tester, this.gp, this.decisions, {this.beforeStep});
+  UiGameDriver(this.tester, this.gp, this.decisions,
+      {this.beforeStep, this.onScreen});
 
   GameState get s => gp.state!;
   GameDecisions get d => decisions;
@@ -81,6 +88,7 @@ class UiGameDriver {
     expect(find.text(name), findsWidgets,
         reason: 'Le téléphone devrait passer à $name');
     await tapButton(loc.passDeviceConfirmButton);
+    await onScreen?.call('${s.phase.name}.open');
   }
 
   void expectShown(String text) =>
@@ -101,6 +109,7 @@ class UiGameDriver {
   }) async {
     await tapOnHome(tester, loc.newGameButton);
     await tester.pumpAndSettle();
+    await onScreen?.call('setupPlayerCount');
 
     // Nombre de joueurs (8 par défaut).
     final delta = names.length - gp.draftPlayerCount;
@@ -142,6 +151,12 @@ class UiGameDriver {
       await tapText(loc.roleSelectionRandomLovers);
       expect(gp.draftConfig!.randomLovers, isTrue);
     }
+    if (onScreen != null) {
+      // La liste vue depuis son début.
+      await tester.drag(roleList, const Offset(0, 20000));
+      await tester.pumpAndSettle();
+      await onScreen!('setupRoles');
+    }
     await tapButton(loc.continueButtonLabel);
 
     // Prénoms. (Chaque TextField a aussi son Scrollable : on prend celui de
@@ -156,6 +171,7 @@ class UiGameDriver {
           find.ancestor(of: label, matching: find.byType(TextField)), names[i]);
     }
     await tester.pumpAndSettle();
+    await onScreen?.call('setupNames');
     await tapButton(loc.dealRolesButton);
     expect(s.players.map((p) => p.name), names);
     rig?.call(s);
@@ -165,6 +181,7 @@ class UiGameDriver {
       await passTo(player.name);
       await tapButton(loc.roleRevealRevealButton);
       expectShown(loc.roleName(player.role));
+      await onScreen?.call('roleReveal');
       final lover = s.tryById(player.loverId);
       if (lover != null) expectShown(loc.loverBondMessage(lover.name));
       await tapButton(loc.roleRevealHideButton);
@@ -191,6 +208,7 @@ class UiGameDriver {
     final before = (phase, s.night, s.day, s.phaseIndex, s.deathsThisWave.length);
     visited.add(phase);
     expectPhasePreconditions(s);
+    await onScreen?.call(phase.name);
 
     switch (phase) {
       case GamePhase.nightIntro:
