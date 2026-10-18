@@ -1747,11 +1747,11 @@
       }
     }
   },
-  "narrationNightFalls": "La nuit tombe sur Thiercelieux. Tout le village s'endort. Fermez les yeux.",
+  "narrationNightFalls": "Le village s'endort.",
   "@narrationNightFalls": {
     "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/nightFalls.mp3). Début de chaque nuit. Ton grave et posé."
   },
-  "narrationDayBreaks": "Le jour se lève sur Thiercelieux. Tout le village se réveille. Ouvrez les yeux.",
+  "narrationDayBreaks": "Le jour se lève.",
   "@narrationDayBreaks": {
     "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/dayBreaks.mp3). Fin de la nuit, avant l'annonce des morts. Ton plus clair."
   },
