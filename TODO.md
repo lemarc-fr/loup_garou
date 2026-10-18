@@ -16,3 +16,4 @@ réglage : voir la cause de la mort
 
 optimiser l'écran des reglages, certains réglages modifiable pendant le jeu
 
+dans le résumé : lister les morts et les élections (résultats)
