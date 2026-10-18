@@ -2423,13 +2423,13 @@ abstract class AppLocalizations {
   /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/nightFalls.mp3). Début de chaque nuit. Ton grave et posé.
   ///
   /// In fr, this message translates to:
-  /// **'La nuit tombe sur Thiercelieux. Tout le village s\'endort. Fermez les yeux.'**
+  /// **'Le village s\'endort.'**
   String get narrationNightFalls;
 
   /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/dayBreaks.mp3). Fin de la nuit, avant l'annonce des morts. Ton plus clair.
   ///
   /// In fr, this message translates to:
-  /// **'Le jour se lève sur Thiercelieux. Tout le village se réveille. Ouvrez les yeux.'**
+  /// **'Le jour se lève.'**
   String get narrationDayBreaks;
 
   /// Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/loversReveal.mp3). Juste après Cupidon : le téléphone passe chez chaque joueur.

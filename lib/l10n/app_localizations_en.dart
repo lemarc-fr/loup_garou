@@ -1389,12 +1389,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get narrationNightFalls =>
-      'Night falls on Thiercelieux. The whole village goes to sleep. Close your eyes.';
+  String get narrationNightFalls => 'Night falls on the village';
 
   @override
-  String get narrationDayBreaks =>
-      'Day breaks over Thiercelieux. The whole village wakes up. Open your eyes.';
+  String get narrationDayBreaks => 'Day breaks over the village';
 
   @override
   String get narrationLoversReveal =>
