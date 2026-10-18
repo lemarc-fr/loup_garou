@@ -6,4 +6,13 @@ Error: google_fonts was unable to load font Cinzel-Black because the following e
 Exception: GoogleFonts.config.allowRuntimeFetching is false but font Cinzel-Black was not found in the application assets. Ensure Cinzel-Black.ttf exists in a folder that is included in your pubspec's assets.
 
 
-loup garou : le hurlements pendant le tour des loups garous pas pendant la nuit
+loup garou : le hurlements pendant le tour des loups garous pas pendant le début de la nuit
+
+bouton réglage volume des six et de la musique dans settings
+
+bouton pour voir description des rôles ( avec remaining)
+
+réglage : voir la cause de la mort
+
+optimiser l'écran des reglages, certains réglages modifiable pendant le jeu
+
