@@ -1510,7 +1510,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsInGameNotice =>
-      'Game in progress: changes apply right away.';
+      'Game in progress: only options marked ⚡ apply right away. The others will only take effect next game.';
+
+  @override
+  String settingsNextGameWarning(String label) {
+    return '“$label” will apply from the next game.';
+  }
+
+  @override
+  String get settingsLiveInGameTooltip =>
+      'Applies right away to the current game';
+
+  @override
+  String settingsChangeCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Settings changed $count times during this game',
+      one: 'Settings changed once during this game',
+      zero: 'No settings changed during this game',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get settingsResetRulesButton => 'Restore default rules';

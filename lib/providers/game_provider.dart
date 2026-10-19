@@ -198,6 +198,22 @@ class GameProvider extends ChangeNotifier {
   /// Recommence tout depuis le début (retour à l'accueil).
   void abandonGame() => startNewSetup();
 
+  // ---------------------------------------------------------------------
+  // Réglages changés en cours de partie
+  // ---------------------------------------------------------------------
+
+  /// Appelé quand une règle change pendant la partie : compte le
+  /// changement et ne le reporte sur la partie que pour les options
+  /// [GameSettingDefinition.liveInGame] (les autres attendent la suivante).
+  void applySettingChange(SettingId id, bool value) {
+    final s = state;
+    if (s == null) return;
+    s.settingsChangeCount++;
+    final def = kGameSettingDefinitions.firstWhere((d) => d.id == id);
+    if (def.liveInGame) s.settings.set(id, value);
+    notifyListeners();
+  }
+
   /// Ouvre l'assistant de création d'une nouvelle partie à sa première
   /// étape (nombre de joueurs), même si une création précédente avait été
   /// interrompue en cours de route (ex. à la sélection des rôles). Le

@@ -1516,7 +1516,28 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get settingsInGameNotice =>
-      'Partie en cours : les changements s\'appliquent tout de suite.';
+      'Partie en cours : seules les options marquées ⚡ s\'appliquent tout de suite. Les autres ne vaudront qu\'à la prochaine partie.';
+
+  @override
+  String settingsNextGameWarning(String label) {
+    return '« $label » s\'appliquera à la prochaine partie.';
+  }
+
+  @override
+  String get settingsLiveInGameTooltip =>
+      'S\'applique tout de suite à la partie en cours';
+
+  @override
+  String settingsChangeCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Réglages changés $count fois pendant cette partie',
+      one: 'Réglages changés 1 fois pendant cette partie',
+      zero: 'Aucun réglage changé pendant cette partie',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get settingsResetRulesButton => 'Rétablir les règles par défaut';

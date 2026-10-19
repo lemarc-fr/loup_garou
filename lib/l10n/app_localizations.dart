@@ -2645,8 +2645,26 @@ abstract class AppLocalizations {
   /// Bandeau de l'écran des réglages ouvert pendant une partie.
   ///
   /// In fr, this message translates to:
-  /// **'Partie en cours : les changements s\'appliquent tout de suite.'**
+  /// **'Partie en cours : seules les options marquées ⚡ s\'appliquent tout de suite. Les autres ne vaudront qu\'à la prochaine partie.'**
   String get settingsInGameNotice;
+
+  /// Message affiché quand on change, pendant une partie, une option qui ne vaudra que pour la partie suivante.
+  ///
+  /// In fr, this message translates to:
+  /// **'« {label} » s\'appliquera à la prochaine partie.'**
+  String settingsNextGameWarning(String label);
+
+  /// Info-bulle de l'éclair à côté des options qui changent en cours de partie.
+  ///
+  /// In fr, this message translates to:
+  /// **'S\'applique tout de suite à la partie en cours'**
+  String get settingsLiveInGameTooltip;
+
+  /// Compteur en haut de l'écran des réglages ouvert pendant une partie.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Aucun réglage changé pendant cette partie} =1{Réglages changés 1 fois pendant cette partie} other{Réglages changés {count} fois pendant cette partie}}'**
+  String settingsChangeCount(int count);
 
   /// Bouton en bas des réglages.
   ///

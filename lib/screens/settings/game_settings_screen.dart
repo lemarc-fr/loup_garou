@@ -3,6 +3,7 @@ import 'package:thiercelieux/l10n/app_localizations.dart';
 import 'package:thiercelieux/l10n/setting_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../models/game_settings.dart';
+import '../../providers/game_provider.dart';
 import '../../providers/settings_provider.dart' show SettingsProvider;
 import '../../theme/app_theme.dart';
 import '../../widgets/confirm.dart';
@@ -22,9 +23,11 @@ const Map<String, String> _languageNames = {
 /// Les règles sont rangées par rubrique (voir [SettingCategory]), repliées
 /// sauf la première, pour que l'écran tienne en un coup d'œil.
 ///
-/// Ouvert depuis une partie ([inGame]) : les changements s'appliquent tout
-/// de suite à la partie en cours (elle partage les mêmes réglages), et les
-/// options qui ne jouent qu'à la création de la partie sont masquées.
+/// Ouvert depuis une partie ([inGame]) : seules les options
+/// [GameSettingDefinition.liveInGame] s'appliquent tout de suite à la
+/// partie en cours ; les autres sont enregistrées pour la suivante, avec un
+/// avertissement. Un compteur rappelle combien de fois on a changé un
+/// réglage pendant la partie.
 class GameSettingsScreen extends StatelessWidget {
   final bool inGame;
 
@@ -44,6 +47,8 @@ class GameSettingsScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 children: [
                   if (inGame) ...[
+                    const _ChangeCounter(),
+                    const SizedBox(height: 10),
                     const _InGameNotice(),
                     const SizedBox(height: 16),
                   ],
@@ -58,6 +63,7 @@ class GameSettingsScreen extends StatelessWidget {
                       _RuleCategoryCard(
                         category: category,
                         definitions: _definitions(category),
+                        inGame: inGame,
                       ),
                       const SizedBox(height: 10),
                     ],
@@ -71,7 +77,19 @@ class GameSettingsScreen extends StatelessWidget {
                           message: loc.settingsResetRulesDialogMessage,
                           confirmLabel: loc.settingsResetRulesConfirmLabel,
                         );
-                        if (ok) await sp.resetRules();
+                        if (!ok) return;
+                        final before = {
+                          for (final d in kGameSettingDefinitions)
+                            d.id: sp.get(d.id),
+                        };
+                        await sp.resetRules();
+                        if (!inGame || !context.mounted) return;
+                        final gp = context.read<GameProvider>();
+                        for (final d in kGameSettingDefinitions) {
+                          if (sp.get(d.id) != before[d.id]) {
+                            gp.applySettingChange(d.id, sp.get(d.id));
+                          }
+                        }
                       },
                       icon: const Icon(Icons.restart_alt, size: 20),
                       label: Text(loc.settingsResetRulesButton),
@@ -85,7 +103,7 @@ class GameSettingsScreen extends StatelessWidget {
 
   List<GameSettingDefinition> _definitions(SettingCategory category) => [
         for (final def in kGameSettingDefinitions)
-          if (def.category == category && !(inGame && def.setupOnly)) def,
+          if (def.category == category) def,
       ];
 }
 
@@ -104,6 +122,35 @@ class _SectionTitle extends StatelessWidget {
               letterSpacing: 1.2,
             ),
       ),
+    );
+  }
+}
+
+/// Nombre de changements de réglages faits pendant la partie en cours.
+class _ChangeCounter extends StatelessWidget {
+  const _ChangeCounter();
+
+  @override
+  Widget build(BuildContext context) {
+    final count = context.select<GameProvider, int>(
+        (gp) => gp.state?.settingsChangeCount ?? 0);
+    final theme = Theme.of(context);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.history,
+            size: 18, color: count > 0 ? AppColors.lantern : AppColors.moonlight),
+        const SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            AppLocalizations.of(context)!.settingsChangeCount(count),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: count > 0 ? AppColors.lantern : null,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -139,8 +186,13 @@ class _InGameNotice extends StatelessWidget {
 class _RuleCategoryCard extends StatelessWidget {
   final SettingCategory category;
   final List<GameSettingDefinition> definitions;
+  final bool inGame;
 
-  const _RuleCategoryCard({required this.category, required this.definitions});
+  const _RuleCategoryCard({
+    required this.category,
+    required this.definitions,
+    required this.inGame,
+  });
 
   static IconData _icon(SettingCategory category) => switch (category) {
         SettingCategory.night => Icons.nights_stay,
@@ -150,6 +202,23 @@ class _RuleCategoryCard extends StatelessWidget {
         SettingCategory.vote => Icons.how_to_vote,
         SettingCategory.otherRoles => Icons.groups,
       };
+
+  Future<void> _onChanged(
+      BuildContext context, GameSettingDefinition def, bool value) async {
+    final sp = context.read<SettingsProvider>();
+    if (inGame) {
+      context.read<GameProvider>().applySettingChange(def.id, value);
+      if (!def.liveInGame) {
+        final loc = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(
+            content: Text(loc.settingsNextGameWarning(loc.settingLabel(def.id))),
+          ));
+      }
+    }
+    await sp.setValue(def.id, value);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -172,10 +241,26 @@ class _RuleCategoryCard extends StatelessWidget {
           for (final def in definitions)
             SwitchListTile(
               value: sp.get(def.id),
-              onChanged: (v) => sp.setValue(def.id, v),
-              title: Text(loc.settingLabel(def.id),
-                  style: theme.textTheme.bodyLarge
-                      ?.copyWith(fontWeight: FontWeight.w600)),
+              onChanged: (v) => _onChanged(context, def, v),
+              title: Text.rich(
+                TextSpan(children: [
+                  TextSpan(text: loc.settingLabel(def.id)),
+                  if (inGame && def.liveInGame)
+                    WidgetSpan(
+                      alignment: PlaceholderAlignment.middle,
+                      child: Tooltip(
+                        message: loc.settingsLiveInGameTooltip,
+                        child: const Padding(
+                          padding: EdgeInsets.only(left: 6),
+                          child: Icon(Icons.bolt,
+                              size: 18, color: AppColors.lantern),
+                        ),
+                      ),
+                    ),
+                ]),
+                style: theme.textTheme.bodyLarge
+                    ?.copyWith(fontWeight: FontWeight.w600),
+              ),
               subtitle: Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(loc.settingDescription(def.id),

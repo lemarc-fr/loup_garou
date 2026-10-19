@@ -118,7 +118,13 @@ class GameState {
   final DateTime startedAt;
   final GameConfig config;
   final List<Player> players;
+  /// Règles de cette partie, copiées à sa création : seules les options
+  /// [GameSettingDefinition.liveInGame] y sont reportées ensuite.
   final GameSettings settings;
+
+  /// Nombre de changements de réglages faits pendant la partie (affiché
+  /// en haut de l'écran des réglages).
+  int settingsChangeCount = 0;
 
   int night = 1;
   int day = 0;

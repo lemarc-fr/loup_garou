@@ -168,4 +168,30 @@ void main() {
       expect(notifications, 1);
     });
   });
+
+  group('Réglages changés en cours de partie', () {
+    test('seules les options liveInGame touchent la partie, toutes comptent',
+        () {
+      gp.setDraftPlayerCount(5);
+      gp.goToRoleSelection();
+      gp.goToNames();
+      for (final (i, name) in ['Ana', 'Bob', 'Cy', 'Dan', 'Eve'].indexed) {
+        gp.setPlayerName(i, name);
+      }
+      final settings = GameSettings();
+      gp.confirmNamesAndDeal(settings);
+      final game = gp.state!.settings;
+
+      // Les réglages de l'app changent sans toucher la partie.
+      settings.set(SettingId.mayorBreaksTies, false);
+      gp.applySettingChange(SettingId.mayorBreaksTies, false);
+      expect(game.mayorBreaksTies, isTrue);
+
+      settings.set(SettingId.revealDeathCause, false);
+      gp.applySettingChange(SettingId.revealDeathCause, false);
+      expect(game.revealDeathCause, isFalse);
+
+      expect(gp.state!.settingsChangeCount, 2);
+    });
+  });
 }

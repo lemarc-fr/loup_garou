@@ -33,16 +33,17 @@ class GameSettingDefinition {
   final bool defaultValue;
   final SettingCategory category;
 
-  /// Option qui ne joue qu'à la création de la partie : la changer en
-  /// cours de partie n'aurait aucun effet, elle n'est donc pas proposée
-  /// depuis la partie (voir GameSettingsScreen.inGame).
-  final bool setupOnly;
+  /// Option qui peut changer en cours de partie sans fausser la donne
+  /// (ex : la façon d'annoncer les morts). Les autres sont figées au
+  /// début de la partie : les changer pendant une partie ne vaut que pour
+  /// la suivante (voir GameState.settings et GameSettingsScreen.inGame).
+  final bool liveInGame;
 
   const GameSettingDefinition({
     required this.id,
     required this.category,
     this.defaultValue = false,
-    this.setupOnly = false,
+    this.liveInGame = false,
   });
 }
 
@@ -79,7 +80,6 @@ const List<GameSettingDefinition> kGameSettingDefinitions = [
   GameSettingDefinition(
     id: SettingId.randomLoversInsteadOfCupidon,
     category: SettingCategory.otherRoles,
-    setupOnly: true,
     defaultValue: false,
   ),
   // Règle officielle : le Chasseur tire au moment même de sa mort, avant
@@ -145,6 +145,7 @@ const List<GameSettingDefinition> kGameSettingDefinitions = [
     id: SettingId.fakeTurnsForPowerlessRoles,
     category: SettingCategory.night,
     defaultValue: true,
+    liveInGame: true,
   ),
   // Annoncer comment chaque joueur est mort (dévoré, empoisonné...) ou
   // seulement qu'il est mort.
@@ -152,6 +153,7 @@ const List<GameSettingDefinition> kGameSettingDefinitions = [
     id: SettingId.revealDeathCause,
     category: SettingCategory.night,
     defaultValue: true,
+    liveInGame: true,
   ),
 ];
 
@@ -170,6 +172,10 @@ class GameSettings {
           kGameSettingDefinitions.firstWhere((d) => d.id == id).defaultValue;
 
   void set(SettingId id, bool value) => _values[id] = value;
+
+  /// Copie indépendante : une partie garde ainsi les règles de son début
+  /// même si on les change ensuite dans les réglages.
+  GameSettings copy() => GameSettings(values: Map.of(_values));
 
   /// Remet chaque option à sa valeur par défaut.
   void resetToDefaults() {

@@ -1895,9 +1895,31 @@
   "@settingCategoryOtherRoles": {
     "description": "Rubrique des réglages pour les autres rôles."
   },
-  "settingsInGameNotice": "Partie en cours : les changements s'appliquent tout de suite.",
+  "settingsInGameNotice": "Partie en cours : seules les options marquées ⚡ s'appliquent tout de suite. Les autres ne vaudront qu'à la prochaine partie.",
   "@settingsInGameNotice": {
     "description": "Bandeau de l'écran des réglages ouvert pendant une partie."
+  },
+  "settingsNextGameWarning": "« {label} » s'appliquera à la prochaine partie.",
+  "@settingsNextGameWarning": {
+    "description": "Message affiché quand on change, pendant une partie, une option qui ne vaudra que pour la partie suivante.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsLiveInGameTooltip": "S'applique tout de suite à la partie en cours",
+  "@settingsLiveInGameTooltip": {
+    "description": "Info-bulle de l'éclair à côté des options qui changent en cours de partie."
+  },
+  "settingsChangeCount": "{count, plural, =0{Aucun réglage changé pendant cette partie} =1{Réglages changés 1 fois pendant cette partie} other{Réglages changés {count} fois pendant cette partie}}",
+  "@settingsChangeCount": {
+    "description": "Compteur en haut de l'écran des réglages ouvert pendant une partie.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "settingsResetRulesButton": "Rétablir les règles par défaut",
   "@settingsResetRulesButton": {

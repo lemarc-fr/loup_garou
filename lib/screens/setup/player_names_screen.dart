@@ -20,6 +20,10 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
 
   _NameError? _error;
 
+  /// Champs en erreur (vides ou en double), entourés de rouge. Recalculés
+  /// à chaque frappe une fois la première erreur affichée.
+  Set<int> _invalidFields = {};
+
   @override
   void initState() {
     super.initState();
@@ -44,25 +48,40 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
 
   }
 
+  /// Repère les champs vides puis, s'il n'y en a pas, ceux en double, et
+  /// met à jour l'erreur affichée. Renvoie true si tout est valide.
+  bool _validate() {
+    final names = _controllers.map((c) => c.text.trim()).toList();
+    final empty = {
+      for (var i = 0; i < names.length; i++)
+        if (names[i].isEmpty) i,
+    };
+    final keys = names.map((n) => n.toLowerCase()).toList();
+    final duplicates = {
+      for (var i = 0; i < keys.length; i++)
+        if (keys[i].isNotEmpty && keys.where((k) => k == keys[i]).length > 1)
+          i,
+    };
+    setState(() {
+      _invalidFields = {...empty, ...duplicates};
+      _error = empty.isNotEmpty
+          ? _NameError.empty
+          : duplicates.isNotEmpty
+              ? _NameError.duplicate
+              : null;
+    });
+    return _error == null;
+  }
+
   void _submit() {
     final gp = context.read<GameProvider>();
     final settings = context.read<SettingsProvider>().settings;
+    if (!_validate()) return;
     final names = _controllers.map((c) => c.text.trim()).toList();
-
-    if (names.any((n) => n.isEmpty)) {
-      setState(() => _error = _NameError.empty);
-      return;
-    }
-    final unique = names.map((n) => n.toLowerCase()).toSet();
-    if (unique.length != names.length) {
-      setState(() => _error = _NameError.duplicate);
-      return;
-    }
 
     for (var i = 0; i < names.length; i++) {
       gp.setPlayerName(i, names[i]);
     }
-    setState(() => _error = null);
     gp.confirmNamesAndDeal(settings);
   }
 
@@ -95,8 +114,10 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
                   textCapitalization: TextCapitalization.words,
                   // Mémorise la saisie pour la retrouver après un retour
                   // arrière vers la sélection des rôles.
-                  onChanged: (value) =>
-                      context.read<GameProvider>().setPlayerName(index, value),
+                  onChanged: (value) {
+                    context.read<GameProvider>().setPlayerName(index, value);
+                    if (_error != null) _validate();
+                  },
                   textInputAction: index == _controllers.length - 1
                       ? TextInputAction.done
                       : TextInputAction.next,
@@ -115,6 +136,11 @@ class _PlayerNamesScreenState extends State<PlayerNamesScreen> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
+                    // Bordure et libellé rouges, sans texte sous le champ :
+                    // le message d'erreur est affiché une seule fois en bas.
+                    error: _invalidFields.contains(index)
+                        ? const SizedBox.shrink()
+                        : null,
                   ),
                 ),
               ),

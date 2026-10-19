@@ -88,7 +88,7 @@ class GameEngine {
       startedAt: DateTime.now(),
       config: config,
       players: players,
-      settings: settings,
+      settings: settings.copy(),
       phase: GamePhase.roleReveal,
     );
     state.voleurTableCards = tableCards;
