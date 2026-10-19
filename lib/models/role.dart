@@ -195,7 +195,7 @@ const Map<RoleId, RoleInfo> kRoleCatalog = {
   RoleId.boucEmissaire: RoleInfo(
     id: RoleId.boucEmissaire,
     camp: Camp.village,
-    imageAsset: '',
+    imageAsset: 'assets/images/roles/bouc_emissaire.png',
     fallbackIcon: Icons.how_to_vote,
     accent: AppColors.forest,
     actsAtNight: false,
@@ -204,7 +204,7 @@ const Map<RoleId, RoleInfo> kRoleCatalog = {
   RoleId.idiotDuVillage: RoleInfo(
     id: RoleId.idiotDuVillage,
     camp: Camp.village,
-    imageAsset: '',
+    imageAsset: 'assets/images/roles/idiot_du_village.png',
     fallbackIcon: Icons.sentiment_very_satisfied,
     accent: AppColors.forest,
     actsAtNight: false,
@@ -213,7 +213,7 @@ const Map<RoleId, RoleInfo> kRoleCatalog = {
   RoleId.salvateur: RoleInfo(
     id: RoleId.salvateur,
     camp: Camp.village,
-    imageAsset: '',
+    imageAsset: 'assets/images/roles/salvateur.png',
     fallbackIcon: Icons.shield,
     accent: AppColors.forest,
     actsAtNight: true,
