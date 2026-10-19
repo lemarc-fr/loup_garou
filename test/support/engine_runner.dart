@@ -79,6 +79,14 @@ class EngineRunner {
     expectPhasePreconditions(s, log);
     log.add('N${s.night}/J${s.day} $phase');
 
+    // Faux tour : le rôle est appelé mais n'a rien à faire.
+    if (s.isFakeTurn(phase)) {
+      log.add('  faux tour');
+      engine.confirmFakeTurn(s);
+      expectInvariants(s, deadBefore: deadBefore, log: log);
+      return;
+    }
+
     switch (phase) {
       case GamePhase.nightIntro:
       case GamePhase.nightGoBackToSleep:
@@ -293,10 +301,14 @@ void expectPhasePreconditions(GameState s, [List<String> log = const []]) {
     GamePhase.nightVoyante => alive(RoleId.voyante),
     GamePhase.nightLoups => s.wolfPackAwake,
     GamePhase.nightLoupBlanc => alive(RoleId.loupBlanc),
-    GamePhase.nightGrandMechantLoup => alive(RoleId.grandMechantLoup),
-    GamePhase.nightInfectPereDesLoups =>
-      alive(RoleId.infectPereDesLoups) && !s.infectPereDesLoupsUsed,
-    GamePhase.nightRenard => alive(RoleId.renard) && !s.renardPowerLost,
+    // Sans pouvoir, il n'est appelé que pour un faux tour (réglage).
+    GamePhase.nightInfectPereDesLoups => alive(RoleId.infectPereDesLoups) &&
+        (!s.infectPereDesLoupsUsed ||
+            s.settings.fakeTurnsForPowerlessRoles),
+    GamePhase.nightRenard => alive(RoleId.renard) &&
+        (!s.renardPowerLost || s.settings.fakeTurnsForPowerlessRoles),
+    GamePhase.nightGrandMechantLoup => alive(RoleId.grandMechantLoup) &&
+        (s.wolfPackIntact || s.settings.fakeTurnsForPowerlessRoles),
     GamePhase.nightCorbeau => alive(RoleId.corbeau),
     GamePhase.nightSorciere => alive(RoleId.sorciere),
     GamePhase.chasseurRevange =>

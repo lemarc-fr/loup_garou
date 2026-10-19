@@ -1854,5 +1854,228 @@
   "narrationSleepSorciere": "La Sorcière se rendort.",
   "@narrationSleepSorciere": {
     "description": "Narration audio lue pendant la nuit (fichier assets/audio/voice/<langue>/sleepSorciere.mp3). Dite quand ce rôle se rendort."
+  },
+  "settingFakeTurnsForPowerlessRolesLabel": "Appeler les rôles sans pouvoir",
+  "@settingFakeTurnsForPowerlessRolesLabel": {
+    "description": "Libellé de l'option des faux tours."
+  },
+  "settingFakeTurnsForPowerlessRolesDescription": "Si activé, comme un vrai meneur, le narrateur appelle quand même la Sorcière sans potion, le Renard sans flair, l'Infect Père des Loups qui a déjà infecté ou le Grand Méchant Loup privé de son pouvoir : ils se réveillent quelques secondes pour rien. Sinon, leur silence trahirait qu'ils n'ont plus de pouvoir.",
+  "@settingFakeTurnsForPowerlessRolesDescription": {
+    "description": "Description de l'option des faux tours."
+  },
+  "settingRevealDeathCauseLabel": "Annoncer la cause des morts",
+  "@settingRevealDeathCauseLabel": {
+    "description": "Libellé de l'option d'annonce de la cause des morts."
+  },
+  "settingRevealDeathCauseDescription": "Si activé, l'annonce de chaque mort précise comment le joueur est mort (dévoré par les Loups-Garous, empoisonné par la Sorcière...). Sinon, seuls son nom et son rôle sont révélés.",
+  "@settingRevealDeathCauseDescription": {
+    "description": "Description de l'option d'annonce de la cause des morts."
+  },
+  "settingCategoryNight": "Nuit et annonces",
+  "@settingCategoryNight": {
+    "description": "Rubrique des réglages : déroulé de la nuit, annonces."
+  },
+  "settingCategoryWolves": "Loups-Garous",
+  "@settingCategoryWolves": {
+    "description": "Rubrique des réglages consacrée aux loups."
+  },
+  "settingCategoryWitch": "Sorcière",
+  "@settingCategoryWitch": {
+    "description": "Rubrique des réglages consacrée à la Sorcière."
+  },
+  "settingCategoryHunter": "Chasseur",
+  "@settingCategoryHunter": {
+    "description": "Rubrique des réglages consacrée au Chasseur."
+  },
+  "settingCategoryVote": "Votes du village",
+  "@settingCategoryVote": {
+    "description": "Rubrique des réglages consacrée aux votes."
+  },
+  "settingCategoryOtherRoles": "Autres rôles",
+  "@settingCategoryOtherRoles": {
+    "description": "Rubrique des réglages pour les autres rôles."
+  },
+  "settingsInGameNotice": "Partie en cours : les changements s'appliquent tout de suite.",
+  "@settingsInGameNotice": {
+    "description": "Bandeau de l'écran des réglages ouvert pendant une partie."
+  },
+  "settingsResetRulesButton": "Rétablir les règles par défaut",
+  "@settingsResetRulesButton": {
+    "description": "Bouton en bas des réglages."
+  },
+  "settingsResetRulesDialogTitle": "Rétablir les règles ?",
+  "@settingsResetRulesDialogTitle": {
+    "description": "Titre de la confirmation."
+  },
+  "settingsResetRulesDialogMessage": "Toutes les règles reprennent leur valeur par défaut. La langue et le son ne changent pas.",
+  "@settingsResetRulesDialogMessage": {
+    "description": "Message de la confirmation."
+  },
+  "settingsResetRulesConfirmLabel": "Rétablir",
+  "@settingsResetRulesConfirmLabel": {
+    "description": "Bouton de confirmation."
+  },
+  "settingsSoundMusicVolumeLabel": "Volume de la musique",
+  "@settingsSoundMusicVolumeLabel": {
+    "description": "Curseur du volume de la musique."
+  },
+  "settingsSoundSfxVolumeLabel": "Volume des bruitages",
+  "@settingsSoundSfxVolumeLabel": {
+    "description": "Curseur du volume des bruitages."
+  },
+  "settingsSoundSfxDescription": "Hurlement des loups à leur réveil, chant du coq au lever du jour. À zéro, ils sont coupés.",
+  "@settingsSoundSfxDescription": {
+    "description": "Explication sous le curseur des bruitages."
+  },
+  "settingsLanguageSystemShort": "Téléphone",
+  "@settingsLanguageSystemShort": {
+    "description": "Choix de langue : suivre celle du téléphone (libellé court)."
+  },
+  "fakeTurnInstruction": "Fais comme si tu jouais : garde les yeux ouverts quelques secondes. Le narrateur te dira quand te rendormir.",
+  "@fakeTurnInstruction": {
+    "description": "Écran d'un faux tour : le rôle n'a plus rien à faire."
+  },
+  "fakeTurnSorciereNoPotion": "Tu as utilisé tes deux potions.",
+  "@fakeTurnSorciereNoPotion": {
+    "description": "Faux tour de la Sorcière : plus de potion."
+  },
+  "fakeTurnSorciereCannotPlay": "Cette nuit, tu ne peux pas utiliser tes potions.",
+  "@fakeTurnSorciereCannotPlay": {
+    "description": "Faux tour de la Sorcière : empêchée de jouer (réglage)."
+  },
+  "fakeTurnRenard": "Tu as perdu ton flair.",
+  "@fakeTurnRenard": {
+    "description": "Faux tour du Renard."
+  },
+  "fakeTurnInfectPereDesLoups": "Tu as déjà utilisé ton pouvoir d'infection.",
+  "@fakeTurnInfectPereDesLoups": {
+    "description": "Faux tour de l'Infect Père des Loups."
+  },
+  "fakeTurnGrandMechantLoup": "Un membre de la meute est mort : tu ne peux plus dévorer de seconde victime.",
+  "@fakeTurnGrandMechantLoup": {
+    "description": "Faux tour du Grand Méchant Loup."
+  },
+  "fakeTurnWaitButton": "Patiente...",
+  "@fakeTurnWaitButton": {
+    "description": "Bouton d'un faux tour, qui se valide tout seul."
+  },
+  "gameRolesTooltip": "Rôles de la partie",
+  "@gameRolesTooltip": {
+    "description": "Bulle du bouton qui ouvre la liste des rôles."
+  },
+  "gameRolesSheetTitle": "Rôles de la partie",
+  "@gameRolesSheetTitle": {
+    "description": "Titre de la liste des rôles de la partie."
+  },
+  "gameRolesSheetIntro": "Chaque carte de la partie. Une carte n'est plus en jeu une fois révélée par la mort de son joueur.",
+  "@gameRolesSheetIntro": {
+    "description": "Explication en haut de la liste des rôles."
+  },
+  "gameRolesRemaining": "{remaining} / {total} en jeu",
+  "@gameRolesRemaining": {
+    "description": "Nombre de cartes d'un rôle encore en jeu.",
+    "placeholders": {
+      "remaining": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "gameRolesNoneLeft": "Plus en jeu",
+  "@gameRolesNoneLeft": {
+    "description": "Toutes les cartes de ce rôle ont été révélées."
+  },
+  "gameProgressEventsTitle": "Ce qui s'est passé",
+  "@gameProgressEventsTitle": {
+    "description": "Résumé : liste des morts et des élections d'un round."
+  },
+  "gameProgressStepsTitle": "Déroulé",
+  "@gameProgressStepsTitle": {
+    "description": "Résumé : liste des étapes d'un round."
+  },
+  "gameEventDeath": "{name} ({role}) est mort(e)",
+  "@gameEventDeath": {
+    "description": "Résumé : un mort, sans la cause.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "gameEventDeathWithCause": "{name} ({role}) : {cause}",
+  "@gameEventDeathWithCause": {
+    "description": "Résumé : un mort et sa cause.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "role": {
+        "type": "String"
+      },
+      "cause": {
+        "type": "String"
+      }
+    }
+  },
+  "gameEventMayorElected": "{name} est élu(e) maire",
+  "@gameEventMayorElected": {
+    "description": "Résumé : élection du maire.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "gameEventMayorSuccession": "{name} succède au maire",
+  "@gameEventMayorSuccession": {
+    "description": "Résumé : succession du maire.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "gameEventVillageVote": "Le village désigne {name}",
+  "@gameEventVillageVote": {
+    "description": "Résumé : résultat du vote du village.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "gameEventNobodyEliminated": "Le village n'élimine personne",
+  "@gameEventNobodyEliminated": {
+    "description": "Résumé : vote sans élimination."
+  },
+  "gameEventIdiotSpared": "{name} se révèle Idiot du Village et survit",
+  "@gameEventIdiotSpared": {
+    "description": "Résumé : l'Idiot du Village gracié.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "gameEventVotes": "{name} : {count, plural, =1{1 voix} other{{count} voix}}",
+  "@gameEventVotes": {
+    "description": "Résumé : voix reçues par un candidat.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "gameEventNone": "Aucun mort, aucune élection.",
+  "@gameEventNone": {
+    "description": "Résumé : round sans événement."
   }
 }

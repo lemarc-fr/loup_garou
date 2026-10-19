@@ -2581,6 +2581,258 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'La Sorcière se rendort.'**
   String get narrationSleepSorciere;
+
+  /// Libellé de l'option des faux tours.
+  ///
+  /// In fr, this message translates to:
+  /// **'Appeler les rôles sans pouvoir'**
+  String get settingFakeTurnsForPowerlessRolesLabel;
+
+  /// Description de l'option des faux tours.
+  ///
+  /// In fr, this message translates to:
+  /// **'Si activé, comme un vrai meneur, le narrateur appelle quand même la Sorcière sans potion, le Renard sans flair, l\'Infect Père des Loups qui a déjà infecté ou le Grand Méchant Loup privé de son pouvoir : ils se réveillent quelques secondes pour rien. Sinon, leur silence trahirait qu\'ils n\'ont plus de pouvoir.'**
+  String get settingFakeTurnsForPowerlessRolesDescription;
+
+  /// Libellé de l'option d'annonce de la cause des morts.
+  ///
+  /// In fr, this message translates to:
+  /// **'Annoncer la cause des morts'**
+  String get settingRevealDeathCauseLabel;
+
+  /// Description de l'option d'annonce de la cause des morts.
+  ///
+  /// In fr, this message translates to:
+  /// **'Si activé, l\'annonce de chaque mort précise comment le joueur est mort (dévoré par les Loups-Garous, empoisonné par la Sorcière...). Sinon, seuls son nom et son rôle sont révélés.'**
+  String get settingRevealDeathCauseDescription;
+
+  /// Rubrique des réglages : déroulé de la nuit, annonces.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nuit et annonces'**
+  String get settingCategoryNight;
+
+  /// Rubrique des réglages consacrée aux loups.
+  ///
+  /// In fr, this message translates to:
+  /// **'Loups-Garous'**
+  String get settingCategoryWolves;
+
+  /// Rubrique des réglages consacrée à la Sorcière.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sorcière'**
+  String get settingCategoryWitch;
+
+  /// Rubrique des réglages consacrée au Chasseur.
+  ///
+  /// In fr, this message translates to:
+  /// **'Chasseur'**
+  String get settingCategoryHunter;
+
+  /// Rubrique des réglages consacrée aux votes.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votes du village'**
+  String get settingCategoryVote;
+
+  /// Rubrique des réglages pour les autres rôles.
+  ///
+  /// In fr, this message translates to:
+  /// **'Autres rôles'**
+  String get settingCategoryOtherRoles;
+
+  /// Bandeau de l'écran des réglages ouvert pendant une partie.
+  ///
+  /// In fr, this message translates to:
+  /// **'Partie en cours : les changements s\'appliquent tout de suite.'**
+  String get settingsInGameNotice;
+
+  /// Bouton en bas des réglages.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rétablir les règles par défaut'**
+  String get settingsResetRulesButton;
+
+  /// Titre de la confirmation.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rétablir les règles ?'**
+  String get settingsResetRulesDialogTitle;
+
+  /// Message de la confirmation.
+  ///
+  /// In fr, this message translates to:
+  /// **'Toutes les règles reprennent leur valeur par défaut. La langue et le son ne changent pas.'**
+  String get settingsResetRulesDialogMessage;
+
+  /// Bouton de confirmation.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rétablir'**
+  String get settingsResetRulesConfirmLabel;
+
+  /// Curseur du volume de la musique.
+  ///
+  /// In fr, this message translates to:
+  /// **'Volume de la musique'**
+  String get settingsSoundMusicVolumeLabel;
+
+  /// Curseur du volume des bruitages.
+  ///
+  /// In fr, this message translates to:
+  /// **'Volume des bruitages'**
+  String get settingsSoundSfxVolumeLabel;
+
+  /// Explication sous le curseur des bruitages.
+  ///
+  /// In fr, this message translates to:
+  /// **'Hurlement des loups à leur réveil, chant du coq au lever du jour. À zéro, ils sont coupés.'**
+  String get settingsSoundSfxDescription;
+
+  /// Choix de langue : suivre celle du téléphone (libellé court).
+  ///
+  /// In fr, this message translates to:
+  /// **'Téléphone'**
+  String get settingsLanguageSystemShort;
+
+  /// Écran d'un faux tour : le rôle n'a plus rien à faire.
+  ///
+  /// In fr, this message translates to:
+  /// **'Fais comme si tu jouais : garde les yeux ouverts quelques secondes. Le narrateur te dira quand te rendormir.'**
+  String get fakeTurnInstruction;
+
+  /// Faux tour de la Sorcière : plus de potion.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tu as utilisé tes deux potions.'**
+  String get fakeTurnSorciereNoPotion;
+
+  /// Faux tour de la Sorcière : empêchée de jouer (réglage).
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette nuit, tu ne peux pas utiliser tes potions.'**
+  String get fakeTurnSorciereCannotPlay;
+
+  /// Faux tour du Renard.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tu as perdu ton flair.'**
+  String get fakeTurnRenard;
+
+  /// Faux tour de l'Infect Père des Loups.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tu as déjà utilisé ton pouvoir d\'infection.'**
+  String get fakeTurnInfectPereDesLoups;
+
+  /// Faux tour du Grand Méchant Loup.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un membre de la meute est mort : tu ne peux plus dévorer de seconde victime.'**
+  String get fakeTurnGrandMechantLoup;
+
+  /// Bouton d'un faux tour, qui se valide tout seul.
+  ///
+  /// In fr, this message translates to:
+  /// **'Patiente...'**
+  String get fakeTurnWaitButton;
+
+  /// Bulle du bouton qui ouvre la liste des rôles.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rôles de la partie'**
+  String get gameRolesTooltip;
+
+  /// Titre de la liste des rôles de la partie.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rôles de la partie'**
+  String get gameRolesSheetTitle;
+
+  /// Explication en haut de la liste des rôles.
+  ///
+  /// In fr, this message translates to:
+  /// **'Chaque carte de la partie. Une carte n\'est plus en jeu une fois révélée par la mort de son joueur.'**
+  String get gameRolesSheetIntro;
+
+  /// Nombre de cartes d'un rôle encore en jeu.
+  ///
+  /// In fr, this message translates to:
+  /// **'{remaining} / {total} en jeu'**
+  String gameRolesRemaining(int remaining, int total);
+
+  /// Toutes les cartes de ce rôle ont été révélées.
+  ///
+  /// In fr, this message translates to:
+  /// **'Plus en jeu'**
+  String get gameRolesNoneLeft;
+
+  /// Résumé : liste des morts et des élections d'un round.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce qui s\'est passé'**
+  String get gameProgressEventsTitle;
+
+  /// Résumé : liste des étapes d'un round.
+  ///
+  /// In fr, this message translates to:
+  /// **'Déroulé'**
+  String get gameProgressStepsTitle;
+
+  /// Résumé : un mort, sans la cause.
+  ///
+  /// In fr, this message translates to:
+  /// **'{name} ({role}) est mort(e)'**
+  String gameEventDeath(String name, String role);
+
+  /// Résumé : un mort et sa cause.
+  ///
+  /// In fr, this message translates to:
+  /// **'{name} ({role}) : {cause}'**
+  String gameEventDeathWithCause(String name, String role, String cause);
+
+  /// Résumé : élection du maire.
+  ///
+  /// In fr, this message translates to:
+  /// **'{name} est élu(e) maire'**
+  String gameEventMayorElected(String name);
+
+  /// Résumé : succession du maire.
+  ///
+  /// In fr, this message translates to:
+  /// **'{name} succède au maire'**
+  String gameEventMayorSuccession(String name);
+
+  /// Résumé : résultat du vote du village.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le village désigne {name}'**
+  String gameEventVillageVote(String name);
+
+  /// Résumé : vote sans élimination.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le village n\'élimine personne'**
+  String get gameEventNobodyEliminated;
+
+  /// Résumé : l'Idiot du Village gracié.
+  ///
+  /// In fr, this message translates to:
+  /// **'{name} se révèle Idiot du Village et survit'**
+  String gameEventIdiotSpared(String name);
+
+  /// Résumé : voix reçues par un candidat.
+  ///
+  /// In fr, this message translates to:
+  /// **'{name} : {count, plural, =1{1 voix} other{{count} voix}}'**
+  String gameEventVotes(String name, int count);
+
+  /// Résumé : round sans événement.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun mort, aucune élection.'**
+  String get gameEventNone;
 }
 
 class _AppLocalizationsDelegate

@@ -18,17 +18,29 @@ void main() {
     await tester.runAsync(GoogleFonts.pendingFonts);
   });
 
+  // Cinzel Black (w900) n'est volontairement pas embarquée : le thème ne
+  // l'utilise pas. google_fonts affiche son erreur avec debugPrint : on la
+  // retient ici, sans quoi elle s'afficherait dans la sortie des tests
+  // comme un vrai problème.
   testWidgets('une graisse absente serait détectée', (tester) async {
     Object? error;
-    await tester.runAsync(() async {
-      try {
-        GoogleFonts.cinzel(fontWeight: FontWeight.w900);
-        await GoogleFonts.pendingFonts();
-      } catch (e) {
-        error = e;
-      }
-    });
+    final printed = <String>[];
+    final originalDebugPrint = debugPrint;
+    debugPrint = (message, {wrapWidth}) => printed.add(message ?? '');
+    try {
+      await tester.runAsync(() async {
+        try {
+          GoogleFonts.cinzel(fontWeight: FontWeight.w900);
+          await GoogleFonts.pendingFonts();
+        } catch (e) {
+          error = e;
+        }
+      });
+    } finally {
+      debugPrint = originalDebugPrint;
+    }
     expect(error.toString(), contains('Cinzel-Black'));
+    expect(printed.join(), contains('Cinzel-Black'));
   });
 
   test('les licences des polices accompagnent l\'app', () async {

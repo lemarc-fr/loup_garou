@@ -4,6 +4,11 @@ class Player {
   final String id;
   String name;
   RoleId role;
+
+  /// La carte reçue à la distribution (ou prise sur la table par le
+  /// Voleur), révélée à sa mort quoi qu'il soit devenu depuis : sert à
+  /// compter les rôles encore en jeu (voir GameState.remainingRoleCounts).
+  RoleId card;
   bool alive;
   bool isMayor;
   String? loverId; // id de l'autre Amoureux, si Cupidon est passé
@@ -22,13 +27,15 @@ class Player {
     required this.id,
     required this.name,
     required this.role,
-  })  : alive = true,
+    RoleId? card,
+  })  : card = card ?? role,
+        alive = true,
         isMayor = false;
 
   Camp get camp => infected ? Camp.loups : role.info.camp;
   bool get isLover => loverId != null;
 
-  Player copy() => Player(id: id, name: name, role: role)
+  Player copy() => Player(id: id, name: name, role: role, card: card)
     ..alive = alive
     ..isMayor = isMayor
     ..loverId = loverId
@@ -42,6 +49,7 @@ class Player {
         'id': id,
         'name': name,
         'role': role.name,
+        'card': card.name,
         'alive': alive,
         'isMayor': isMayor,
         'loverId': loverId,
@@ -57,6 +65,9 @@ class Player {
       id: json['id'] as String,
       name: json['name'] as String,
       role: RoleId.values.byName(json['role'] as String),
+      card: json['card'] == null
+          ? null
+          : RoleId.values.byName(json['card'] as String),
     );
     p.alive = json['alive'] as bool;
     p.isMayor = json['isMayor'] as bool;

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:thiercelieux/l10n/role_localizations.dart';
+import 'package:thiercelieux/models/game_settings.dart';
 import 'package:thiercelieux/models/game_state.dart';
 import 'package:thiercelieux/models/role.dart';
 import 'package:thiercelieux/providers/game_provider.dart';
@@ -45,6 +46,18 @@ void main() {
         findsOneWidget);
     // Le Montreur (Chloé) a maintenant Alice, un loup, pour voisine.
     expect(find.text(loc.montreurDoursGrowlsText), findsOneWidget);
+  });
+
+  testWidgets('réglage : la cause de la mort peut rester secrète',
+      (tester) async {
+    nightWhereBobDies();
+    gp.state!.settings.set(SettingId.revealDeathCause, false);
+    final loc = await pumpScreen(tester, gp, const DayRevealScreen(),
+        theme: AppTheme.day);
+
+    expect(find.text('Bob'), findsOneWidget);
+    expect(find.text(loc.roleName(RoleId.voyante)), findsOneWidget);
+    expect(find.textContaining(loc.deathCauseDevoreParLesLoups), findsNothing);
   });
 
   testWidgets('le bouton lance la journée', (tester) async {

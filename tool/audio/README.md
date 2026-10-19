@@ -13,8 +13,8 @@ du téléphone). `flutter test` le vérifie
 sont facultatifs : sans fichier, il n'y a simplement pas de musique ou de
 bruitage.
 
-Les deux sons se coupent dans **Options → Application → Voix du narrateur /
-Musique d'ambiance**.
+Les sons se règlent dans **Options → Application** : voix du narrateur et
+musique d'ambiance (activées ou non), volume de la musique et des bruitages.
 
 - [Fichiers attendus](#fichiers-attendus)
 - [Voix du narrateur : 4 méthodes](#voix-du-narrateur--4-méthodes)
@@ -33,7 +33,7 @@ Les prompts prêts à copier-coller sont dans [prompts.md](prompts.md).
 | `assets/audio/voice/fr/<phrase>.mp3` | les 27 phrases du narrateur en français | 1 à 12 s |
 | `assets/audio/voice/en/<phrase>.mp3` | les 27 phrases en anglais | 1 à 12 s |
 | `assets/audio/music/night.mp3` | musique de la nuit, jouée en boucle | 2 à 4 min |
-| `assets/audio/sfx/nightfall.mp3` | bruitage avant « La nuit tombe » (hurlement de loup) | 2 à 5 s |
+| `assets/audio/sfx/howl.mp3` | hurlement de loup, quand les Loups-Garous se réveillent | 2 à 5 s |
 | `assets/audio/sfx/daybreak.mp3` | bruitage avant « Le jour se lève » (coq, cloche) | 2 à 5 s |
 
 - **Format** : `.mp3` de préférence (`.m4a` et `.wav` marchent aussi).
@@ -232,8 +232,9 @@ Le plus charmant : la voix d'un ami qui joue habituellement le meneur.
   minutes, qui boucle sans à-coup. Elle est jouée à volume réduit et baisse
   encore pendant chaque phrase du narrateur. Moins de 5 Mo.
 - **Bruitages** (facultatifs, 2 à 5 s) : un hurlement de loup lointain
-  (`sfx/nightfall.mp3`) et un chant du coq ou une cloche
-  (`sfx/daybreak.mp3`). Ils sont coupés avec la musique.
+  (`sfx/howl.mp3`, joué au réveil des Loups-Garous) et un chant du coq ou
+  une cloche (`sfx/daybreak.mp3`). Leur volume se règle à part, dans les
+  options.
 
 ### Où les trouver
 
@@ -265,7 +266,7 @@ ffmpeg -i musique_source.mp3 -filter_complex "[0:a]asplit=3[a][b][c];[a]atrim=17
 Garde 4 secondes, fondu de sortie sur la dernière, volume uniformisé :
 
 ```sh
-ffmpeg -i hurlement_source.wav -t 4 -af "afade=t=out:st=3:d=1,loudnorm=I=-16:TP=-1.5:LRA=11" -codec:a libmp3lame -q:a 4 assets/audio/sfx/nightfall.mp3
+ffmpeg -i hurlement_source.wav -t 4 -af "afade=t=out:st=3:d=1,loudnorm=I=-16:TP=-1.5:LRA=11" -codec:a libmp3lame -q:a 4 assets/audio/sfx/howl.mp3
 ffmpeg -i coq_source.wav -t 4 -af "afade=t=out:st=3:d=1,loudnorm=I=-16:TP=-1.5:LRA=11" -codec:a libmp3lame -q:a 4 assets/audio/sfx/daybreak.mp3
 ```
 

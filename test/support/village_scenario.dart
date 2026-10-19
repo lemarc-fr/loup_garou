@@ -88,7 +88,8 @@ abstract final class VillageScenario {
       GamePhase.nightGoBackToSleep,
     ],
     // Nina est Voyante grâce à la Servante ; le Renard a perdu son flair,
-    // la Sorcière ses deux potions.
+    // la Sorcière ses deux potions : ils sont appelés pour rien (faux
+    // tours).
     3: [
       GamePhase.nightIntro,
       GamePhase.nightVoyante,
@@ -96,8 +97,13 @@ abstract final class VillageScenario {
       GamePhase.nightLoups,
       GamePhase.nightInfectPereDesLoups,
       GamePhase.nightGoBackToSleep,
+      GamePhase.nightRenard,
+      GamePhase.nightGoBackToSleep,
+      GamePhase.nightSorciere,
+      GamePhase.nightGoBackToSleep,
     ],
     // Emma, infectée la nuit 3, l'apprend avant de rejoindre la meute.
+    // L'Infect Père, qui a infecté, est appelé pour rien.
     4: [
       GamePhase.nightIntro,
       GamePhase.nightVoyante,
@@ -105,13 +111,26 @@ abstract final class VillageScenario {
       GamePhase.nightInfectedReveal,
       GamePhase.nightGoBackToSleep,
       GamePhase.nightLoups,
+      GamePhase.nightInfectPereDesLoups,
+      GamePhase.nightGoBackToSleep,
+      GamePhase.nightRenard,
+      GamePhase.nightGoBackToSleep,
+      GamePhase.nightSorciere,
       GamePhase.nightGoBackToSleep,
     ],
-    // Plus aucun pouvoir au village depuis la pendaison de l'Ancien.
-    5: [GamePhase.nightIntro, GamePhase.nightLoups, GamePhase.nightGoBackToSleep],
-    6: [GamePhase.nightIntro, GamePhase.nightLoups, GamePhase.nightGoBackToSleep],
+    // Plus aucun pouvoir au village depuis la pendaison de l'Ancien ; seul
+    // l'Infect Père (Manon) est encore appelé pour rien.
+    5: _wolvesAndFakeInfect,
+    6: _wolvesAndFakeInfect,
     7: [GamePhase.nightIntro, GamePhase.nightLoups, GamePhase.nightGoBackToSleep],
   };
+
+  static const _wolvesAndFakeInfect = [
+    GamePhase.nightIntro,
+    GamePhase.nightLoups,
+    GamePhase.nightInfectPereDesLoups,
+    GamePhase.nightGoBackToSleep,
+  ];
 
   /// Morts annoncées au lever de chaque jour, dans l'ordre.
   static const dawnDeaths = <int, List<String>>{

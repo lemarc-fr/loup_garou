@@ -135,6 +135,18 @@ class GameEngine {
     GamePhase.nightInfectedReveal,
   };
 
+  /// Ajoute un événement public au compte rendu du round en cours.
+  void _logEvent(GameState s, RoundEvent event) {
+    if (s.rounds.isNotEmpty) s.rounds.last.events.add(event);
+  }
+
+  /// Décompte du vote secret qu'on valide (null après un vote collectif).
+  Map<String, int>? _takeVoteCounts(GameState s) {
+    final counts = s.lastVoteCounts;
+    s.lastVoteCounts = null;
+    return counts;
+  }
+
   void _startRound(GameState s, String wave, int number) {
     // Referme l'étape "current" laissée en suspens par le round précédent
     // (le dernier rôle de la nuit, le résultat du vote, ...) avant d'en
@@ -276,6 +288,10 @@ class GameEngine {
       q.add(GamePhase.nightInfectedReveal);
       addSleep();
     }
+    // Faux tours (réglage) : un rôle vivant qui n'a plus rien à faire est
+    // quand même appelé (voir GameState.isFakeTurn).
+    final fakeTurns = s.settings.fakeTurnsForPowerlessRoles;
+
     if (s.wolfPackAwake) {
       q.add(GamePhase.nightLoups);
       // La Petite Fille espionne PENDANT le tour des loups : sa phase se
@@ -284,11 +300,12 @@ class GameEngine {
       if (s.hasAliveRole(RoleId.loupBlanc) && s.night > 1 && s.night.isEven) {
         q.add(GamePhase.nightLoupBlanc);
       }
-      if (s.hasAliveRole(RoleId.grandMechantLoup) && s.wolfPackIntact) {
+      if (s.hasAliveRole(RoleId.grandMechantLoup) &&
+          (s.wolfPackIntact || fakeTurns)) {
         q.add(GamePhase.nightGrandMechantLoup);
       }
       if (s.hasAliveRole(RoleId.infectPereDesLoups) &&
-          !s.infectPereDesLoupsUsed) {
+          (!s.infectPereDesLoupsUsed || fakeTurns)) {
         q.add(GamePhase.nightInfectPereDesLoups);
       }
       // Un seul "tu peux te rendormir" pour tout le bloc des loups (et
@@ -298,7 +315,7 @@ class GameEngine {
       addSleep();
     }
 
-    if (s.hasAliveRole(RoleId.renard) && !s.renardPowerLost) {
+    if (s.hasAliveRole(RoleId.renard) && (!s.renardPowerLost || fakeTurns)) {
       q.add(GamePhase.nightRenard);
       addSleep();
     }
@@ -309,7 +326,7 @@ class GameEngine {
 
     final sorciereEncorePuissante = !s.sorciereVieUsed || !s.sorciereMortUsed;
     if (s.hasAliveRole(RoleId.sorciere) &&
-        sorciereEncorePuissante &&
+        (sorciereEncorePuissante || fakeTurns) &&
         s.wolfPackAwake) {
       q.add(GamePhase.nightSorciere);
       addSleep();
@@ -403,7 +420,10 @@ class GameEngine {
   }
 
   bool _shouldSkipPhase(GameState s, GamePhase phase) {
+    // Avec les faux tours, la Sorcière empêchée de jouer est appelée quand
+    // même (voir GameState.isFakeTurn) : son absence la trahirait.
     if (phase == GamePhase.nightSorciere &&
+        !s.settings.fakeTurnsForPowerlessRoles &&
         !s.settings.allowWitchToPlayIfWerewolfDeathCause &&
         s.hasAliveRole(RoleId.sorciere)) {
       final sorciere = s.alivePlayersWithRole(RoleId.sorciere).first;
@@ -434,6 +454,7 @@ class GameEngine {
       if (idx != -1) {
         s.voleurTableCards[idx] = RoleId.voleur;
         voleur.role = chosenTableCard;
+        voleur.card = chosenTableCard;
         // La file de la nuit a été construite avant l'échange : le rôle
         // pris sur la table (Cupidon, Voyante, Loup-Garou...) joue dès
         // cette nuit si le réglage le permet.
@@ -481,6 +502,10 @@ class GameEngine {
     s.salvateurProtectedId = protectedId;
     advance(s);
   }
+
+  /// Fin d'un faux tour (voir GameState.isFakeTurn) : le rôle appelé n'a
+  /// rien fait.
+  void confirmFakeTurn(GameState s) => advance(s);
 
   /// La voyante n'altère aucun état — l'écran affiche juste le rôle en direct.
   void confirmVoyanteDone(GameState s) => advance(s);
@@ -758,6 +783,8 @@ class GameEngine {
   void resolveMayorSuccession(GameState s, String successorId) {
     s.mayorSuccessionNeededFor = null;
     _setMayor(s, successorId);
+    _logEvent(s,
+        RoundEvent(RoundEventKind.mayorSuccession, playerId: successorId));
     _resolveFollowUps(s);
   }
 
@@ -818,11 +845,16 @@ class GameEngine {
 
   void resolveMayorElection(GameState s, String winnerId) {
     _setMayor(s, winnerId);
+    _logEvent(
+        s,
+        RoundEvent(RoundEventKind.mayorElected,
+            playerId: winnerId, votes: _takeVoteCounts(s)));
     advance2(s);
   }
 
   void confirmMayorElectionExplain(GameState s, VoteMode mode) {
     s.voteMode = mode;
+    s.lastVoteCounts = null;
     advance2(s);
   }
 
@@ -831,6 +863,7 @@ class GameEngine {
   /// son éventuelle reprise demandée par le Juge Bègue).
   void confirmDebate(GameState s, VoteMode mode) {
     s.voteMode = mode;
+    s.lastVoteCounts = null;
     advance2(s);
   }
 
@@ -862,6 +895,8 @@ class GameEngine {
         (candidates == null || candidates.contains(cursed.id))) {
       counts[cursed.id] = (counts[cursed.id] ?? 0) + 2;
     }
+    s.lastVoteCounts = Map.fromEntries(
+        counts.entries.toList()..sort((a, b) => b.value.compareTo(a.value)));
     if (counts.isEmpty) return const VoteTally(tiedCandidates: []);
     final maxVotes = counts.values.reduce(max);
     final tied = counts.entries
@@ -875,6 +910,10 @@ class GameEngine {
   }
 
   void resolveVillageVote(GameState s, String eliminatedId) {
+    _logEvent(
+        s,
+        RoundEvent(RoundEventKind.villageVote,
+            playerId: eliminatedId, votes: _takeVoteCounts(s)));
     _applyDeath(s, eliminatedId, DeathCause.vote);
     s.lastVoteTie = null;
     s.corbeauCursedId = null; // la malédiction ne vaut que pour ce vote
@@ -900,18 +939,30 @@ class GameEngine {
   /// [mayorChoiceId] : l'ex aequo désigné par le maire quand il tranche.
   void resolveVillageVoteTie(GameState s, {String? mayorChoiceId}) {
     final rule = villageVoteTieRule(s);
+    final votes = _takeVoteCounts(s);
     switch (rule) {
       case VoteTieRule.boucEmissaire:
         final bouc = s.alivePlayersWithRole(RoleId.boucEmissaire).first;
+        _logEvent(
+            s,
+            RoundEvent(RoundEventKind.villageVote,
+                playerId: bouc.id, tieRule: rule, votes: votes));
         _applyDeath(s, bouc.id, DeathCause.vote);
         s.boucEmissaireChoiceNeededId = bouc.id;
       case VoteTieRule.mayorDecides:
         if (mayorChoiceId == null) {
           throw ArgumentError('Le maire doit désigner un ex aequo');
         }
+        _logEvent(
+            s,
+            RoundEvent(RoundEventKind.villageVote,
+                playerId: mayorChoiceId, tieRule: rule, votes: votes));
         _applyDeath(s, mayorChoiceId, DeathCause.vote);
       case VoteTieRule.nobodyEliminated:
-        break;
+        _logEvent(
+            s,
+            RoundEvent(RoundEventKind.nobodyEliminated,
+                tieRule: rule, votes: votes));
       case VoteTieRule.runoff:
         throw StateError('Égalité réglée par un second tour');
     }
@@ -976,6 +1027,7 @@ class GameEngine {
         cause == DeathCause.vote &&
         !(idiotAlreadyUnmasked && s.settings.idiotDiesOnSecondVote)) {
       s.idiotDuVillageRevealId = p.id;
+      _logEvent(s, RoundEvent(RoundEventKind.idiotSpared, playerId: p.id));
       return;
     }
 
@@ -984,6 +1036,10 @@ class GameEngine {
     p.deathAtNight = s.currentWave == 'night' ? s.night : null;
     p.deathAtDay = s.currentWave == 'day' ? s.day : null;
     s.deathsThisWave.add(playerId);
+    _logEvent(
+        s,
+        RoundEvent(RoundEventKind.death,
+            playerId: p.id, role: p.role, cause: cause));
 
     // Mort avant d'avoir joué sa suite (abattu par le Chasseur...) : la
     // Servante ne choisira plus, la mutation de l'Enfant Sauvage n'a plus à

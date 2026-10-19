@@ -93,6 +93,16 @@ extension RoleLocalizations on AppLocalizations {
     return roleWithFormerRole(roleName(player.role), roleShortName(former));
   }
 
+  /// Comment un joueur est mort (« dévoré(e) par les Loups-Garous »...).
+  String deathCauseLabel(DeathCause cause) => switch (cause) {
+        DeathCause.devoreParLesLoups => deathCauseDevoreParLesLoups,
+        DeathCause.potionDeMort => deathCausePotionDeMort,
+        DeathCause.chagrinDAmourCupidon => deathCauseChagrinDAmourCupidon,
+        DeathCause.vengeanceDuChasseur => deathCauseVengeanceDuChasseur,
+        DeathCause.vote => deathCauseVote,
+        DeathCause.tueParLoupBlanc => deathCauseTueParLoupBlanc,
+      };
+
   /// Libellé du camp tel qu'annoncé au joueur lors de la découverte de
   /// son rôle.
   String campLabel(Camp camp) => switch (camp) {

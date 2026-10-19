@@ -38,7 +38,8 @@ enum NarrationCue {
 
 /// Bruitages facultatifs, communs à toutes les langues :
 /// `assets/audio/sfx/<nom>.mp3`. Simplement ignorés si le fichier manque.
-enum SoundEffect { nightfall, daybreak }
+/// [howl] : le hurlement des loups, au moment où la meute se réveille.
+enum SoundEffect { howl, daybreak }
 
 /// Une étape de la bande-son. Les étapes sont jouées l'une après l'autre,
 /// dans l'ordre (voir SoundService) : une phrase ne coupe jamais la
@@ -160,10 +161,7 @@ class NarrationScript {
 
     if (phase == GamePhase.nightIntro) {
       _awake = null;
-      actions.addAll(const [
-        PlaySfx(SoundEffect.nightfall),
-        SpeakCue(NarrationCue.nightFalls),
-      ]);
+      actions.add(const SpeakCue(NarrationCue.nightFalls));
       return actions;
     }
 
@@ -177,7 +175,13 @@ class NarrationScript {
     // Passage direct d'un rôle à un autre sans écran "rendors-toi" (les
     // Loups puis le Loup-Garou Blanc...) : on endort d'abord le premier.
     _putAwakeRoleToSleep(actions);
-    actions.addAll([const Pause(wakeDelay), SpeakCue(wake)]);
+    actions.add(const Pause(wakeDelay));
+    // Les loups hurlent en se réveillant : le hurlement annonce leur tour,
+    // pas la tombée de la nuit.
+    if (phase == GamePhase.nightLoups) {
+      actions.add(const PlaySfx(SoundEffect.howl));
+    }
+    actions.add(SpeakCue(wake));
     _awake = phase;
     return actions;
   }

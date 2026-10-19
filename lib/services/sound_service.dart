@@ -22,8 +22,8 @@ import 'narration_script.dart';
 /// Aucune erreur audio (plugin absent, fichier illisible...) ne remonte :
 /// le son ne doit jamais bloquer la partie.
 class SoundService {
-  static const _musicVolume = 0.35;
-  static const _duckedMusicVolume = 0.12;
+  /// Pendant une phrase, la musique tombe à cette fraction de son volume.
+  static const _duckRatio = 0.35;
 
   /// mp3 en priorité ; pas d'ogg, illisible sur iOS.
   static const _extensions = ['mp3', 'm4a', 'wav'];
@@ -34,6 +34,8 @@ class SoundService {
 
   bool _voiceEnabled = true;
   bool _musicEnabled = true;
+  double _musicVolume = 0.35;
+  double _sfxVolume = 1;
   String _languageCode = 'fr';
 
   final _queue = Queue<SoundAction>();
@@ -60,10 +62,23 @@ class SoundService {
   Set<String>? _audioAssets;
   bool _disposed = false;
 
-  void configure({required bool voiceEnabled, required bool musicEnabled}) {
+  void configure({
+    required bool voiceEnabled,
+    required bool musicEnabled,
+    double musicVolume = 0.35,
+    double sfxVolume = 1,
+  }) {
     if (_voiceEnabled && !voiceEnabled) _cutCurrentClip();
     _voiceEnabled = voiceEnabled;
     _musicEnabled = musicEnabled;
+    _sfxVolume = sfxVolume;
+    if (musicVolume != _musicVolume) {
+      _musicVolume = musicVolume;
+      // Réglé pendant que la musique joue : on l'entend changer.
+      if (_musicPlaying) {
+        _fadeMusicTo(_musicLevel, const Duration(milliseconds: 200));
+      }
+    }
     _updateMusic();
   }
 
@@ -141,10 +156,12 @@ class SoundService {
       case Pause(:final duration):
         if (_voiceEnabled) await _interruptible(Future.delayed(duration));
       case PlaySfx(:final effect):
-        // Les bruitages font partie de l'ambiance, pas de la narration.
-        if (!_musicEnabled) return;
+        // Volume à zéro : bruitages coupés.
+        if (_sfxVolume <= 0) return;
         final asset = await _findAsset('assets/audio/sfx/${effect.name}');
-        if (asset != null) await _withMusicDucked(() => _playClip(asset));
+        if (asset != null) {
+          await _withMusicDucked(() => _playClip(asset, volume: _sfxVolume));
+        }
       case SpeakCue(:final cue):
         if (!_voiceEnabled) return;
         final asset =
@@ -204,8 +221,10 @@ class SoundService {
     return player;
   }
 
-  Future<void> _playClip(String assetKey) async {
+  Future<void> _playClip(String assetKey, {double volume = 1}) async {
     final player = _voicePlayer ??= await _createPlayer(ReleaseMode.stop);
+    // Voix et bruitages partagent ce lecteur : chacun son volume.
+    await player.setVolume(volume);
     // Écouté avant play() pour ne pas rater la fin d'un clip très court.
     // Le then<void> est indispensable : sous le type Stream<void>, c'est un
     // Stream<AudioEvent>, et un onTimeout qui ne renvoie rien planterait.
@@ -252,7 +271,8 @@ class SoundService {
     }
   }
 
-  double get _musicLevel => _ducked ? _duckedMusicVolume : _musicVolume;
+  double get _musicLevel =>
+      _ducked ? _musicVolume * _duckRatio : _musicVolume;
 
   Future<void> _withMusicDucked(Future<void> Function() body) async {
     _ducked = true;

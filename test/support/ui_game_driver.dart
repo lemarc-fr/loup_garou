@@ -210,6 +210,18 @@ class UiGameDriver {
     expectPhasePreconditions(s);
     await onScreen?.call(phase.name);
 
+    // Faux tour : le téléphone passe comme d'habitude, puis l'écran se
+    // valide tout seul au bout de quelques secondes (tap compris).
+    if (s.isFakeTurn(phase)) {
+      final roleName = expectedFakeTurnPassTo(loc, phase);
+      expect(find.text(roleName), findsWidgets,
+          reason: 'Le téléphone devrait passer à $roleName');
+      await tapButton(loc.passDeviceConfirmButton);
+      await onScreen?.call('${phase.name}.fake');
+      expect(s.phase, isNot(phase), reason: 'Faux tour bloqué sur $phase');
+      return;
+    }
+
     switch (phase) {
       case GamePhase.nightIntro:
         await tapButton(loc.nightIntroEveryoneAsleepButton);
@@ -443,3 +455,14 @@ class UiGameDriver {
     fail('Égalités sans fin au vote');
   }
 }
+
+/// Destinataire de l'écran « passe le téléphone à... » d'un faux tour : le
+/// même que pour le vrai tour du rôle.
+String expectedFakeTurnPassTo(AppLocalizations loc, GamePhase phase) =>
+    switch (phase) {
+      GamePhase.nightSorciere => loc.roleName(RoleId.sorciere),
+      GamePhase.nightRenard => loc.roleName(RoleId.renard),
+      GamePhase.nightInfectPereDesLoups =>
+        loc.roleName(RoleId.infectPereDesLoups),
+      _ => loc.roleName(RoleId.grandMechantLoup),
+    };

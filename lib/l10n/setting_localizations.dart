@@ -33,6 +33,9 @@ extension SettingLocalizations on AppLocalizations {
           settingLoupBlancMustBeLastSurvivorLabel,
         SettingId.ancienPowerLossByAnyVillager =>
           settingAncienPowerLossByAnyVillagerLabel,
+        SettingId.fakeTurnsForPowerlessRoles =>
+          settingFakeTurnsForPowerlessRolesLabel,
+        SettingId.revealDeathCause => settingRevealDeathCauseLabel,
       };
 
   String settingDescription(SettingId id) => switch (id) {
@@ -64,5 +67,17 @@ extension SettingLocalizations on AppLocalizations {
           settingLoupBlancMustBeLastSurvivorDescription,
         SettingId.ancienPowerLossByAnyVillager =>
           settingAncienPowerLossByAnyVillagerDescription,
+        SettingId.fakeTurnsForPowerlessRoles =>
+          settingFakeTurnsForPowerlessRolesDescription,
+        SettingId.revealDeathCause => settingRevealDeathCauseDescription,
+      };
+
+  String settingCategoryLabel(SettingCategory category) => switch (category) {
+        SettingCategory.night => settingCategoryNight,
+        SettingCategory.wolves => settingCategoryWolves,
+        SettingCategory.witch => settingCategoryWitch,
+        SettingCategory.hunter => settingCategoryHunter,
+        SettingCategory.vote => settingCategoryVote,
+        SettingCategory.otherRoles => settingCategoryOtherRoles,
       };
 }

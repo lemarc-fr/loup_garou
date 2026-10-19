@@ -92,6 +92,8 @@ class _NarrationHostState extends State<NarrationHost>
     _sound.configure(
       voiceEnabled: _settings.narrationEnabled,
       musicEnabled: _settings.musicEnabled,
+      musicVolume: _settings.musicVolume,
+      sfxVolume: _settings.sfxVolume,
     );
   }
 

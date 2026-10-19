@@ -58,6 +58,12 @@ class AppColors {
     return lighten ? Colors.white : Colors.black;
   }
 
+  /// Fond (opaque) d'une carte posée sur l'écran, pour vérifier qu'un texte
+  /// y reste lisible.
+  static Color cardOn(ThemeData theme) => theme.brightness == Brightness.dark
+      ? nightAlt
+      : Color.alphaBlend(Colors.white.withValues(alpha: 0.6), parchment);
+
   /// Couleur de texte/icône à poser sur un aplat de couleur [fill]
   /// (bouton plein, pastille...).
   static Color onFill(Color fill) =>
@@ -69,9 +75,17 @@ class AppColors {
 /// Raccourcis pour obtenir une couleur d'accent lisible sur le fond de
 /// l'écran courant, qu'il soit en thème nuit ou en thème jour.
 extension ReadableColors on BuildContext {
-  Color readable(Color accent, {double minContrast = 4.5}) =>
-      AppColors.readableOn(accent, Theme.of(this).scaffoldBackgroundColor,
-          minContrast: minContrast);
+  /// Lisible sur le fond de l'écran ET sur les cartes posées dessus (un
+  /// peu plus claires) : un texte coloré se retrouve souvent dans une carte
+  /// ou une pastille.
+  Color readable(Color accent, {double minContrast = 4.5}) {
+    final theme = Theme.of(this);
+    final onBackground = AppColors.readableOn(
+        accent, theme.scaffoldBackgroundColor,
+        minContrast: minContrast);
+    return AppColors.readableOn(onBackground, AppColors.cardOn(theme),
+        minContrast: minContrast);
+  }
 
   /// Comme [readable], avec le seuil plus souple des icônes et éléments
   /// graphiques (WCAG : 3:1, un peu relevé car l'icône est souvent posée
@@ -173,6 +187,9 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.lantern,
           foregroundColor: AppColors.night,
+          // Bouton désactivé : estompé mais lisible.
+          disabledBackgroundColor: AppColors.nightLine,
+          disabledForegroundColor: AppColors.moonlight.withValues(alpha: 0.7),
           padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
           textStyle:
               GoogleFonts.workSans(fontSize: 16, fontWeight: FontWeight.w600),
@@ -234,6 +251,8 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.forest,
           foregroundColor: AppColors.parchment,
+          disabledBackgroundColor: AppColors.ink.withValues(alpha: 0.1),
+          disabledForegroundColor: AppColors.ink.withValues(alpha: 0.72),
           padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
           textStyle:
               GoogleFonts.workSans(fontSize: 16, fontWeight: FontWeight.w600),

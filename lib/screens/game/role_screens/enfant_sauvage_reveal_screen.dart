@@ -163,11 +163,14 @@ class _LabelledRole extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final content = SizedBox(
+    final fade = opacity;
+    final image = RoleImage(role: role, size: 96);
+    return SizedBox(
       width: 110,
       child: Column(
         children: [
-          RoleImage(role: role, size: 96),
+          // Seule l'illustration s'efface : le nom reste lisible.
+          fade == null ? image : FadeTransition(opacity: fade, child: image),
           const SizedBox(height: 10),
           Text(
             label,
@@ -180,7 +183,5 @@ class _LabelledRole extends StatelessWidget {
         ],
       ),
     );
-    final fade = opacity;
-    return fade == null ? content : FadeTransition(opacity: fade, child: content);
   }
 }

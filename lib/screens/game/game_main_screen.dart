@@ -39,7 +39,8 @@ import 'village_vote_screen.dart';
 import 'vote_result_screen.dart';
 import 'role_screens/enfant_sauvage_mutation_screen.dart';
 
-import '../../widgets/game_progress_sheet.dart';
+import '../../widgets/game_toolbar.dart';
+import 'role_screens/fake_turn_screen.dart';
 import '../../widgets/phase_entrance.dart';
 
 /// Point d'entrée de la partie une fois la distribution des rôles terminée.
@@ -60,7 +61,10 @@ class GameMainScreen extends StatelessWidget {
     final state = gp.state!;
     final phase = state.phase;
 
-    final screen = switch (phase) {
+    // Un rôle sans plus rien à faire est appelé pour rien (faux tour).
+    final screen = state.isFakeTurn(phase)
+        ? FakeTurnScreen(phase: phase)
+        : switch (phase) {
       GamePhase.nightIntro => const NightIntroScreen(),
       GamePhase.nightGoBackToSleep => const NightGoBackToSleepScreen(),
       GamePhase.nightVoleur => const VoleurScreen(),
@@ -103,6 +107,7 @@ class GameMainScreen extends StatelessWidget {
     final waveStart =
         phase == GamePhase.nightIntro || phase == GamePhase.dayReveal;
 
+    final media = MediaQuery.of(context);
     final content = Stack(
       children: [
         // Fond sous l'écran entrant pendant son fondu.
@@ -112,16 +117,25 @@ class GameMainScreen extends StatelessWidget {
                 .scaffoldBackgroundColor,
           ),
         ),
-        PhaseEntrance(
-          // Une nouvelle entrée à chaque étape, y compris deux écrans
-          // « rendors-toi » d'affilée.
-          key: ValueKey((phase, state.night, state.day, state.phaseIndex)),
-          duration: Duration(milliseconds: waveStart ? 650 : 280),
-          child: screen,
+        // L'écran commence sous la bande de la barre d'outils.
+        MediaQuery(
+          data: media.copyWith(
+            padding: media.padding
+                .copyWith(top: media.padding.top + GameToolbar.height),
+            viewPadding: media.viewPadding
+                .copyWith(top: media.viewPadding.top + GameToolbar.height),
+          ),
+          child: PhaseEntrance(
+            // Une nouvelle entrée à chaque étape, y compris deux écrans
+            // « rendors-toi » d'affilée.
+            key: ValueKey((phase, state.night, state.day, state.phaseIndex)),
+            duration: Duration(milliseconds: waveStart ? 650 : 280),
+            child: screen,
+          ),
         ),
         const Align(
           alignment: Alignment.topRight,
-          child: SafeArea(child: GameProgressButton()),
+          child: SafeArea(child: GameToolbar()),
         ),
       ],
     );

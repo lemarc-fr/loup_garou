@@ -14,6 +14,8 @@ class StorageService {
   static const _localeKey = 'thiercelieux.locale.v1';
   static const _narrationKey = 'thiercelieux.sound.narration.v1';
   static const _musicKey = 'thiercelieux.sound.music.v1';
+  static const _musicVolumeKey = 'thiercelieux.sound.music_volume.v1';
+  static const _sfxVolumeKey = 'thiercelieux.sound.sfx_volume.v1';
 
 
   Future<List<PlayerStats>> loadAllStats() async {
@@ -72,22 +74,38 @@ class StorageService {
     }
   }
 
-  /// Réglages du son (voix du narrateur, musique d'ambiance), activés par
-  /// défaut.
-  Future<({bool narration, bool music})> loadSoundSettings() async {
+  /// Réglages du son : voix du narrateur et musique d'ambiance (activées
+  /// par défaut), volume de la musique et des bruitages (de 0 à 1).
+  Future<SoundSettings> loadSoundSettings() async {
     final prefs = await SharedPreferences.getInstance();
     return (
       narration: prefs.getBool(_narrationKey) ?? true,
       music: prefs.getBool(_musicKey) ?? true,
+      musicVolume:
+          prefs.getDouble(_musicVolumeKey) ?? SoundDefaults.musicVolume,
+      sfxVolume: prefs.getDouble(_sfxVolumeKey) ?? SoundDefaults.sfxVolume,
     );
   }
 
-  Future<void> saveSoundSettings({
-    required bool narration,
-    required bool music,
-  }) async {
+  Future<void> saveSoundSettings(SoundSettings sound) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_narrationKey, narration);
-    await prefs.setBool(_musicKey, music);
+    await prefs.setBool(_narrationKey, sound.narration);
+    await prefs.setBool(_musicKey, sound.music);
+    await prefs.setDouble(_musicVolumeKey, sound.musicVolume);
+    await prefs.setDouble(_sfxVolumeKey, sound.sfxVolume);
   }
+}
+
+typedef SoundSettings = ({
+  bool narration,
+  bool music,
+  double musicVolume,
+  double sfxVolume,
+});
+
+/// Volumes par défaut (de 0 à 1). La musique reste discrète : elle ne doit
+/// pas couvrir la voix du narrateur.
+abstract final class SoundDefaults {
+  static const musicVolume = 0.35;
+  static const sfxVolume = 1.0;
 }

@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:thiercelieux/l10n/app_localizations.dart';
+import 'package:thiercelieux/l10n/role_localizations.dart';
 
 import '../models/game_progress.dart';
 import '../models/game_state.dart';
 import '../providers/game_provider.dart';
 import '../theme/app_theme.dart';
+import 'game_toolbar.dart';
 
-/// Bouton compact affiché en overlay au-dessus de l'écran de jeu (voir
-/// GameMainScreen) : résume en un coup d'œil où on en est ("Nuit 2",
-/// "Jour 1"...) et ouvre le résumé complet de la partie au tap.
+/// Bouton compact de la barre d'outils de la partie (voir GameToolbar) :
+/// résume en un coup d'œil où on en est ("Nuit 2", "Jour 1"...) et ouvre le
+/// résumé complet de la partie au tap.
 class GameProgressButton extends StatelessWidget {
   const GameProgressButton({super.key});
 
@@ -26,33 +28,21 @@ class GameProgressButton extends StatelessWidget {
         ? loc.gameProgressNightCounter(state.night)
         : loc.gameProgressDayCounter(state.day);
 
-    return Padding(
-      padding: const EdgeInsets.only(top: 6, right: 6),
-      child: Material(
-        color: AppColors.nightAlt.withValues(alpha: 0.88),
-        borderRadius: BorderRadius.circular(20),
-        elevation: 3,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(20),
-          onTap: () => showGameProgressSheet(context),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(isNight ? Icons.dark_mode : Icons.wb_sunny,
-                    size: 18, color: AppColors.lantern),
-                const SizedBox(width: 6),
-                Text(label,
-                    style: theme.textTheme.bodyMedium
-                        ?.copyWith(color: AppColors.moonlight)),
-                const SizedBox(width: 6),
-                const Icon(Icons.checklist_rtl,
-                    size: 16, color: AppColors.moonlight),
-              ],
-            ),
-          ),
-        ),
+    return ToolbarPill(
+      onTap: () => showGameProgressSheet(context),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(isNight ? Icons.dark_mode : Icons.wb_sunny,
+              size: 18, color: AppColors.lantern),
+          const SizedBox(width: 6),
+          Text(label,
+              style: theme.textTheme.bodyMedium
+                  ?.copyWith(color: AppColors.moonlight)),
+          const SizedBox(width: 6),
+          const Icon(Icons.checklist_rtl,
+              size: 16, color: AppColors.moonlight),
+        ],
       ),
     );
   }
@@ -207,17 +197,127 @@ class _RoundTile extends StatelessWidget {
                 style: const TextStyle(color: AppColors.lantern))
             : null,
         childrenPadding: const EdgeInsets.only(bottom: 8),
-        children: round.steps.isEmpty
-            ? [
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Text(loc.gameProgressInProgressDots,
-                      style: theme.textTheme.bodyMedium),
-                ),
-              ]
-            : [for (final step in round.steps) _StepTile(step: step)],
+        expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Compte rendu : morts, élections, résultat des votes. Une nuit
+          // n'en a qu'une fois terminée (ses morts sont annoncées au jour).
+          if (round.events.isNotEmpty || !isLatest) ...[
+            _SubTitle(loc.gameProgressEventsTitle),
+            if (round.events.isEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 2, 16, 6),
+                child: Text(loc.gameEventNone,
+                    style: theme.textTheme.bodyMedium),
+              ),
+            for (final event in round.events) _EventTile(event: event),
+            _SubTitle(loc.gameProgressStepsTitle),
+          ],
+          if (round.steps.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text(loc.gameProgressInProgressDots,
+                  style: theme.textTheme.bodyMedium),
+            )
+          else
+            for (final step in round.steps) _StepTile(step: step),
+        ],
       ),
+    );
+  }
+}
+
+class _SubTitle extends StatelessWidget {
+  final String text;
+  const _SubTitle(this.text);
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+        child: Text(
+          text.toUpperCase(),
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: AppColors.lantern, letterSpacing: 1.1),
+        ),
+      );
+}
+
+/// Une ligne du compte rendu d'un round (voir RoundEvent).
+class _EventTile extends StatelessWidget {
+  final RoundEvent event;
+  const _EventTile({required this.event});
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.read<GameProvider>().state!;
+    final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
+    final player = state.tryById(event.playerId);
+    final name = player?.name ?? '';
+
+    final (icon, color, text) = switch (event.kind) {
+      RoundEventKind.death => (
+          Icons.close,
+          AppColors.blood,
+          // Cause de la mort : selon le réglage, comme à l'annonce.
+          state.settings.revealDeathCause && event.cause != null
+              ? loc.gameEventDeathWithCause(name, loc.playerRoleLabel(player!),
+                  loc.deathCauseLabel(event.cause!))
+              : loc.gameEventDeath(name, loc.playerRoleLabel(player!)),
+        ),
+      RoundEventKind.mayorElected => (
+          Icons.emoji_events,
+          AppColors.lantern,
+          loc.gameEventMayorElected(name),
+        ),
+      RoundEventKind.mayorSuccession => (
+          Icons.emoji_events,
+          AppColors.lantern,
+          loc.gameEventMayorSuccession(name),
+        ),
+      RoundEventKind.villageVote => (
+          Icons.gavel,
+          AppColors.moonlight,
+          loc.gameEventVillageVote(name),
+        ),
+      RoundEventKind.nobodyEliminated => (
+          Icons.balance,
+          AppColors.moonlight,
+          loc.gameEventNobodyEliminated,
+        ),
+      RoundEventKind.idiotSpared => (
+          Icons.sentiment_satisfied,
+          AppColors.forest,
+          loc.gameEventIdiotSpared(name),
+        ),
+    };
+
+    final details = [
+      if (event.tieRule case final tie?)
+        switch (tie) {
+          VoteTieRule.boucEmissaire => loc.voteResultTieBouc,
+          VoteTieRule.mayorDecides => loc.voteResultTieMayor,
+          VoteTieRule.nobodyEliminated => loc.voteResultTieNobody,
+          VoteTieRule.runoff => '',
+        },
+      if (event.votes case final votes? when votes.isNotEmpty)
+        votes.entries
+            .map((e) =>
+                loc.gameEventVotes(state.tryById(e.key)?.name ?? '', e.value))
+            .join(' · '),
+    ].where((d) => d.isNotEmpty);
+
+    return ListTile(
+      dense: true,
+      leading: Icon(icon,
+          size: 22,
+          color: AppColors.readableOn(color, AppColors.nightAlt,
+              minContrast: 3.5)),
+      title: Text(text, style: theme.textTheme.bodyMedium),
+      subtitle: details.isEmpty
+          ? null
+          : Text(details.join('\n'),
+              style: theme.textTheme.bodySmall?.copyWith(
+                  color: AppColors.moonlight.withValues(alpha: 0.85))),
     );
   }
 }
@@ -236,7 +336,7 @@ class _StepTile extends StatelessWidget {
       title: Text(
         gamePhaseLabel(AppLocalizations.of(context)!, step.phase),
         style: theme.textTheme.bodyMedium?.copyWith(
-          color: dimmed ? AppColors.moonlight.withValues(alpha: 0.45) : null,
+          color: dimmed ? AppColors.moonlight.withValues(alpha: 0.62) : null,
         ),
       ),
     );
@@ -264,7 +364,7 @@ class _StatusIcon extends StatelessWidget {
       case StepStatus.pending:
         return Icon(Icons.radio_button_unchecked,
             key: const ValueKey('pending'),
-            color: AppColors.moonlight.withValues(alpha: 0.35),
+            color: AppColors.moonlight.withValues(alpha: 0.5),
             size: 22);
       case StepStatus.done:
         return Icon(Icons.check_circle,

@@ -48,8 +48,11 @@ class DayRevealScreen extends StatelessWidget {
                         child: ListTile(
                           leading: RoleImage(role: p.role, size: 48),
                           title: Text(p.name),
-                          subtitle: Text(
-                              '${loc.playerRoleLabel(p)} — ${_causeLabel(loc, p.deathCause)}'),
+                          // Cause de la mort : selon le réglage.
+                          subtitle: Text(state.settings.revealDeathCause &&
+                                  p.deathCause != null
+                              ? '${loc.playerRoleLabel(p)} — ${loc.deathCauseLabel(p.deathCause!)}'
+                              : loc.playerRoleLabel(p)),
                         ),
                       ),
                   ],
@@ -86,24 +89,5 @@ class DayRevealScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _causeLabel(AppLocalizations loc, DeathCause? c) {
-    switch (c) {
-      case DeathCause.devoreParLesLoups:
-        return loc.deathCauseDevoreParLesLoups;
-      case DeathCause.potionDeMort:
-        return loc.deathCausePotionDeMort;
-      case DeathCause.chagrinDAmourCupidon:
-        return loc.deathCauseChagrinDAmourCupidon;
-      case DeathCause.vengeanceDuChasseur:
-        return loc.deathCauseVengeanceDuChasseur;
-      case DeathCause.vote:
-        return loc.deathCauseVote;
-      case DeathCause.tueParLoupBlanc:
-        return loc.deathCauseTueParLoupBlanc;
-      default :
-        return '';
-    }
   }
 }

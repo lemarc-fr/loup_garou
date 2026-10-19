@@ -2,18 +2,23 @@ import 'package:flutter/material.dart';
 
 /// Bouton qui se valide tout seul au bout de [duration] : une barre
 /// estompée remplit le bouton de gauche à droite pendant le compte à
-/// rebours. Un appui le valide aussitôt. Tant que [duration] est null
-/// (durée encore inconnue), c'est un bouton ordinaire.
+/// rebours. Un appui le valide aussitôt, sauf avec [waitForEnd]. Tant que
+/// [duration] est null (durée encore inconnue), c'est un bouton ordinaire.
 class CountdownButton extends StatefulWidget {
   final String label;
   final VoidCallback onPressed;
   final Duration? duration;
+
+  /// Un appui ne fait rien : seul le compte à rebours valide le bouton
+  /// (faux tour, qui doit durer comme un vrai).
+  final bool waitForEnd;
 
   const CountdownButton({
     super.key,
     required this.label,
     required this.onPressed,
     this.duration,
+    this.waitForEnd = false,
   });
 
   @override
@@ -71,7 +76,8 @@ class _CountdownButtonState extends State<CountdownButton>
     final fill = textColor.withValues(alpha: 0.22);
 
     return ElevatedButton(
-      onPressed: _press,
+      // Une fonction vide plutôt que null : le bouton garde son aspect actif.
+      onPressed: widget.waitForEnd ? () {} : _press,
       clipBehavior: Clip.antiAlias,
       style: ButtonStyle(
         backgroundBuilder: (context, states, content) => AnimatedBuilder(

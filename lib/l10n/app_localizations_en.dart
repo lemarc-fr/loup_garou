@@ -1474,4 +1474,163 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get narrationSleepSorciere => 'The Witch goes back to sleep.';
+
+  @override
+  String get settingFakeTurnsForPowerlessRolesLabel =>
+      'Call roles that lost their power';
+
+  @override
+  String get settingFakeTurnsForPowerlessRolesDescription =>
+      'If on, like a real game master, the narrator still calls the Witch with no potion left, the Fox who lost his sense of smell, the Accursed Wolf-Father who already infected someone or the Big Bad Wolf who lost his power: they wake up for a few seconds for nothing. Otherwise their silence would give away that their power is gone.';
+
+  @override
+  String get settingRevealDeathCauseLabel => 'Announce how players died';
+
+  @override
+  String get settingRevealDeathCauseDescription =>
+      'If on, each death announcement tells how the player died (devoured by the Werewolves, poisoned by the Witch...). Otherwise only their name and role are revealed.';
+
+  @override
+  String get settingCategoryNight => 'Night and announcements';
+
+  @override
+  String get settingCategoryWolves => 'Werewolves';
+
+  @override
+  String get settingCategoryWitch => 'Witch';
+
+  @override
+  String get settingCategoryHunter => 'Hunter';
+
+  @override
+  String get settingCategoryVote => 'Village votes';
+
+  @override
+  String get settingCategoryOtherRoles => 'Other roles';
+
+  @override
+  String get settingsInGameNotice =>
+      'Game in progress: changes apply right away.';
+
+  @override
+  String get settingsResetRulesButton => 'Restore default rules';
+
+  @override
+  String get settingsResetRulesDialogTitle => 'Restore the rules?';
+
+  @override
+  String get settingsResetRulesDialogMessage =>
+      'Every rule goes back to its default value. Language and sound are unchanged.';
+
+  @override
+  String get settingsResetRulesConfirmLabel => 'Restore';
+
+  @override
+  String get settingsSoundMusicVolumeLabel => 'Music volume';
+
+  @override
+  String get settingsSoundSfxVolumeLabel => 'Sound effects volume';
+
+  @override
+  String get settingsSoundSfxDescription =>
+      'Wolves howling as they wake up, rooster at daybreak. At zero, they are off.';
+
+  @override
+  String get settingsLanguageSystemShort => 'Phone';
+
+  @override
+  String get fakeTurnInstruction =>
+      'Act as if you were playing: keep your eyes open for a few seconds. The narrator will tell you when to go back to sleep.';
+
+  @override
+  String get fakeTurnSorciereNoPotion => 'You have used both your potions.';
+
+  @override
+  String get fakeTurnSorciereCannotPlay =>
+      'Tonight, you cannot use your potions.';
+
+  @override
+  String get fakeTurnRenard => 'You have lost your sense of smell.';
+
+  @override
+  String get fakeTurnInfectPereDesLoups =>
+      'You have already used your infection power.';
+
+  @override
+  String get fakeTurnGrandMechantLoup =>
+      'A member of the pack has died: you can no longer devour a second victim.';
+
+  @override
+  String get fakeTurnWaitButton => 'Wait...';
+
+  @override
+  String get gameRolesTooltip => 'Roles in this game';
+
+  @override
+  String get gameRolesSheetTitle => 'Roles in this game';
+
+  @override
+  String get gameRolesSheetIntro =>
+      'Every card in this game. A card is out of play once its player\'s death reveals it.';
+
+  @override
+  String gameRolesRemaining(int remaining, int total) {
+    return '$remaining / $total in play';
+  }
+
+  @override
+  String get gameRolesNoneLeft => 'Out of play';
+
+  @override
+  String get gameProgressEventsTitle => 'What happened';
+
+  @override
+  String get gameProgressStepsTitle => 'Steps';
+
+  @override
+  String gameEventDeath(String name, String role) {
+    return '$name ($role) died';
+  }
+
+  @override
+  String gameEventDeathWithCause(String name, String role, String cause) {
+    return '$name ($role): $cause';
+  }
+
+  @override
+  String gameEventMayorElected(String name) {
+    return '$name is elected mayor';
+  }
+
+  @override
+  String gameEventMayorSuccession(String name) {
+    return '$name succeeds the mayor';
+  }
+
+  @override
+  String gameEventVillageVote(String name) {
+    return 'The village points at $name';
+  }
+
+  @override
+  String get gameEventNobodyEliminated => 'The village eliminates nobody';
+
+  @override
+  String gameEventIdiotSpared(String name) {
+    return '$name turns out to be the Village Idiot and survives';
+  }
+
+  @override
+  String gameEventVotes(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count votes',
+      one: '1 vote',
+    );
+    return '$name: $_temp0';
+  }
+
+  @override
+  String get gameEventNone => 'No death, no election.';
 }

@@ -61,7 +61,7 @@ void main() {
         () => NarrationTiming.clip('fr', NarrationCue.sleepVoyante)))!;
     final step = await tester.runAsync(() => NarrationTiming.of(const [
           StartMusic(),
-          PlaySfx(SoundEffect.nightfall),
+          PlaySfx(SoundEffect.howl),
           Pause(Duration(seconds: 2)),
           SpeakCue(NarrationCue.sleepVoyante),
         ], 'fr'));

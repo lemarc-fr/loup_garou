@@ -313,6 +313,12 @@ class GameProvider extends ChangeNotifier {
   /// GameState directement.
   bool get montreurDoursGrowls => state?.montreurDoursGrowls ?? false;
 
+  /// Fin d'un faux tour (voir GameState.isFakeTurn).
+  void confirmFakeTurn() {
+    engine.confirmFakeTurn(state!);
+    notifyListeners();
+  }
+
   void advanceGeneric() {
     engine.advance(state!);
     notifyListeners();

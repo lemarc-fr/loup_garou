@@ -21,15 +21,18 @@ void main() {
         () {
       expect(script.onPhase(GamePhase.nightIntro), const [
         StartMusic(),
-        PlaySfx(SoundEffect.nightfall),
         SpeakCue(NarrationCue.nightFalls),
       ]);
       expect(script.onPhase(GamePhase.nightVoyante),
           const [_wakePause, SpeakCue(NarrationCue.wakeVoyante)]);
       expect(script.onPhase(GamePhase.nightGoBackToSleep),
           const [SpeakCue(NarrationCue.sleepVoyante)]);
-      expect(script.onPhase(GamePhase.nightLoups),
-          const [_wakePause, SpeakCue(NarrationCue.wakeLoups)]);
+      // Le hurlement annonce le réveil des loups, pas la tombée de la nuit.
+      expect(script.onPhase(GamePhase.nightLoups), const [
+        _wakePause,
+        PlaySfx(SoundEffect.howl),
+        SpeakCue(NarrationCue.wakeLoups),
+      ]);
       expect(script.onPhase(GamePhase.nightGoBackToSleep),
           const [SpeakCue(NarrationCue.sleepLoups)]);
       expect(script.onPhase(GamePhase.dayReveal), const [

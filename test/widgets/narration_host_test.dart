@@ -23,7 +23,12 @@ class _RecordingSoundService extends SoundService {
   bool disposed = false;
 
   @override
-  void configure({required bool voiceEnabled, required bool musicEnabled}) {
+  void configure({
+    required bool voiceEnabled,
+    required bool musicEnabled,
+    double musicVolume = 0.35,
+    double sfxVolume = 1,
+  }) {
     this.voiceEnabled = voiceEnabled;
     this.musicEnabled = musicEnabled;
   }

@@ -37,6 +37,7 @@ class AppHarness {
       'thiercelieux.locale.v1': language,
       'thiercelieux.sound.narration.v1': false,
       'thiercelieux.sound.music.v1': false,
+      'thiercelieux.sound.sfx_volume.v1': 0.0,
       ...preferences,
     });
     final settings = SettingsProvider();

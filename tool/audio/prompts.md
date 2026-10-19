@@ -128,7 +128,7 @@ Mots-clés à chercher sur Pixabay Music ou YouTube Audio Library :
 
 ### ElevenLabs — *Sound Effects* (durée 4 s, *Prompt influence* ~50 %)
 
-**`sfx/nightfall.mp3`**
+**`sfx/howl.mp3`** (au réveil des Loups-Garous)
 
 ```text
 A single distant wolf howl echoing over a misty forest at night, soft wind in the trees, no music

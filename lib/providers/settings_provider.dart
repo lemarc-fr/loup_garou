@@ -8,8 +8,8 @@ import '../services/storage_service.dart';
 /// `context.watch<SettingsProvider>().get(SettingId.xxx)`.
 ///
 /// Porte aussi la langue de l'application ([locale]) et les réglages du son
-/// ([narrationEnabled], [musicEnabled]), qui ne sont pas des règles de jeu
-/// mais se règlent depuis le même écran.
+/// ([narrationEnabled], [musicEnabled], [musicVolume], [sfxVolume]), qui ne
+/// sont pas des règles de jeu mais se règlent depuis le même écran.
 class SettingsProvider extends ChangeNotifier {
   final StorageService _storage = StorageService();
   GameSettings settings = GameSettings();
@@ -25,6 +25,13 @@ class SettingsProvider extends ChangeNotifier {
   /// Musique d'ambiance pendant la nuit.
   bool musicEnabled = true;
 
+  /// Volume de la musique d'ambiance, de 0 à 1.
+  double musicVolume = SoundDefaults.musicVolume;
+
+  /// Volume des bruitages (hurlement des loups, chant du coq), de 0 à 1 :
+  /// à 0, ils ne sont plus joués.
+  double sfxVolume = SoundDefaults.sfxVolume;
+
   Future<void> load() async {
     settings = await _storage.loadSettings();
     final code = await _storage.loadLocaleCode();
@@ -32,6 +39,8 @@ class SettingsProvider extends ChangeNotifier {
     final sound = await _storage.loadSoundSettings();
     narrationEnabled = sound.narration;
     musicEnabled = sound.music;
+    musicVolume = sound.musicVolume;
+    sfxVolume = sound.sfxVolume;
     loaded = true;
     notifyListeners();
   }
@@ -48,8 +57,26 @@ class SettingsProvider extends ChangeNotifier {
     await _saveSound();
   }
 
-  Future<void> _saveSound() => _storage.saveSoundSettings(
-      narration: narrationEnabled, music: musicEnabled);
+  /// Appelé à chaque mouvement du curseur : la valeur est appliquée tout
+  /// de suite, mais n'est enregistrée qu'au lâcher ([saveSound]).
+  void setMusicVolume(double value) {
+    musicVolume = value.clamp(0.0, 1.0);
+    notifyListeners();
+  }
+
+  void setSfxVolume(double value) {
+    sfxVolume = value.clamp(0.0, 1.0);
+    notifyListeners();
+  }
+
+  Future<void> saveSound() => _saveSound();
+
+  Future<void> _saveSound() => _storage.saveSoundSettings((
+        narration: narrationEnabled,
+        music: musicEnabled,
+        musicVolume: musicVolume,
+        sfxVolume: sfxVolume,
+      ));
 
   Future<void> setLocale(Locale? value) async {
     locale = value;
@@ -61,6 +88,14 @@ class SettingsProvider extends ChangeNotifier {
 
   Future<void> setValue(SettingId id, bool value) async {
     settings.set(id, value);
+    notifyListeners();
+    await _storage.saveSettings(settings);
+  }
+
+  /// Remet toutes les règles du jeu à leur valeur par défaut (pas la
+  /// langue ni le son).
+  Future<void> resetRules() async {
+    settings.resetToDefaults();
     notifyListeners();
     await _storage.saveSettings(settings);
   }

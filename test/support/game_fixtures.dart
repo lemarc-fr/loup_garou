@@ -38,6 +38,7 @@ void rigRoles(GameState state, List<RoleId> roles,
   assert(roles.length == state.players.length);
   for (var i = 0; i < roles.length; i++) {
     state.players[i].role = roles[i];
+    state.players[i].card = roles[i];
   }
   state.voleurTableCards = [...tableCards];
 }
@@ -78,6 +79,10 @@ extension EngineShortcuts on GameEngine {
     var guard = 0;
     while (s.phase != phase) {
       if (++guard > 50) throw StateError('$phase jamais atteinte');
+      if (s.isFakeTurn(s.phase)) {
+        confirmFakeTurn(s);
+        continue;
+      }
       switch (s.phase) {
         case GamePhase.nightIntro:
         case GamePhase.nightGoBackToSleep:
@@ -100,6 +105,10 @@ extension EngineShortcuts on GameEngine {
     var guard = 0;
     while (s.currentWave == 'night') {
       if (++guard > 60) throw StateError('nuit sans fin');
+      if (s.isFakeTurn(s.phase)) {
+        confirmFakeTurn(s);
+        continue;
+      }
       switch (s.phase) {
         case GamePhase.nightIntro:
         case GamePhase.nightGoBackToSleep:

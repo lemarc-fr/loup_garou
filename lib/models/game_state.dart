@@ -182,6 +182,10 @@ class GameState {
   /// d'égalité), pour l'annoncer au résultat.
   VoteTieRule? lastVoteTie;
 
+  /// Décompte du dernier vote secret dépouillé (voir GameEngine.tallyVotes),
+  /// repris dans le résumé de la partie quand ce vote est validé.
+  Map<String, int>? lastVoteCounts;
+
   // --- Morts de la vague en cours (nuit ou vote), pas encore révélées ---
   List<String> deathsThisWave = [];
 
@@ -216,6 +220,45 @@ class GameState {
   bool hasAliveRole(RoleId role) => alivePlayersWithRole(role).isNotEmpty;
   bool gameHasRole(RoleId role) => players.any((p) => p.role == role);
 
+  /// Nombre de cartes de chaque rôle de la partie qui n'ont pas encore été
+  /// révélées par une mort : ce que tout le village peut savoir, sans
+  /// rien trahir (une carte restée sur la table du Voleur compte comme
+  /// encore en jeu). Seuls les rôles de la partie y figurent.
+  Map<RoleId, int> get remainingRoleCounts {
+    final remaining = {
+      for (final e in config.roleCounts.entries)
+        if (e.value > 0) e.key: e.value,
+    };
+    for (final p in players.where((p) => !p.alive)) {
+      final left = remaining[p.card];
+      if (left != null && left > 0) remaining[p.card] = left - 1;
+    }
+    return remaining;
+  }
+
+  /// Vrai si [phase] est un « faux tour » : le rôle est appelé comme
+  /// d'habitude (réglage fakeTurnsForPowerlessRoles), mais n'a plus rien à
+  /// faire. Le joueur se réveille quelques secondes puis se rendort, pour
+  /// qu'à l'oreille rien ne distingue cette nuit des autres.
+  bool isFakeTurn(GamePhase phase) {
+    switch (phase) {
+      case GamePhase.nightSorciere:
+        if (sorciereVieUsed && sorciereMortUsed) return true;
+        final sorciere = alivePlayersWithRole(RoleId.sorciere);
+        // Réglage : la Sorcière dévorée cette nuit ne joue pas.
+        return !settings.allowWitchToPlayIfWerewolfDeathCause &&
+            sorciere.isNotEmpty &&
+            finalNightVictimId == sorciere.first.id;
+      case GamePhase.nightRenard:
+        return renardPowerLost;
+      case GamePhase.nightInfectPereDesLoups:
+        return infectPereDesLoupsUsed;
+      case GamePhase.nightGrandMechantLoup:
+        return !wolfPackIntact;
+      default:
+        return false;
+    }
+  }
   /// Joueurs vivants pouvant participer au vote du village. L'Idiot du
   /// Village, une fois démasqué, en a perdu le droit — mais reste éligible
   /// en tant que candidat. Le lendemain de sa mort, le Bouc Émissaire a pu

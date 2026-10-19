@@ -227,7 +227,7 @@ void main() {
         ('Gml', RoleId.grandMechantLoup),
         ('Lg', RoleId.loupGarou),
         for (var i = 1; i <= 6; i++) ('V$i', RoleId.simpleVillageois),
-      ]);
+      ], settings: settingsWith({SettingId.fakeTurnsForPowerlessRoles: false}));
       expect(s.phaseQueue, contains(GamePhase.nightGrandMechantLoup));
       engine.skipTo(s, GamePhase.nightLoups);
       engine.setLoupsVictim(s, s.idOf('V1'));
@@ -247,7 +247,7 @@ void main() {
         ('Lg', RoleId.loupGarou),
         ('Lg2', RoleId.loupGarou),
         for (var i = 1; i <= 6; i++) ('V$i', RoleId.simpleVillageois),
-      ]);
+      ], settings: settingsWith({SettingId.fakeTurnsForPowerlessRoles: false}));
       engine.skipTo(s, GamePhase.nightLoups);
       engine.setLoupsVictim(s, s.idOf('V1'));
       engine.skipTo(s, GamePhase.nightSorciere);
@@ -268,8 +268,10 @@ void main() {
           ('V2', RoleId.simpleVillageois),
           ('V3', RoleId.simpleVillageois),
         ],
-        settings: settingsWith(
-            {SettingId.allowWitchToPlayIfWerewolfDeathCause: false}),
+        settings: settingsWith({
+          SettingId.allowWitchToPlayIfWerewolfDeathCause: false,
+          SettingId.fakeTurnsForPowerlessRoles: false,
+        }),
       );
       engine.skipTo(s, GamePhase.nightLoups);
       engine.setLoupsVictim(s, s.idOf('Sor'));
@@ -282,6 +284,219 @@ void main() {
       engine.advance(s);
       expect(s.phase, GamePhase.dayReveal);
       expect(s.deadNames, ['Sor']);
+    });
+  });
+
+  group('Faux tours (réglage par défaut)', () {
+    /// Joue la nuit jusqu'à [phase] : c'est un faux tour, qui ne change rien.
+    void expectFakeTurn(GameState s, GamePhase phase) {
+      expect(s.phase, phase);
+      expect(s.isFakeTurn(phase), isTrue);
+      final deaths = [...s.deathsThisWave];
+      engine.confirmFakeTurn(s);
+      expect(s.phase, isNot(phase));
+      expect(s.deathsThisWave, deaths);
+      final step = s.rounds.last.steps.firstWhere((st) => st.phase == phase);
+      expect(step.status, isNot(StepStatus.skipped),
+          reason: 'Le résumé ne doit pas trahir le faux tour');
+    }
+
+    test('la Sorcière sans potion est appelée pour rien', () {
+      final s = startedGame(engine, [
+        ('Sor', RoleId.sorciere),
+        ('Lg', RoleId.loupGarou),
+        ('Lg2', RoleId.loupGarou),
+        for (var i = 1; i <= 6; i++) ('V$i', RoleId.simpleVillageois),
+      ]);
+      engine.skipTo(s, GamePhase.nightLoups);
+      engine.setLoupsVictim(s, s.idOf('V1'));
+      engine.skipTo(s, GamePhase.nightSorciere);
+      expect(s.isFakeTurn(GamePhase.nightSorciere), isFalse);
+      engine.resolveSorciere(s, useVie: true, poisonTargetId: s.idOf('Lg2'));
+      engine.finishNight(s);
+      toNextNight(s, 'V2');
+      engine.skipTo(s, GamePhase.nightLoups);
+      engine.setLoupsVictim(s, s.idOf('V3'));
+      engine.skipTo(s, GamePhase.nightSorciere);
+      expectFakeTurn(s, GamePhase.nightSorciere);
+      engine.finishNight(s);
+      expect(s.deadNames, contains('V3'), reason: 'Plus de potion de vie');
+    });
+
+    test('la Sorcière dévorée, empêchée de jouer, est appelée pour rien', () {
+      final s = startedGame(
+        engine,
+        [
+          ('Sor', RoleId.sorciere),
+          ('Lg', RoleId.loupGarou),
+          ('V1', RoleId.simpleVillageois),
+          ('V2', RoleId.simpleVillageois),
+          ('V3', RoleId.simpleVillageois),
+        ],
+        settings: settingsWith(
+            {SettingId.allowWitchToPlayIfWerewolfDeathCause: false}),
+      );
+      engine.skipTo(s, GamePhase.nightLoups);
+      engine.setLoupsVictim(s, s.idOf('Sor'));
+      engine.advance(s); // « rendors-toi » des loups
+      expectFakeTurn(s, GamePhase.nightSorciere);
+      engine.advance(s);
+      expect(s.phase, GamePhase.dayReveal);
+      expect(s.deadNames, ['Sor']);
+      expect(s.sorciereVieUsed, isFalse);
+    });
+
+    test('le Renard sans flair est appelé pour rien', () {
+      final s = startedGame(engine, [
+        ('V1', RoleId.simpleVillageois),
+        ('Ren', RoleId.renard),
+        ('V2', RoleId.simpleVillageois),
+        ('V3', RoleId.simpleVillageois),
+        ('Lb', RoleId.loupBlanc),
+        ('Lg', RoleId.loupGarou),
+        ('V4', RoleId.simpleVillageois),
+      ]);
+      engine.skipTo(s, GamePhase.nightLoups);
+      engine.setLoupsVictim(s, s.idOf('V4'));
+      engine.skipTo(s, GamePhase.nightRenard);
+      engine.resolveRenardCenter(s, s.idOf('Ren')); // V1, Ren, V2
+      engine.finishNight(s);
+      toNextNight(s, 'V2');
+      expect(s.phaseQueue, contains(GamePhase.nightRenard));
+      engine.skipTo(s, GamePhase.nightLoups);
+      engine.setLoupsVictim(s, s.idOf('V1'));
+      engine.resolveLoupBlanc(s, null); // nuit paire : le Loup Blanc joue
+      engine.skipTo(s, GamePhase.nightRenard);
+      expectFakeTurn(s, GamePhase.nightRenard);
+    });
+
+    test("l'Infect Père, pouvoir utilisé, et le Grand Méchant Loup, meute "
+        'entamée, sont appelés pour rien', () {
+      final s = startedGame(engine, [
+        ('Ipl', RoleId.infectPereDesLoups),
+        ('Gml', RoleId.grandMechantLoup),
+        ('Lg', RoleId.loupGarou),
+        for (var i = 1; i <= 8; i++) ('V$i', RoleId.simpleVillageois),
+      ]);
+      engine.skipTo(s, GamePhase.nightLoups);
+      engine.setLoupsVictim(s, s.idOf('V1'));
+      engine.resolveGrandMechantLoup(s, null);
+      engine.resolveInfectPereDesLoups(s, true);
+      engine.finishNight(s);
+      toNextNight(s, 'Lg');
+      expect(s.wolfPackIntact, isFalse);
+      engine.skipTo(s, GamePhase.nightInfectedReveal);
+      engine.confirmInfectedReveal(s);
+      engine.skipTo(s, GamePhase.nightLoups);
+      engine.setLoupsVictim(s, s.idOf('V3'));
+      expectFakeTurn(s, GamePhase.nightGrandMechantLoup);
+      expectFakeTurn(s, GamePhase.nightInfectPereDesLoups);
+      engine.finishNight(s);
+      expect(s.deadNames, ['Lg', 'V3'], reason: 'Pas de seconde victime');
+    });
+  });
+
+  group('Compte rendu du résumé', () {
+    List<RoundEventKind> kinds(RoundRecord round) =>
+        [for (final e in round.events) e.kind];
+
+    test('les morts, l\'élection et le vote, avec le décompte des voix', () {
+      final s = startedGame(engine, [
+        ('Lg', RoleId.loupGarou),
+        ('Sor', RoleId.sorciere),
+        for (var i = 1; i <= 5; i++) ('V$i', RoleId.simpleVillageois),
+      ]);
+      engine.skipTo(s, GamePhase.nightLoups);
+      engine.setLoupsVictim(s, s.idOf('V1'));
+      expect(s.rounds.last.events, isEmpty,
+          reason: 'Rien n\'est connu avant le matin');
+      engine.skipTo(s, GamePhase.nightSorciere);
+      engine.resolveSorciere(s, poisonTargetId: s.idOf('V2'));
+      engine.finishNight(s);
+
+      final night = s.rounds.firstWhere((r) => r.wave == 'night');
+      expect(kinds(night), [RoundEventKind.death, RoundEventKind.death]);
+      expect(night.events.map((e) => (s.byId(e.playerId!).name, e.cause)), [
+        ('V1', DeathCause.devoreParLesLoups),
+        ('V2', DeathCause.potionDeMort),
+      ]);
+
+      // Élection secrète : V3 l'emporte 3 voix à 2.
+      engine.confirmDayReveal(s);
+      engine.confirmMayorElectionExplain(s, VoteMode.secret);
+      final votes = {
+        s.idOf('Lg'): s.idOf('V3'),
+        s.idOf('Sor'): s.idOf('V3'),
+        s.idOf('V3'): s.idOf('V3'),
+        s.idOf('V4'): s.idOf('Sor'),
+        s.idOf('V5'): s.idOf('Sor'),
+      };
+      final tally = engine.tallyVotes(s, votes);
+      engine.resolveMayorElection(s, tally.winner!);
+      final day = s.rounds.last;
+      expect(kinds(day), [RoundEventKind.mayorElected]);
+      expect(day.events.single.playerId, s.idOf('V3'));
+      expect(day.events.single.votes, {s.idOf('V3'): 3, s.idOf('Sor'): 2});
+
+      // Vote collectif : pas de décompte.
+      engine.confirmMayorReveal(s);
+      engine.confirmDebate(s, VoteMode.collective);
+      engine.resolveVillageVote(s, s.idOf('Lg'));
+      expect(kinds(day), [
+        RoundEventKind.mayorElected,
+        RoundEventKind.villageVote,
+        RoundEventKind.death,
+      ]);
+      expect(day.events[1].votes, isNull);
+      expect(day.events[2].cause, DeathCause.vote);
+    });
+
+    test('ce qui reste secret n\'y figure pas (Ancien, infection)', () {
+      final s = startedGame(engine, [
+        ('Ipl', RoleId.infectPereDesLoups),
+        ('Anc', RoleId.ancien),
+        for (var i = 1; i <= 5; i++) ('V$i', RoleId.simpleVillageois),
+      ]);
+      engine.skipTo(s, GamePhase.nightLoups);
+      engine.setLoupsVictim(s, s.idOf('Anc'));
+      engine.resolveInfectPereDesLoups(s, false);
+      engine.finishNight(s);
+      expect(s.named('Anc').alive, isTrue);
+      expect(s.rounds.first.events, isEmpty);
+
+      toNextNight(s, 'V5');
+      engine.skipTo(s, GamePhase.nightLoups);
+      engine.setLoupsVictim(s, s.idOf('V1'));
+      engine.resolveInfectPereDesLoups(s, true);
+      engine.finishNight(s);
+      expect(s.rounds.firstWhere((r) => r.wave == 'night' && r.number == 2)
+          .events, isEmpty);
+    });
+
+    test('rôles encore en jeu : une carte sort à la mort de son joueur', () {
+      final s = startedGame(engine, [
+        ('Lg', RoleId.loupGarou),
+        ('Lg2', RoleId.loupGarou),
+        ('Voy', RoleId.voyante),
+        for (var i = 1; i <= 5; i++) ('V$i', RoleId.simpleVillageois),
+      ]);
+      s.config.roleCounts
+        ..clear()
+        ..addAll({
+          RoleId.loupGarou: 2,
+          RoleId.voyante: 1,
+          RoleId.simpleVillageois: 5,
+        });
+      engine.skipTo(s, GamePhase.nightLoups);
+      engine.setLoupsVictim(s, s.idOf('Voy'));
+      engine.finishNight(s);
+      engine.dayToVote(s);
+      engine.resolveVillageVote(s, s.idOf('Lg'));
+      expect(s.remainingRoleCounts, {
+        RoleId.loupGarou: 1,
+        RoleId.voyante: 0,
+        RoleId.simpleVillageois: 5,
+      });
     });
   });
 
@@ -313,6 +528,8 @@ void main() {
       engine.resolveVoleur(s, RoleId.voyante);
 
       expect(s.named('Vol').role, RoleId.voyante);
+      expect(s.named('Vol').card, RoleId.voyante,
+          reason: 'Sa carte, révélée à sa mort, est celle prise sur la table');
       expect(s.voleurTableCards, [RoleId.voleur, RoleId.simpleVillageois]);
       expect(s.phase, GamePhase.nightGoBackToSleep);
       engine.advance(s);
@@ -514,7 +731,10 @@ void main() {
           ('Voy', RoleId.voyante),
           for (var i = 1; i <= 7; i++) ('V$i', RoleId.simpleVillageois),
         ],
-        settings: settingsWith({SettingId.infectedKeepsPower: keepsPower}),
+        settings: settingsWith({
+          SettingId.infectedKeepsPower: keepsPower,
+          SettingId.fakeTurnsForPowerlessRoles: false,
+        }),
       );
       engine.skipTo(s, GamePhase.nightLoups);
       engine.setLoupsVictim(s, s.idOf('Voy'));
@@ -592,7 +812,7 @@ void main() {
     });
 
     test('ne flaire aucun loup : perd définitivement son pouvoir', () {
-      final s = startedGame(engine, seats());
+      final s = startedGame(engine, seats(), settings: settingsWith({SettingId.fakeTurnsForPowerlessRoles: false}));
       engine.skipTo(s, GamePhase.nightLoups);
       engine.setLoupsVictim(s, s.idOf('V4'));
       engine.skipTo(s, GamePhase.nightRenard);
