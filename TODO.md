@@ -1,1 +1,1 @@
-si il y a un nb pair de joueur et un maire alors pas d'égalité possible 
+si il y a un nb pair de joueur et un maire alors pas d'égalité possible. rajoute un bouton de confirmation pour l'égalité 
